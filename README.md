@@ -1,5 +1,5 @@
 # RE:SEP
-An alternative article reader for the Stanford Encyclopedia of [Stanford Encyclopedia of Philosophy](https://plato.stanford.edu).
+An alternative article reader for the [Stanford Encyclopedia of Philosophy](https://plato.stanford.edu).
 Built with Go + gRPC + Sveltekit
 
 
