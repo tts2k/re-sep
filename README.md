@@ -2,6 +2,8 @@
 An alternative article reader for the [Stanford Encyclopedia of Philosophy](https://plato.stanford.edu).
 Built with Go + gRPC + Sveltekit
 
+### Architecture (drafted)
+![architecture](docs/architecture.png)
 
 ### :warning: Status: Portfolio :warning:
 This project is in **Portfolio Status**, meaning that there hasn't been any actual work done to it
