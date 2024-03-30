@@ -24,6 +24,7 @@
 		if (dropdownOpen) {
 			return;
 		}
+
 		showHeader = false;
 	};
 
@@ -53,8 +54,7 @@
 	role="menubar"
 	on:mousemove={onMouseMove}
 	on:mouseleave={onMouseLeave}
-	on:focus={onMouseMove}
-	class="{headerVisibility} stick top-0 flex flex-grow h-16 items-center justify-center gap-4 border-b
+	class="{headerVisibility} fixed w-screen top-0 flex flex-grow h-12 items-center justify-center gap-4 border-b
 	bg-background px-4 md:px-6 transition-opacity duration-500 shadow-md shadow-foreground/5"
 >
 	<div class="flex flex-1 justify-start">

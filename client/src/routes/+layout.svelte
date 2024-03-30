@@ -1,9 +1,9 @@
 <script>
 	import Header from "@/components/header/Header.svelte";
-	import "../app.css";
+	import "../app.pcss";
 	import { ModeWatcher } from "mode-watcher";
 </script>
 
-<ModeWatcher />
-<Header />
-<slot />
+<ModeWatcher></ModeWatcher>
+<Header></Header>
+<slot></slot>

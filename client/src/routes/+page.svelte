@@ -1,2 +1,54 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+	import type { PageServerData } from "./$types";
+
+	export let data: PageServerData;
+</script>
+
+<article class="mt-24 ml-10 mr-10 font-serif lg:ml-72 lg:mr-72">
+	{@html data.content}
+</article>
+
+<!-- shadcn typography -->
+<style lang="postcss">
+	article :global(#pubinfo) {
+		@apply mb-2;
+	}
+
+	article :global(h1) {
+		@apply scroll-m-20 text-6xl font-extrabold tracking-tight lg:text-5xl
+		text-center mb-12;
+	}
+
+	article :global(h2) {
+		@apply scroll-m-20 border-b pb-2 text-4xl font-semibold tracking-tight
+		transition-colors mt-10;
+	}
+
+	article :global(h3) {
+		@apply scroll-m-20 text-3xl font-semibold tracking-tight mt-10;
+	}
+
+	article :global(h4) {
+		@apply scroll-m-20 text-2xl font-semibold tracking-tight mt-10;
+	}
+
+	article :global(p) {
+		@apply leading-7 [&:not(:first-child)]:mt-6 text-lg lg:text-xl;
+	}
+
+	article :global(em) {
+		@apply text-lg lg:text-xl;
+	}
+
+	article :global(ul) {
+		@apply my-6 ml-6 list-disc text-lg lg:text-xl;
+	}
+
+	article :global(li) {
+		@apply mt-2;
+	}
+
+	article :global(blockquote) {
+		@apply mt-6 border-l-2 pl-6 italic text-lg;
+	}
+</style>
