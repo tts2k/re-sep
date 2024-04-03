@@ -8,9 +8,12 @@
 	import EnterFullScreenIcon from "~icons/radix-icons/enter-full-screen";
 	import ExitFullScreenIcon from "~icons/radix-icons/exit-full-screen";
 	import { mode, toggleMode } from "mode-watcher";
+	import ConfigDialog from "./ConfigDialog.svelte";
+	import { sidebarStatus } from "$lib/components/sidebar/stores/sidebarStore";
 
 	let fullscreenElement: Document["fullscreenElement"];
 	let dropdownOpen: boolean;
+	let configDialogOpen: boolean;
 	let showHeader = false;
 	let hovering = false;
 
@@ -42,6 +45,11 @@
 		document.exitFullscreen();
 	};
 
+	const openSidebar = (e: Event) => {
+		e.stopPropagation();
+		$sidebarStatus.open = true;
+	};
+
 	$: toggleFullScreen = !fullscreenElement ? enterFullScreen : exitFullScreen;
 
 	$: headerVisibility = showHeader ? "opacity-100" : "opacity-0";
@@ -54,11 +62,11 @@
 	role="menubar"
 	on:mousemove={onMouseMove}
 	on:mouseleave={onMouseLeave}
-	class="{headerVisibility} fixed w-screen top-0 flex flex-grow h-12 items-center justify-center gap-4 border-b
+	class="{headerVisibility} fixed w-full top-0 flex flex-grow h-12 items-center justify-center gap-4 border-b
 	bg-background px-4 md:px-6 transition-opacity duration-500 shadow-md shadow-foreground/5"
 >
 	<div class="flex flex-1 justify-start">
-		<Button variant="ghost" size="icon">
+		<Button variant="ghost" size="icon" on:click={openSidebar}>
 			<TextLeftIcon font-size="24" />
 		</Button>
 	</div>
@@ -92,7 +100,9 @@
 				on:mouseleave={onMouseLeave}
 				on:focus={onMouseMove}
 			>
-				<DropdownMenu.Item>Font & Layout Settings</DropdownMenu.Item>
+				<DropdownMenu.Item on:click={() => (configDialogOpen = true)}>
+					Font & Layout Settings
+				</DropdownMenu.Item>
 				<DropdownMenu.Separator />
 				<DropdownMenu.CheckboxItem>
 					Autohide Cursor
@@ -110,3 +120,5 @@
 		</Button>
 	</div>
 </header>
+
+<ConfigDialog bind:open={configDialogOpen} />

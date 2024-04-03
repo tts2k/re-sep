@@ -1,10 +1,22 @@
 <script lang="ts">
 	import type { PageServerData } from "./$types";
+	import { toc } from "$lib/actions/toc";
+	import { currentTocItem } from "$lib/components/sidebar/stores/tocStore";
+	import { metadata } from "@/stores/articleMetadata";
 
 	export let data: PageServerData;
+
+	$metadata = {
+		title: data.title,
+		authors: data.author,
+		toc: data.toc,
+	};
 </script>
 
-<article class="mt-24 ml-10 mr-10 font-serif lg:ml-72 lg:mr-72">
+<article
+	use:toc={{ store: currentTocItem }}
+	class="mt-24 mb-24 ml-10 mr-10 font-serif lg:ml-72 lg:mr-72"
+>
 	{@html data.content}
 </article>
 
