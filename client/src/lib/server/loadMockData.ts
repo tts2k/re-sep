@@ -73,7 +73,7 @@ const toc: TocItem[] = [
 			},
 			{
 				label: "Facts about the Blaming Interaction",
-				id: "FactAboInter",
+				id: "FacAboInter",
 				subItems: [
 					{
 						label: "Proportionality",
@@ -132,7 +132,7 @@ const toc: TocItem[] = [
 	},
 	{
 		label: "Acknowledgements",
-		id: "related-entries",
+		id: "acknowledgements",
 		subItems: [],
 	},
 ];
