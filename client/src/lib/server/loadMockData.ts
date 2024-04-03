@@ -103,7 +103,7 @@ const toc: TocItem[] = [
 					},
 					{
 						label: "Other Blamer-Based Worries",
-						id: "OthBalmWor",
+						id: "OthBlamWor",
 						subItems: [],
 					},
 				],
@@ -117,7 +117,7 @@ const toc: TocItem[] = [
 	},
 	{
 		label: "Bibliography",
-		id: "bibilography",
+		id: "Bib",
 		subItems: [],
 	},
 	{

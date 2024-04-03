@@ -21,6 +21,7 @@ export const toc: Action<HTMLElement, ActionProps> = (
 	const onObserver = (entries: IntersectionObserverEntry[]) => {
 		for (const entry of entries) {
 			if (entry.isIntersecting) {
+				console.log("Reading:", entry.target.id);
 				props.store.set(entry.target.id);
 			}
 		}

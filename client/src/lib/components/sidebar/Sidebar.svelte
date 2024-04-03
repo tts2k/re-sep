@@ -25,9 +25,12 @@
 	$: pinIcon = $sidebarStatus.pin ? PinnedIcon : UnpinnedIcon;
 
 	$: if (tocRoot && $currentTocItem !== "") {
-		const active = tocRoot.querySelector(
-			`a[href="${"#" + $currentTocItem}"]`,
-		);
+		// Reset active class
+		let active = tocRoot.querySelector(".active");
+		active?.classList.remove("active");
+
+		// Add active class to new toc item
+		active = tocRoot.querySelector(`a[href="${"#" + $currentTocItem}"]`);
 		active?.classList.add("active");
 	}
 </script>
