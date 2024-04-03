@@ -14,16 +14,17 @@ export const toc: Action<HTMLElement, ActionProps> = (
 	}
 
 	const options = {
-		rootMargin: "-50% 0px",
-		threshold: 0,
+		threshold: [0, 0.25, 0.5, 0.75, 1],
 	};
 
 	const onObserver = (entries: IntersectionObserverEntry[]) => {
 		for (const entry of entries) {
-			if (entry.isIntersecting) {
-				console.log("Reading:", entry.target.id);
-				props.store.set(entry.target.id);
+			if (!entry.isIntersecting) {
+				continue;
 			}
+
+			console.log("Reading:", entry.target.id);
+			props.store.set(entry.target.id);
 		}
 	};
 

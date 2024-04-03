@@ -122,12 +122,12 @@ const toc: TocItem[] = [
 	},
 	{
 		label: "Other Internet Resoources",
-		id: "other-internet-resources",
+		id: "Oth",
 		subItems: [],
 	},
 	{
 		label: "Related Entires",
-		id: "related-entries",
+		id: "Rel",
 		subItems: [],
 	},
 	{
