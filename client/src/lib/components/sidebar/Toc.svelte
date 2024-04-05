@@ -5,16 +5,12 @@
 	export let items: TocItem[];
 	export let indent = 0;
 	export let parentPrefix = "";
-
-	const setCurrentTocItem = (id: string) => {
-		$currentTocItem = id;
-	};
 </script>
 
 <ul>
 	{#each items as item, index}
-		<li style="margin-left: {indent}px;">
-			<a href="#{item.id}" on:click={() => setCurrentTocItem(item.id)}>
+		<li style="margin-left: {indent}px;" class="truncate">
+			<a href="#{item.id}">
 				{parentPrefix}{index + 1}. {item.label}
 			</a>
 		</li>

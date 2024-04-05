@@ -132,7 +132,7 @@ const toc: TocItem[] = [
 	},
 	{
 		label: "Acknowledgements",
-		id: "acknowledgements",
+		id: "acknowledgments",
 		subItems: [],
 	},
 ];

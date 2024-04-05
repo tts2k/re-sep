@@ -43,9 +43,7 @@
 		shadow-black shadow-2xl"
 		style="width: 400px;"
 	>
-		<div
-			class="space-y-4 py-4 overflow-hidden whitespace-nowrap text-ellipsis"
-		>
+		<div class="space-y-4 py-4">
 			<div class="flex justify-end pr-3">
 				<Button variant="ghost" size="icon" on:click={onPinClick}>
 					<svelte:component
