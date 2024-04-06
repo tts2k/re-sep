@@ -8,6 +8,7 @@
 </script>
 
 <ModeWatcher />
+<!--Dim the background of on sidebar open-->
 {#if $sidebarStatus.open && !$sidebarStatus.pin}
 	<div
 		role="none"
