@@ -20,7 +20,6 @@
 
 	const onMouseDown = (e: MouseEvent) => {
 		resizing = true;
-
 		startX = e.clientX;
 
 		window.addEventListener("mouseup", onMouseUp);
@@ -28,7 +27,6 @@
 	};
 
 	const onMouseUp = () => {
-		document.body.classList.remove("cursor-col-resize");
 		// Move the code block to the end of the event queue,
 		// so that Sidebar's clickOutside can know and not run after resizing
 		setTimeout(() => {
@@ -36,6 +34,7 @@
 			resizing = false;
 			window.removeEventListener("mouseup", onMouseUp);
 			window.removeEventListener("mousemove", onMouseMove);
+			document.body.classList.remove("cursor-col-resize");
 		});
 	};
 </script>

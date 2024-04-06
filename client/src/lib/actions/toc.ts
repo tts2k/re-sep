@@ -31,7 +31,6 @@ export const toc: Action<HTMLElement, ActionProps> = (
 
 	const observer = new IntersectionObserver(onObserver, options);
 
-	// This should be pre-proccessed by the golang backend with goquery after scraping
 	// TODO: Experiment with (htmx | horse-powered html)'s hx-trigger intersect
 	const headingLinks = container.querySelectorAll(
 		"h1 > a, h2 > a, h3 > a, h4 > a, h5 > a, h6 > a",

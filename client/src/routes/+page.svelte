@@ -3,6 +3,7 @@
 	import { toc } from "$lib/actions/toc";
 	import { currentTocItem } from "$lib/components/sidebar/stores/tocStore";
 	import { metadata } from "@/stores/articleMetadata";
+	import { ScrollArea } from "$lib/components/ui/scroll-area";
 
 	export let data: PageServerData;
 
@@ -13,12 +14,16 @@
 	};
 </script>
 
-<article
-	use:toc={{ store: currentTocItem }}
-	class="mt-24 mb-24 ml-10 mr-10 font-serif lg:ml-72 lg:mr-72"
->
-	{@html data.content}
-</article>
+<!-- class="mt-24 mb-24 ml-10 mr-10 font-serif lg:ml-72 lg:mr-72" -->
+
+<ScrollArea orientation="vertical" class="rounded-md border p-4 h-screen">
+	<article
+		use:toc={{ store: currentTocItem }}
+		class="mt-24 mb-24 ml-10 mr-10 font-serif lg:ml-72 lg:mr-72"
+	>
+		{@html data.content}
+	</article>
+</ScrollArea>
 
 <!-- shadcn typography -->
 <style lang="postcss">
@@ -27,8 +32,8 @@
 	}
 
 	article :global(h1) {
-		@apply scroll-m-20 text-6xl font-extrabold tracking-tight lg:text-5xl
-		text-center mb-12;
+		@apply scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-7xl
+		text-center mb-32;
 	}
 
 	article :global(h2) {

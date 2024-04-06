@@ -58,7 +58,7 @@
 	<div
 		use:clickOutside={closeSidebar}
 		transition:slide={{ axis: "x" }}
-		class="bg-border h-screen top-0 fixed z-20
+		class="bg-background h-screen top-0 fixed z-20
 		shadow-black shadow-2xl"
 		style="width: {width}px"
 	>

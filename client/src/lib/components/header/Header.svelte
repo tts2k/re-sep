@@ -10,6 +10,7 @@
 	import { mode, toggleMode } from "mode-watcher";
 	import ConfigDialog from "./ConfigDialog.svelte";
 	import { sidebarStatus } from "$lib/components/sidebar/stores/sidebarStore";
+	import { metadata } from "@/stores/articleMetadata";
 
 	let fullscreenElement: Document["fullscreenElement"];
 	let dropdownOpen: boolean;
@@ -63,7 +64,8 @@
 	on:mousemove={onMouseMove}
 	on:mouseleave={onMouseLeave}
 	class="{headerVisibility} fixed w-full top-0 flex flex-grow h-12 items-center justify-center gap-4 border-b
-	bg-background px-4 md:px-6 transition-opacity duration-500 shadow-md shadow-foreground/5"
+	bg-background px-4 md:px-6 transition-opacity duration-500 shadow-md
+	shadow-foreground/5 z-10"
 >
 	<div class="flex flex-1 justify-start">
 		<Button variant="ghost" size="icon" on:click={openSidebar}>
@@ -72,7 +74,7 @@
 	</div>
 
 	<div class="flex flex-1 justify-center">
-		<h1 class="font-bold">Article Title</h1>
+		<h1 class="font-bold">{$metadata.title}</h1>
 	</div>
 
 	<div class="flex flex-1 justify-end gap-4">
