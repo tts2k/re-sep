@@ -12,8 +12,6 @@
 {#if $sidebarStatus.open && !$sidebarStatus.pin}
 	<div
 		role="none"
-		on:mousemove|stopPropagation
-		on:scroll|stopPropagation
 		class="fixed w-full h-full bg-black opacity-55 left-0 top-0 z-20"
 		transition:fade
 	></div>

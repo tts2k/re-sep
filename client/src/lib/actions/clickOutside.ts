@@ -6,6 +6,7 @@ export const clickOutside: Action<HTMLElement, (e: Event) => void> = (
 ) => {
 	const handleClick = (e: Event) => {
 		if (!element.contains(e.target as Node)) {
+			console.log("click");
 			handler(e);
 		}
 	};

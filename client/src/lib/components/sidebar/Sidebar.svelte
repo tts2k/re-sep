@@ -8,19 +8,38 @@
 	import { slide } from "svelte/transition";
 	import { metadata } from "@/stores/articleMetadata";
 	import { currentTocItem } from "./stores/tocStore";
+	import ResizeHandle from "./ResizeHandle.svelte";
 
 	let tocRoot: HTMLElement;
+	let resizing: boolean;
+	let defaultWidth = 500;
+	let addedWidth = 0;
 
 	const onPinClick = () => {
 		$sidebarStatus.pin = !$sidebarStatus.pin;
 	};
 
 	const closeSidebar = () => {
+		if (resizing) {
+			return;
+		}
+
 		if ($sidebarStatus.pin) {
 			return;
 		}
 		$sidebarStatus.open = false;
 	};
+
+	const onResize = (e: CustomEvent) => {
+		addedWidth = e.detail;
+	};
+
+	$: width = defaultWidth + addedWidth;
+
+	$: if (!resizing) {
+		defaultWidth = defaultWidth + addedWidth;
+		addedWidth = 0;
+	}
 
 	$: pinIcon = $sidebarStatus.pin ? PinnedIcon : UnpinnedIcon;
 
@@ -41,9 +60,9 @@
 		transition:slide={{ axis: "x" }}
 		class="bg-border h-screen top-0 fixed z-20
 		shadow-black shadow-2xl"
-		style="width: 400px;"
+		style="width: {width}px"
 	>
-		<div class="space-y-4 py-4">
+		<div class="space-y-4 py-4 mr-4">
 			<div class="flex justify-end pr-3">
 				<Button variant="ghost" size="icon" on:click={onPinClick}>
 					<svelte:component
@@ -53,9 +72,11 @@
 					/>
 				</Button>
 			</div>
-			<div id="toc" class="px-10 py-5" bind:this={tocRoot}>
+			<div id="toc" class="mx-10 my-5" bind:this={tocRoot}>
 				<Toc items={$metadata.toc} />
 			</div>
 		</div>
+		<div></div>
+		<ResizeHandle bind:resizing on:resize={onResize} />
 	</div>
 {/if}

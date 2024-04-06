@@ -8,7 +8,7 @@
 
 <ul>
 	{#each items as item, index}
-		<li style="margin-left: {indent}px;" class="truncate">
+		<li style="padding-left: {indent}px;" class="truncate">
 			<a href="#{item.id}">
 				{parentPrefix}{index + 1}. {item.label}
 			</a>
