@@ -8,9 +8,8 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		// adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
-		// If your environment is not supported or you settled on a specific environment, switch out the adapter.
-		// See https://kit.svelte.dev/docs/adapters for more information about adapters.
+		// Cloudflare adapter is temporary. Mostly for demo-ing the FE
+		// The final product is probably gonna run on the Node adapter
 		adapter: adapter(),
 		alias: {
 			"@/*": "./src/lib/*",
