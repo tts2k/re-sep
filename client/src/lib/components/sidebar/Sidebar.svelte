@@ -12,7 +12,7 @@
 
 	let tocRoot: HTMLElement;
 	let resizing: boolean;
-	let defaultWidth = 500;
+	let originalWidth = 500;
 	let addedWidth = 0;
 
 	const onPinClick = () => {
@@ -34,10 +34,10 @@
 		addedWidth = e.detail;
 	};
 
-	$: width = defaultWidth + addedWidth;
+	$: width = originalWidth + addedWidth;
 
 	$: if (!resizing) {
-		defaultWidth = defaultWidth + addedWidth;
+		originalWidth = originalWidth + addedWidth;
 		addedWidth = 0;
 	}
 

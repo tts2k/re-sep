@@ -28,9 +28,9 @@
 	};
 
 	const onMouseUp = () => {
+		document.body.classList.remove("cursor-col-resize");
 		// Move the code block to the end of the event queue,
 		// so that Sidebar's clickOutside can know and not run after resizing
-		document.body.classList.remove("cursor-col-resize");
 		setTimeout(() => {
 			startX = 0;
 			resizing = false;
