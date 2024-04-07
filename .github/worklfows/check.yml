@@ -1,4 +1,4 @@
-name: Check
+name: Client check
 
 on:
   push:
@@ -17,6 +17,8 @@ jobs:
           node-version: 20
           cache: 'npm'
       - name: Install dependencies
+        working-directory: ./client
         run: npm ci
       - name: Run checks
+        working-directory: ./client
         run: npm run ci
