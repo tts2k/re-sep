@@ -49,7 +49,7 @@
 		active?.classList.remove("active");
 
 		// Add active class to new toc item
-		active = tocRoot.querySelector(`a[href="${"#" + $currentTocItem}"]`);
+		active = tocRoot.querySelector(`a[href="${`#${$currentTocItem}`}"]`);
 		active?.classList.add("active");
 	}
 </script>

@@ -1,26 +1,37 @@
 {
 	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"files": {
+		"ignoreUnknown": true
+	},
 	"vcs": {
 		"enabled": true,
 		"clientKind": "git",
 		"useIgnoreFile": true
 	},
+	"organizeImports": {
+		"enabled": false
+	},
 	"formatter": {
 		"indentStyle": "tab",
-		"indentSize": 4,
 		"indentWidth": 4,
 		"lineEnding": "lf",
-		"lineWidth": 80
+		"lineWidth": 80,
+		"ignore": ["./src/**/*.svelte"]
 	},
 	"overrides": [
 		{
-			"include": [
-				"*.svelte"
-			],
+			"include": ["./src/**/*.svelte"],
 			"linter": {
 				"rules": {
 					"style": {
-						"useConst": "off"
+						"useConst": "off",
+						"useImportType": "off"
+					},
+					"suspicious": {
+						"noConfusingLabels": "off"
+					},
+					"correctness": {
+						"noUnusedLabels": "off"
 					}
 				}
 			}
