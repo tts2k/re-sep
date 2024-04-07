@@ -8,6 +8,11 @@ tab_width = 4
 trim_trailing_whitespace = true
 max_line_length = 80
 
-[*.{json,yaml}]
+[*.json]
 indent_size = 2
 tab_width = 2
+
+[*.yaml]
+indent_style = space
+tab_width = 2
+indent_size = 2
