@@ -1,4 +1,5 @@
-import adapter from "@sveltejs/adapter-auto";
+import adapterAuto from "@sveltejs/adapter-auto";
+import adapterNode from "@sveltejs/adapter-node";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -8,13 +9,16 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		// Auto adapter is temporary. Mostly for demo-ing the FE
-		// The final product is probably gonna run on the Node adapter
-		adapter: adapter(),
 		alias: {
 			"@/*": "./src/lib/*",
 		},
 	},
 };
+
+if (process.env.SELF_HOST) {
+	config.kit.adapter = adapterNode();
+} else {
+	config.kit.adapter = adapterAuto();
+}
 
 export default config;
