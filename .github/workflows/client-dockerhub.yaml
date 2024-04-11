@@ -2,6 +2,9 @@ name: Client Dockerhub push
 
 on:
   push:
+    paths:
+      - "client/**"
+      - ".github/workflows/**"
     branches:
       - 'main'
 
