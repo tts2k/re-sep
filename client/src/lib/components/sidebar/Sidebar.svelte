@@ -27,6 +27,7 @@
 		if ($sidebarStatus.pin) {
 			return;
 		}
+
 		$sidebarStatus.open = false;
 	};
 

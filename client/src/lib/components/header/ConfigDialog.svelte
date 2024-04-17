@@ -1,17 +1,18 @@
 <script lang="ts">
 	import * as Dialog from "$lib/components/ui/dialog";
+	import { Slider } from "../ui/slider";
 
 	export let open = false;
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content>
+
 		<Dialog.Header>
-			<Dialog.Title>Are you sure absolutely sure?</Dialog.Title>
-			<Dialog.Description>
-				This action cannot be undone. This will permanently delete your
-				account and remove your data from our servers.
-			</Dialog.Description>
+			<Dialog.Title>Font and Layout Settings</Dialog.Title>
 		</Dialog.Header>
+
+		<Slider/>
+
 	</Dialog.Content>
 </Dialog.Root>

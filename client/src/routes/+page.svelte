@@ -1,9 +1,11 @@
 <script lang="ts">
 	import type { PageServerData } from "./$types";
+	import { ScrollArea } from "$lib/components/ui/scroll-area";
 	import { toc } from "$lib/actions/toc";
+	import { layerConfig } from "$lib/actions/layerConfig";
 	import { currentTocItem } from "$lib/components/sidebar/stores/tocStore";
 	import { metadata } from "@/stores/articleMetadata";
-	import { ScrollArea } from "$lib/components/ui/scroll-area";
+	import { userConfig } from "@/stores/userConfig";
 
 	export let data: PageServerData;
 
@@ -14,12 +16,20 @@
 	};
 </script>
 
-<!-- class="mt-24 mb-24 ml-10 mr-10 font-serif lg:ml-72 lg:mr-72" -->
+<svelte:head>
+	<title>{data.title}</title>
+</svelte:head>
 
-<ScrollArea orientation="vertical" class="rounded-md border p-4 h-screen">
+<ScrollArea
+	orientation="vertical"
+	class="border p-4 h-screen
+	flex-col"
+>
 	<article
 		use:toc={{ store: currentTocItem }}
-		class="mt-24 mb-24 ml-10 mr-10 font-serif lg:ml-72 lg:mr-72"
+		use:layerConfig={userConfig}
+		class="mt-24 mb-24 font-serif h-screen flex flex-col"
+		style="margin-left: 300px; margin-right: 300px;"
 	>
 		{@html data.content}
 	</article>
