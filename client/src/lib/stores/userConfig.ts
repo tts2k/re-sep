@@ -1,9 +1,9 @@
 import { browser } from "$app/environment";
 import { writable } from "svelte/store";
 
-const availableFonts = ["serif", "sans-serif", "Open Dyslexic"] as const;
+export const AvailableFonts = ["serif", "sans-serif", "Open Dyslexic"] as const;
 
-type Font = (typeof availableFonts)[number];
+type Font = (typeof AvailableFonts)[number];
 
 export type UserConfig = {
 	layered: boolean;

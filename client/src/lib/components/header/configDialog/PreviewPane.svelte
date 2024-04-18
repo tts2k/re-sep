@@ -10,8 +10,6 @@
 
 	$: zoomlvl = zoomLvls[curZoomLvl];
 
-	$: console.log(zoomlvl);
-
 	const zoomIn = () => {
 		if (curZoomLvl + 1 < zoomLvls.length) {
 			curZoomLvl++;
@@ -25,7 +23,7 @@
 	};
 </script>
 
-<div class="w-[60%] h-[85vh] font-serif">
+<div class="w-[70%] h-[85vh] font-serif">
 	<ScrollArea
 		orientation="both"
 		class="border p-4 h-full flex-col
