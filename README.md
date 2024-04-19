@@ -33,6 +33,6 @@ improve UX. I call this process **Layering**, inspired by the
 [similar functionality](https://docs.fedoraproject.org/en-US/fedora-silverblue/getting-started/#package-layering)
 of Fedora Silverblue.
 
-### :warning: Status: Post-Portfolio :warning:
-We are in the **Post-Porfolio** status. In this state, the "image" (the
-frontend) will be worked on extensively while the backend remain untouched
+### Status: The Death of The Portfolio
+Now that the backend is finally being worked on, the changes will no longer
+be visible to the end user, and thus the image is broken.
