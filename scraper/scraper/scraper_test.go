@@ -15,7 +15,7 @@ import (
 func newUnstartedTestServer() *httptest.Server {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/entries/foucault", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 
 		file, _ := os.ReadFile("./testdata/full_document.html")
@@ -39,7 +39,8 @@ func TestSingle(t *testing.T) {
 	issueTime, _ := time.Parse(timeLayout, "2003-04-02")
 	modifiedTime, _ := time.Parse(timeLayout, "2022-08-05")
 	expectedArticle := Article{
-		Title: "Michel Foucault",
+		EntryName: "foucault",
+		Title:     "Michel Foucault",
 		Author: []string{
 			"Gutting, Gary",
 			"Oksala, Johanna",
@@ -48,9 +49,18 @@ func TestSingle(t *testing.T) {
 		Modified: modifiedTime,
 	}
 
-	article, err := Single(ts.URL)
+	article, err := Single(ts.URL + "/entries/foucault")
 	if err != nil {
 		t.Fatalf("Singe fetch failed: %v", err)
+	}
+
+	// Entry name
+	if expectedArticle.EntryName != article.EntryName {
+		t.Fatalf(
+			"Wrong article entry name. Expect %s but got %s instead.",
+			expectedArticle.EntryName,
+			article.EntryName,
+		)
 	}
 
 	// Title

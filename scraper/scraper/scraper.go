@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"fmt"
+	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -18,12 +19,13 @@ type TOCItem struct {
 }
 
 type Article struct {
-	Title    string
-	Issued   time.Time
-	Modified time.Time
-	HTMLText string
-	Author   []string
-	TOC      []TOCItem
+	EntryName string
+	Title     string
+	Issued    time.Time
+	Modified  time.Time
+	HTMLText  string
+	Author    []string
+	TOC       []TOCItem
 }
 
 var Collector = colly.NewCollector()
@@ -84,6 +86,8 @@ func parseTOC(root *goquery.Selection) []TOCItem {
 
 func Single(url string) (Article, error) {
 	article := Article{}
+
+	article.EntryName = path.Base(url)
 
 	Collector.OnHTML(`meta[name="DC.title"]`, func(e *colly.HTMLElement) {
 		article.Title = e.Attr("content")
