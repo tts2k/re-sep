@@ -58,7 +58,7 @@ func InsertArticle(article scraper.Article) error {
 		INSERT INTO articles (
 			id, title, entry_name, issued, modified, html_text, author, toc
 		) VALUES (
-			?, ?, ?, ?, ?, ?, jsonb_array(?), jsonb(?)
+			?, ?, ?, ?, ?, ?, jsonb(?), jsonb(?)
 		)
 	`)
 	if err != nil {
@@ -71,6 +71,7 @@ func InsertArticle(article scraper.Article) error {
 	modifiedDate := article.Modified.Format(time.RFC3339)
 
 	// Create JSON objects
+	// https://www.sqlite.org/json1.html
 	authorsJSON, err := json.Marshal(article.Author)
 	if err != nil {
 		return err
