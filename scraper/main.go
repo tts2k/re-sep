@@ -1,11 +1,47 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
+	"re-sep-scraper/database"
+	"re-sep-scraper/scraper"
+
 	"github.com/spf13/pflag"
 )
+
+func doSingle(url string) error {
+	// fmt.Println(url)
+	outputPath, _ := pflag.CommandLine.GetString("out")
+	if outputPath == "" {
+		return errors.New("flag: no output specified")
+	}
+
+	// Scrape
+	fmt.Println("=> Scraping article")
+	article, err := scraper.Single(url)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Single scrape failed")
+		return err
+	}
+
+	// Create database
+	fmt.Println("=> Creating database")
+	database.InitDB(outputPath)
+	err = database.CreateTable()
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("=> Inserting row into the database")
+	err = database.InsertArticle(article)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func checkBoolFlagsConflict(flagList []string) error {
 	hasFlagEnabled := false
@@ -41,14 +77,16 @@ func initFlags() error {
 	pflag.BoolP("help", "h", false, "Print this help message")
 	pflag.BoolP("all", "a", false, "Scrape all available articles")
 	pflag.BoolP("single", "s", false, "Scrape a single article")
-	pflag.CommandLine.SortFlags = false
+	pflag.StringP("out", "o", "", "Specify output path")
 
-	pflag.Parse()
+	pflag.CommandLine.SortFlags = false
 
 	err := checkBoolFlagsConflict([]string{"json", "single"})
 	if err != nil {
 		return err
 	}
+
+	pflag.Parse()
 
 	return nil
 }
@@ -82,7 +120,13 @@ func main() {
 	}
 
 	if pflag.NArg() == 0 {
-		fmt.Fprintln(os.Stderr, "Scrape all is not implemented")
+		fmt.Fprintln(os.Stderr, "An url must be provided for single mode")
+		pflag.Usage()
 		return
+	}
+
+	err = doSingle(pflag.Arg(0))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
 	}
 }
