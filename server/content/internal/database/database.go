@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 
 type Service interface {
 	Health() map[string]string
+	GetArticle(entryName string) *Article
 }
 
 type service struct {
@@ -42,6 +44,30 @@ func New() Service {
 		db: db,
 	}
 	return dbInstance
+}
+
+func (s *service) GetArticle(entryName string) *Article {
+	row := s.db.QueryRow(`
+		SELECT title, entry_name, issued, modified, html_text, jsonb(author), jsonb(toc)
+		FROM Articles WHERE entryName = ?
+	`, "")
+	if row.Err() != nil {
+		slog.Error(row.Err().Error())
+		return nil
+	}
+
+	article := Article{}
+	row.Scan(
+		&article.Title,
+		&article.EntryName,
+		&article.Issued,
+		&article.Modified,
+		&article.HTMLText,
+		&article.Author,
+		&article.TOC,
+	)
+
+	return &article
 }
 
 func (s *service) Health() map[string]string {
