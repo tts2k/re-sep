@@ -13,19 +13,19 @@ import (
 )
 
 type TOCItem struct {
-	ID       string    `json: "id"`
-	Content  string    `json: "content"`
-	SubItems []TOCItem `json: "subItems`
+	ID       string    `json:"id"`
+	Content  string    `json:"content"`
+	SubItems []TOCItem `json:"subItems"`
 }
 
 type Article struct {
-	EntryName string    `json: "entryName"`
-	Title     string    `json: "title"`
-	Issued    time.Time `json: "issued"`
-	Modified  time.Time `json: "modified"`
-	HTMLText  string    `json: "htmlText"`
-	Author    []string  `json: "author"`
-	TOC       []TOCItem `json: "toc"`
+	EntryName string    `json:"entryName"`
+	Title     string    `json:"title"`
+	Issued    time.Time `json:"issued"`
+	Modified  time.Time `json:"modified"`
+	HTMLText  string    `json:"htmlText"`
+	Author    []string  `json:"author"`
+	TOC       []TOCItem `json:"toc"`
 }
 
 var Collector = colly.NewCollector()
