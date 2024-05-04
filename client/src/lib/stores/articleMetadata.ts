@@ -1,10 +1,5 @@
+import type { TocItem } from "@/server/articleService/type";
 import { writable } from "svelte/store";
-
-export type TocItem = {
-	label: string;
-	id: string;
-	subItems: TocItem[];
-};
 
 export type ArticleMetadata = {
 	title: string;

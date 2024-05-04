@@ -31,7 +31,7 @@
 		class="mt-24 mb-24 font-serif h-screen flex flex-col"
 		style="margin-left: 300px; margin-right: 300px;"
 	>
-		{@html data.content}
+		{@html data.htmlText}
 	</article>
 </ScrollArea>
 

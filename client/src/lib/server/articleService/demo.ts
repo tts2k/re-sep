@@ -1,17 +1,5 @@
-import mockHtml from "./blame.html?raw";
-
-type TocItem = {
-	label: string;
-	id: string;
-	subItems: TocItem[];
-};
-
-type MockData = {
-	title: string;
-	author: string[];
-	toc: TocItem[];
-	content: string;
-};
+import mockHtml from "../assets/blame.html?raw";
+import type { TocItem, Article, ArticleService } from "./type";
 
 const toc: TocItem[] = [
 	{
@@ -137,12 +125,24 @@ const toc: TocItem[] = [
 	},
 ];
 
-// The mock data html is raw and not sanitized. Ideally it should be sanitized from the golang
-// backend before saving into the database.
-// All mock data will be processed from the golang backend. Sveltekit server only job is to handle SSR
-export const mockData: MockData = {
+const mockArticle: Article = {
 	title: "Blame",
+	entryName: "blame",
 	author: ["Tognazzini, Neal", "Coates, D. Justin"],
 	toc: toc,
-	content: mockHtml,
+	htmlText: mockHtml,
+	issued: new Date().toISOString(),
+	modified: new Date().toISOString(),
 };
+
+export const getArticle = () => {
+	return mockArticle;
+};
+
+const service: ArticleService = {
+	getArticle,
+};
+
+console.log(mockHtml);
+
+export default service;

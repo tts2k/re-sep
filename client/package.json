@@ -36,10 +36,12 @@
 		"typescript": "^5.0.0",
 		"unplugin-icons": "^0.18.5",
 		"vite": "^5.0.3",
+		"vite-plugin-conditional-compiler": "^0.3.1",
 		"vitest": "^1.2.0"
 	},
 	"type": "module",
 	"dependencies": {
+		"@grpc/grpc-js": "^1.10.7",
 		"bits-ui": "^0.21.4",
 		"clsx": "^2.1.0",
 		"mode-watcher": "^0.3.0",
