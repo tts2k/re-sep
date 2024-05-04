@@ -48,9 +48,9 @@ func New() Service {
 
 func (s *service) GetArticle(entryName string) *Article {
 	row := s.db.QueryRow(`
-		SELECT title, entry_name, issued, modified, html_text, jsonb(author), jsonb(toc)
-		FROM Articles WHERE entryName = ?
-	`, "")
+		SELECT title, entry_name, issued, modified, html_text, json(author), json(toc)
+		FROM Articles WHERE entry_name = ?
+	`, entryName)
 	if row.Err() != nil {
 		slog.Error(row.Err().Error())
 		return nil

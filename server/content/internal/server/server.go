@@ -28,7 +28,7 @@ func Serve() error {
 	}
 
 	grpcServer := grpc.NewServer()
-	pb.RegisterContentServer(grpcServer, &contentServer{})
+	pb.RegisterContentServer(grpcServer, newContentServer())
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
 	if err != nil {
