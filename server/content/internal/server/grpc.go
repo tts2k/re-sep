@@ -66,7 +66,7 @@ func (s *contentServer) GetArticle(ctx context.Context, in *pb.EntryName) (*pb.A
 	err = json.Unmarshal([]byte(article.TOC), &protoArticle.Toc)
 	if err != nil {
 		slog.Error(err.Error())
-		return nil, fmt.Errorf("processing unmarshalling failed on entry name: %s, ", in.EntryName)
+		return nil, fmt.Errorf("json unmarshalling failed on entry name: %s, ", in.EntryName)
 	}
 
 	return &protoArticle, nil
