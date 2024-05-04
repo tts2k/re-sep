@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { TocItem } from "@/stores/articleMetadata";
+	import type { TocItem } from "@/server/articleService/type";
 
 	export let items: TocItem[];
 	export let indent = 0;
