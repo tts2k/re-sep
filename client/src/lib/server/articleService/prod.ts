@@ -1,12 +1,30 @@
-import type { ArticleService } from "./type";
-import { proto } from "../grpc";
+import { contentClient } from "../grpc";
+import type { Article, ArticleService } from "./type";
 
-const protoService = new proto.proto.;
+export const getArticle = async (entryName: string) => {
+	return new Promise<Article>((resolve, reject) => {
+		contentClient.getArticle({ entryName }, (error, response) => {
+			if (error !== null) {
+				reject(error);
+			}
 
-export const getArticle = () => {
-	return;
+			const article: Article = {
+				title: response.title,
+				entryName: response.entryName,
+				issued: response.issued?.toLocaleString() || "",
+				modified: response.modified?.toLocaleString() || "",
+				author: response.authors,
+				toc: response.toc,
+				htmlText: response.htmlText,
+			};
+
+			resolve(article);
+		});
+	});
 };
 
 const service: ArticleService = {
 	getArticle,
 };
+
+export default service;

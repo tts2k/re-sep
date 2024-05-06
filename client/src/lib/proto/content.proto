@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package content;
+
 option go_package = "re-sep-content/internal/proto";
 
 import "google/protobuf/timestamp.proto";
@@ -14,15 +16,15 @@ message EntryName {
 
 message TOCItem {
 	string id = 1;
-	string content = 2;
+	string label = 2;
 	repeated TOCItem subItems = 3;
 }
 
 message Article {
 	string entryName = 1;
 	string title = 2;
-	google.protobuf.Timestamp Issued = 3;
-	google.protobuf.Timestamp Modified = 4;
+	google.protobuf.Timestamp issued = 3;
+	google.protobuf.Timestamp modified = 4;
 	string htmlText = 5;
 	repeated string authors = 6;
 	repeated TOCItem toc = 7;

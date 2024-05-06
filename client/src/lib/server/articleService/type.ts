@@ -15,5 +15,5 @@ export type Article = {
 };
 
 export interface ArticleService {
-	getArticle(entryName: string): Article;
+	getArticle(entryName: string): Promise<Article>;
 }

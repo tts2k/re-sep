@@ -1,15 +1,22 @@
-import protoLoader from "@grpc/proto-loader";
-import { loadPackageDefinition } from "@grpc/grpc-js";
+import { credentials } from "@grpc/grpc-js";
+import { env } from "$env/dynamic/private";
+import { ContentClient } from "@/proto/content";
 
-export const packageDefinition = protoLoader.loadSync(
-	"./src/lib/proto/content.proto",
-	{
-		keepCase: true,
-		longs: String,
-		enums: String,
-		defaults: true,
-		oneofs: true,
-	},
-);
+const GRPC_URL = env.GRPC_URL;
 
-export const proto = loadPackageDefinition(packageDefinition);
+if (!GRPC_URL) {
+	throw new Error("No gRPC URL");
+}
+
+const contentClient = new ContentClient(GRPC_URL, credentials.createInsecure());
+
+const deadline = new Date();
+deadline.setSeconds(deadline.getSeconds() + 5);
+
+contentClient.waitForReady(deadline, (error?: Error) => {
+	if (error) {
+		console.log(`GRPC content client connect error: ${error.message}`);
+	}
+});
+
+export { contentClient };

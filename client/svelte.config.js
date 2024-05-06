@@ -15,10 +15,10 @@ const config = {
 	},
 };
 
-if (process.env.SELF_HOST) {
-	config.kit.adapter = adapterNode();
-} else {
+if (process.env.DEMO) {
 	config.kit.adapter = adapterAuto();
+} else {
+	config.kit.adapter = adapterNode();
 }
 
 export default config;

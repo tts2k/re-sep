@@ -135,14 +135,12 @@ const mockArticle: Article = {
 	modified: new Date().toISOString(),
 };
 
-export const getArticle = () => {
+export const getArticle = async () => {
 	return mockArticle;
 };
 
 const service: ArticleService = {
 	getArticle,
 };
-
-console.log(mockHtml);
 
 export default service;
