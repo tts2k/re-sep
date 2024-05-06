@@ -35,7 +35,7 @@ func NewContentClient(cc grpc.ClientConnInterface) ContentClient {
 
 func (c *contentClient) GetArticle(ctx context.Context, in *EntryName, opts ...grpc.CallOption) (*Article, error) {
 	out := new(Article)
-	err := c.cc.Invoke(ctx, "/Content/GetArticle", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/content.Content/GetArticle", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func _Content_GetArticle_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Content/GetArticle",
+		FullMethod: "/content.Content/GetArticle",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ContentServer).GetArticle(ctx, req.(*EntryName))
@@ -92,7 +92,7 @@ func _Content_GetArticle_Handler(srv interface{}, ctx context.Context, dec func(
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Content_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "Content",
+	ServiceName: "content.Content",
 	HandlerType: (*ContentServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

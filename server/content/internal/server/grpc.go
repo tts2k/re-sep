@@ -37,7 +37,6 @@ func (s *contentServer) GetArticle(ctx context.Context, in *pb.EntryName) (*pb.A
 		return nil, fmt.Errorf("get article failed on entry name: %s", in.EntryName)
 	}
 
-	println(article.Issued)
 	issuedTime, err := time.Parse(time.RFC3339, article.Issued)
 	if err != nil {
 		slog.Error(err.Error())

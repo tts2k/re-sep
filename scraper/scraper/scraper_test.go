@@ -141,11 +141,11 @@ func compareTOCs(rootID string, t1 []TOCItem, t2 []TOCItem) error {
 			)
 		}
 
-		if t1[i].Content != t2[i].Content {
+		if t1[i].Label != t2[i].Label {
 			return fmt.Errorf(
 				"Content mismatch. Expected \"%s\" to equal \"%s\".",
-				t1[i].Content,
-				t2[i].Content,
+				t1[i].Label,
+				t2[i].Label,
 			)
 		}
 
@@ -166,87 +166,87 @@ func TestParseToc(t *testing.T) {
 
 	testToc := []TOCItem{
 		{
-			ID:      "BiogSket",
-			Content: "Biographical Sketch",
+			ID:    "BiogSket",
+			Label: "Biographical Sketch",
 		},
 		{
-			ID:      "InteBack",
-			Content: "Intellectual Background",
+			ID:    "InteBack",
+			Label: "Intellectual Background",
 		},
 		{
-			ID:      "MajoWork",
-			Content: "Major Works",
+			ID:    "MajoWork",
+			Label: "Major Works",
 			SubItems: []TOCItem{
 				{
-					ID:      "HistMadnMedi",
-					Content: "Histories of Madness and Medicine",
+					ID:    "HistMadnMedi",
+					Label: "Histories of Madness and Medicine",
 				},
 				{
-					ID:      "OrdeThin",
-					Content: "The Order of Things",
+					ID:    "OrdeThin",
+					Label: "The Order of Things",
 					SubItems: []TOCItem{
 
 						{
-							ID:      "ClasRepr",
-							Content: "Classical Representation",
+							ID:    "ClasRepr",
+							Label: "Classical Representation",
 						},
 						{
-							ID:      "KantCritClasRepr",
-							Content: "Kant’s Critique of Classical Representation",
+							ID:    "KantCritClasRepr",
+							Label: "Kant’s Critique of Classical Representation",
 						},
 						{
-							ID:      "LangMan",
-							Content: "Language and “Man”",
+							ID:    "LangMan",
+							Label: "Language and “Man”",
 						},
 						{
-							ID:      "AnalFini",
-							Content: "The Analytic of Finitude",
+							ID:    "AnalFini",
+							Label: "The Analytic of Finitude",
 						},
 					},
 				},
 				{
-					ID:      "ArchGene",
-					Content: "From Archaeology to Genealogy",
+					ID:    "ArchGene",
+					Label: "From Archaeology to Genealogy",
 				},
 				{
-					ID:      "HistPris",
-					Content: "History of the Prison",
+					ID:    "HistPris",
+					Label: "History of the Prison",
 				},
 				{
-					ID:      "HistModeSexu",
-					Content: "History of Modern Sexuality",
+					ID:    "HistModeSexu",
+					Label: "History of Modern Sexuality",
 				},
 				{
-					ID:      "SexAnciWorl",
-					Content: "Sex in the Ancient World",
+					ID:    "SexAnciWorl",
+					Label: "Sex in the Ancient World",
 				},
 			},
 		},
 		{
-			ID:      "FoucAfteFouc",
-			Content: "Foucault after Foucault",
+			ID:    "FoucAfteFouc",
+			Label: "Foucault after Foucault",
 		},
 		{
-			ID:      "Bib",
-			Content: "Bibliography",
+			ID:    "Bib",
+			Label: "Bibliography",
 			SubItems: []TOCItem{
 				{
-					ID:      "PrimSour",
-					Content: "Primary Sources",
+					ID:    "PrimSour",
+					Label: "Primary Sources",
 				},
 				{
-					ID:      "SecoSour",
-					Content: "Secondary Sources",
+					ID:    "SecoSour",
+					Label: "Secondary Sources",
 				},
 			},
 		},
 		{
-			ID:      "Oth",
-			Content: "Other Internet Resources",
+			ID:    "Oth",
+			Label: "Other Internet Resources",
 		},
 		{
-			ID:      "Rel",
-			Content: "Related Entries",
+			ID:    "Rel",
+			Label: "Related Entries",
 		},
 	}
 

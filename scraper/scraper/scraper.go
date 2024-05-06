@@ -14,7 +14,7 @@ import (
 
 type TOCItem struct {
 	ID       string    `json:"id"`
-	Content  string    `json:"content"`
+	Label    string    `json:"label"`
 	SubItems []TOCItem `json:"subItems"`
 }
 
@@ -60,8 +60,8 @@ func parseTOCRecur(root *goquery.Selection) []TOCItem {
 				content = htmlTrimRegex.ReplaceAllString(content, " ")
 
 				toc = append(toc, TOCItem{
-					ID:      href[1:],
-					Content: content,
+					ID:    href[1:],
+					Label: content,
 				})
 
 				return
