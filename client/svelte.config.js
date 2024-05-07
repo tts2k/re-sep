@@ -15,7 +15,7 @@ const config = {
 	},
 };
 
-if (process.env.DEMO) {
+if (process.env.DEMO === "true") {
 	config.kit.adapter = adapterAuto();
 } else {
 	config.kit.adapter = adapterNode();

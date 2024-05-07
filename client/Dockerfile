@@ -3,8 +3,7 @@ WORKDIR /app
 COPY package*.json .
 RUN npm ci
 COPY . .
-ENV SELF_HOST=true
-RUN npm run build && npm prune --production
+RUN npm run build
 
 FROM node:20-alpine
 USER node
