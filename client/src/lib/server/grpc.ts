@@ -12,7 +12,10 @@ if (!building) {
 		throw new Error("No gRPC URL");
 	}
 
-	contentClient = new ContentClient(GRPC_URL, credentials.createInsecure());
+	contentClient = new ContentClient(
+		GRPC_URL || "",
+		credentials.createInsecure(),
+	);
 
 	const deadline = new Date();
 	deadline.setSeconds(deadline.getSeconds() + 5);
