@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"net"
 	"os"
-	"strconv"
 
 	"google.golang.org/grpc"
 
@@ -19,23 +18,23 @@ type Server struct {
 	port int
 }
 
-const DefaultPort = 5000
+const DefaultPort = "5000"
 
 func Serve() error {
-	port, _ := strconv.Atoi(os.Getenv("PORT"))
-	if port == 0 {
+	port := os.Getenv("PORT")
+	if port == "" {
 		port = DefaultPort
 	}
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterContentServer(grpcServer, newContentServer())
 
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
+	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		slog.Error("failed to listen: %v", err)
 		return err
 	}
-	slog.Info(fmt.Sprintf("Listening on port %d", port))
+	slog.Info(fmt.Sprintf("Listening on port %s", port))
 
 	grpcServer.Serve(lis)
 
