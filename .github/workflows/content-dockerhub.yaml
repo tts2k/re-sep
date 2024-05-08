@@ -19,7 +19,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: tts2k/re-sep-client
+          images: tts2k/re-sep-content
           tags: type=sha
 
       - name: Set up Docker Buildx
@@ -34,7 +34,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ./client
+          context: ./server/content
           push: true
           tags: |
             ${{ steps.meta.outputs.tags }}
