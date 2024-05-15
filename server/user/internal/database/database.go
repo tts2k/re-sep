@@ -8,37 +8,46 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
+	database "re-sep-user/internal/database/generated"
+
 	_ "github.com/joho/godotenv/autoload"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-type Service interface {
-	Health() map[string]string
-}
-
-type service struct {
-	db *sql.DB
+type Service struct {
+	db      *sql.DB
+	queries *database.Queries
 }
 
 var (
-	database = os.Getenv("DB_DATABASE")
-	password = os.Getenv("DB_PASSWORD")
-	username = os.Getenv("DB_USERNAME")
-	port     = os.Getenv("DB_PORT")
-	host     = os.Getenv("DB_HOST")
+	dburl      = os.Getenv("DB_URL")
+	dbInstance *Service
 )
 
-func New() Service {
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
-	db, err := sql.Open("pgx", connStr)
+func NewDBService() *Service {
+	// Reuse Connection
+	if dbInstance != nil {
+		return dbInstance
+	}
+
+	db, err := sql.Open("sqlite3", dburl)
 	if err != nil {
+		// This will not be a connection error, but a DSN parse error or
+		// another initialization error.
 		log.Fatal(err)
 	}
-	s := &service{db: db}
-	return s
+
+	queries := database.New(db)
+
+	dbInstance = &Service{
+		queries: queries,
+		db:      db,
+	}
+
+	return dbInstance
 }
 
-func (s *service) Health() map[string]string {
+func (s *Service) Health() map[string]string {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
