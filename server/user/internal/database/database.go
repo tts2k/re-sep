@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	database "re-sep-user/internal/database/generated"
+	"re-sep-user/internal/system"
 
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/mattn/go-sqlite3"
@@ -20,7 +20,7 @@ type Service struct {
 }
 
 var (
-	dburl      = os.Getenv("DB_URL")
+	dburl      = system.Config().DBURL
 	dbInstance *Service
 )
 
