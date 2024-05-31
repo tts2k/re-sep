@@ -4,19 +4,23 @@ WHERE id = ? LIMIT 1;
 
 -- name: InsertUser :one
 INSERT INTO Users (
-	id, username, password, email, created, updated
+	id, username, sub, created, updated
 ) VALUES (
-	?, ?, ?, ?, Datetime('now'), Datetime('now')
+	?, ?, ?, Datetime('now'), Datetime('now')
 )
 RETURNING *
 ;
 
--- name: UpdateUserPassword :one
+-- name: UpdateUsername :one
 UPDATE Users
-SET password = ?
+SET username = ?
 WHERE id = ?
 RETURNING *;
 
 -- name: DeleteUser :exec
 DELETE FROM Users
-WHERE id = ?
+WHERE id = ?;
+
+-- name: CleanInactiveUsers :exec
+DELETE FROM Users
+WHERE CAST(Julianday(Datetime('now') - Julianday(last_login)) AS Integer) >= ?;

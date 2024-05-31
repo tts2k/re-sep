@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -22,26 +23,36 @@ func (q *Queries) CleanTokens(ctx context.Context) error {
 }
 
 const getTokenById = `-- name: GetTokenById :one
-SELECT id, userid, expires FROM Tokens
+SELECT id, userid, expires, state FROM Tokens
 WHERE id = ? LIMIT 1
 `
 
 func (q *Queries) GetTokenById(ctx context.Context, id uuid.UUID) (Token, error) {
 	row := q.db.QueryRowContext(ctx, getTokenById, id)
 	var i Token
-	err := row.Scan(&i.ID, &i.Userid, &i.Expires)
+	err := row.Scan(
+		&i.ID,
+		&i.Userid,
+		&i.Expires,
+		&i.State,
+	)
 	return i, err
 }
 
 const getUserByTokenId = `-- name: GetUserByTokenId :one
-SELECT id, userid, expires FROM Tokens
+SELECT id, userid, expires, state FROM Tokens
 WHERE id = ? LIMIT 1
 `
 
 func (q *Queries) GetUserByTokenId(ctx context.Context, id uuid.UUID) (Token, error) {
 	row := q.db.QueryRowContext(ctx, getUserByTokenId, id)
 	var i Token
-	err := row.Scan(&i.ID, &i.Userid, &i.Expires)
+	err := row.Scan(
+		&i.ID,
+		&i.Userid,
+		&i.Expires,
+		&i.State,
+	)
 	return i, err
 }
 
@@ -51,19 +62,24 @@ INSERT INTO Tokens (
 ) VALUES (
 	?, ?, ?
 )
-RETURNING id, userid, expires
+RETURNING id, userid, expires, state
 `
 
 type InsertTokenParams struct {
 	ID      uuid.UUID
 	Userid  uuid.UUID
-	Expires string
+	Expires time.Time
 }
 
 func (q *Queries) InsertToken(ctx context.Context, arg InsertTokenParams) (Token, error) {
 	row := q.db.QueryRowContext(ctx, insertToken, arg.ID, arg.Userid, arg.Expires)
 	var i Token
-	err := row.Scan(&i.ID, &i.Userid, &i.Expires)
+	err := row.Scan(
+		&i.ID,
+		&i.Userid,
+		&i.Expires,
+		&i.State,
+	)
 	return i, err
 }
 
@@ -73,17 +89,22 @@ const updateToken = `-- name: UpdateToken :one
 UPDATE Tokens
 SET expires = ?
 WHERE id = ?
-RETURNING id, userid, expires
+RETURNING id, userid, expires, state
 `
 
 type UpdateTokenParams struct {
-	Expires string
+	Expires time.Time
 	ID      uuid.UUID
 }
 
 func (q *Queries) UpdateToken(ctx context.Context, arg UpdateTokenParams) (Token, error) {
 	row := q.db.QueryRowContext(ctx, updateToken, arg.Expires, arg.ID)
 	var i Token
-	err := row.Scan(&i.ID, &i.Userid, &i.Expires)
+	err := row.Scan(
+		&i.ID,
+		&i.Userid,
+		&i.Expires,
+		&i.State,
+	)
 	return i, err
 }

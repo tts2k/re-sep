@@ -7,9 +7,20 @@ package database
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
+
+const cleanInactiveUsers = `-- name: CleanInactiveUsers :exec
+DELETE FROM Users
+WHERE CAST(Julianday(Datetime('now') - Julianday(last_login)) AS Integer) >= ?
+`
+
+func (q *Queries) CleanInactiveUsers(ctx context.Context, lastLogin time.Time) error {
+	_, err := q.db.ExecContext(ctx, cleanInactiveUsers, lastLogin)
+	return err
+}
 
 const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM Users
@@ -22,7 +33,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, username, password, email, created, updated FROM Users
+SELECT id, username, sub, last_login, created_at, updated_at FROM Users
 WHERE id = ? LIMIT 1
 `
 
@@ -32,73 +43,67 @@ func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
-		&i.Password,
-		&i.Email,
-		&i.Created,
-		&i.Updated,
+		&i.Sub,
+		&i.LastLogin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const insertUser = `-- name: InsertUser :one
 INSERT INTO Users (
-	id, username, password, email, created, updated
+	id, username, sub, created, updated
 ) VALUES (
-	?, ?, ?, ?, Datetime('now'), Datetime('now')
+	?, ?, ?, Datetime('now'), Datetime('now')
 )
-RETURNING id, username, password, email, created, updated
+RETURNING id, username, sub, last_login, created_at, updated_at
 `
 
 type InsertUserParams struct {
 	ID       uuid.UUID
 	Username string
-	Password string
-	Email    string
+	Sub      string
 }
 
 func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, insertUser,
-		arg.ID,
-		arg.Username,
-		arg.Password,
-		arg.Email,
-	)
+	row := q.db.QueryRowContext(ctx, insertUser, arg.ID, arg.Username, arg.Sub)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
-		&i.Password,
-		&i.Email,
-		&i.Created,
-		&i.Updated,
+		&i.Sub,
+		&i.LastLogin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
-const updateUserPassword = `-- name: UpdateUserPassword :one
+const updateUsername = `-- name: UpdateUsername :one
 ;
 
 UPDATE Users
-SET password = ?
+SET username = ?
 WHERE id = ?
-RETURNING id, username, password, email, created, updated
+RETURNING id, username, sub, last_login, created_at, updated_at
 `
 
-type UpdateUserPasswordParams struct {
-	Password string
+type UpdateUsernameParams struct {
+	Username string
 	ID       uuid.UUID
 }
 
-func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUserPassword, arg.Password, arg.ID)
+func (q *Queries) UpdateUsername(ctx context.Context, arg UpdateUsernameParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUsername, arg.Username, arg.ID)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
-		&i.Password,
-		&i.Email,
-		&i.Created,
-		&i.Updated,
+		&i.Sub,
+		&i.LastLogin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

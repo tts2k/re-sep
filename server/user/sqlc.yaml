@@ -12,4 +12,7 @@ sql:
             go_type:
               import: "github.com/google/uuid"
               type: "UUID"
+          - db_type: "TIME"
+            go_type:
+              type: "time.Time"
 

@@ -5,20 +5,23 @@
 package database
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
 type Token struct {
 	ID      uuid.UUID
 	Userid  uuid.UUID
-	Expires string
+	Expires time.Time
+	State   string
 }
 
 type User struct {
-	ID       uuid.UUID
-	Username string
-	Password string
-	Email    string
-	Created  string
-	Updated  string
+	ID        uuid.UUID
+	Username  string
+	Sub       string
+	LastLogin time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
