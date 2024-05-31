@@ -19,7 +19,7 @@ type Token struct {
 
 type User struct {
 	ID        uuid.UUID
-	Username  string
+	Name      string
 	Sub       string
 	LastLogin time.Time
 	CreatedAt time.Time

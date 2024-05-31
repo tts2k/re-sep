@@ -33,7 +33,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, username, sub, last_login, created_at, updated_at FROM Users
+SELECT id, name, sub, last_login, created_at, updated_at FROM Users
 WHERE id = ? LIMIT 1
 `
 
@@ -42,7 +42,7 @@ func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.Username,
+		&i.Name,
 		&i.Sub,
 		&i.LastLogin,
 		&i.CreatedAt,
@@ -53,25 +53,25 @@ func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
 
 const insertUser = `-- name: InsertUser :one
 INSERT INTO Users (
-	id, username, sub, created, updated
+	id, name, sub, last_login, created, updated
 ) VALUES (
-	?, ?, ?, Datetime('now'), Datetime('now')
+	?, ?, ?, Datetime('now'), Datetime('now'), Datetime('now')
 )
-RETURNING id, username, sub, last_login, created_at, updated_at
+RETURNING id, name, sub, last_login, created_at, updated_at
 `
 
 type InsertUserParams struct {
-	ID       uuid.UUID
-	Username string
-	Sub      string
+	ID   uuid.UUID
+	Name string
+	Sub  string
 }
 
 func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, insertUser, arg.ID, arg.Username, arg.Sub)
+	row := q.db.QueryRowContext(ctx, insertUser, arg.ID, arg.Name, arg.Sub)
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.Username,
+		&i.Name,
 		&i.Sub,
 		&i.LastLogin,
 		&i.CreatedAt,
@@ -84,22 +84,22 @@ const updateUsername = `-- name: UpdateUsername :one
 ;
 
 UPDATE Users
-SET username = ?
+SET name = ?
 WHERE id = ?
-RETURNING id, username, sub, last_login, created_at, updated_at
+RETURNING id, name, sub, last_login, created_at, updated_at
 `
 
 type UpdateUsernameParams struct {
-	Username string
-	ID       uuid.UUID
+	Name string
+	ID   uuid.UUID
 }
 
 func (q *Queries) UpdateUsername(ctx context.Context, arg UpdateUsernameParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUsername, arg.Username, arg.ID)
+	row := q.db.QueryRowContext(ctx, updateUsername, arg.Name, arg.ID)
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.Username,
+		&i.Name,
 		&i.Sub,
 		&i.LastLogin,
 		&i.CreatedAt,

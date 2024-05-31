@@ -1,6 +1,6 @@
--- name: GetTokenById :one
+-- name: GetTokenByState :one
 SELECT * FROM Tokens
-WHERE id = ? LIMIT 1;
+WHERE state = ? LIMIT 1;
 
 -- name: GetUserByTokenId :one
 SELECT * FROM Tokens
@@ -12,8 +12,7 @@ INSERT INTO Tokens (
 ) VALUES (
 	?, ?, ?
 )
-RETURNING *
-;
+RETURNING *;
 
 -- name: UpdateToken :one
 UPDATE Tokens

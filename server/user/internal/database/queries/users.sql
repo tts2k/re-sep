@@ -4,16 +4,16 @@ WHERE id = ? LIMIT 1;
 
 -- name: InsertUser :one
 INSERT INTO Users (
-	id, username, sub, created, updated
+	id, name, sub, last_login, created, updated
 ) VALUES (
-	?, ?, ?, Datetime('now'), Datetime('now')
+	?, ?, ?, Datetime('now'), Datetime('now'), Datetime('now')
 )
 RETURNING *
 ;
 
 -- name: UpdateUsername :one
 UPDATE Users
-SET username = ?
+SET name = ?
 WHERE id = ?
 RETURNING *;
 

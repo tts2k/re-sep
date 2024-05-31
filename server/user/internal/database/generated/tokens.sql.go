@@ -22,13 +22,13 @@ func (q *Queries) CleanTokens(ctx context.Context) error {
 	return err
 }
 
-const getTokenById = `-- name: GetTokenById :one
+const getTokenByState = `-- name: GetTokenByState :one
 SELECT id, userid, expires, state FROM Tokens
-WHERE id = ? LIMIT 1
+WHERE state = ? LIMIT 1
 `
 
-func (q *Queries) GetTokenById(ctx context.Context, id uuid.UUID) (Token, error) {
-	row := q.db.QueryRowContext(ctx, getTokenById, id)
+func (q *Queries) GetTokenByState(ctx context.Context, state string) (Token, error) {
+	row := q.db.QueryRowContext(ctx, getTokenByState, state)
 	var i Token
 	err := row.Scan(
 		&i.ID,
@@ -84,8 +84,6 @@ func (q *Queries) InsertToken(ctx context.Context, arg InsertTokenParams) (Token
 }
 
 const updateToken = `-- name: UpdateToken :one
-;
-
 UPDATE Tokens
 SET expires = ?
 WHERE id = ?
