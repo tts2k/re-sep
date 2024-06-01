@@ -2,6 +2,7 @@ package system
 
 import (
 	"os"
+	"testing"
 )
 
 type OAuthConfig struct {
@@ -19,6 +20,10 @@ type EnvConfig struct {
 }
 
 func mustHaveEnv(key string) string {
+	if testing.Testing() {
+		return "test"
+	}
+
 	value := os.Getenv(key)
 	if value == "" {
 		panic("Missing environment variable: " + key)
@@ -27,7 +32,7 @@ func mustHaveEnv(key string) string {
 	return value
 }
 
-// Env into a struct for lsp autocompletion
+// Put env into a struct for lsp autocompletion
 var config EnvConfig = EnvConfig{
 	DBURL:     mustHaveEnv("DB_URL"),
 	HTTPPort:  mustHaveEnv("HTTP_PORT"),
@@ -46,6 +51,7 @@ func init() {
 		return
 	}
 
+	// Get http url from base url and port if the value is not provided
 	if config.BaseURL[len(config.BaseURL)-1] == '/' {
 		httpURL = config.BaseURL[:len(config.BaseURL)-1] + ":" + config.HTTPPort
 	} else {
