@@ -25,10 +25,14 @@ func NewServer() *http.Server {
 		db: database.NewDBService(),
 	}
 
+	// Register route handlers
+	serverHandler := http.NewServeMux()
+	serverHandler.Handle("/api/v1", NewServer.RegisterRoutes())
+
 	// Declare Server config
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", NewServer.port),
-		Handler:      NewServer.RegisterRoutes(),
+		Handler:      serverHandler,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
