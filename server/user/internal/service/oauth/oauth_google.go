@@ -14,24 +14,9 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-var googleOAuthConfig oauth2.Config
-
-func init() {
-	systemConfig := system.Config()
-
-	googleOAuthConfig = oauth2.Config{
-		ClientID:     systemConfig.Google.ClientID,
-		ClientSecret: systemConfig.Google.ClientSecret,
-		RedirectURL:  path.Join(systemConfig.HTTPURL, "/oauth-callback/google"),
-		Scopes:       []string{"openid"},
-		Endpoint:     google.Endpoint,
-	}
-}
-
 type OAuthStrategy interface {
 	Login(w http.ResponseWriter, r *http.Request)
-	Callback(w http.ResponseWriter, r *http.Request) (string, error)
-	GetUserUniqueID(accessToken string) (string, error)
+	Callback(w http.ResponseWriter, r *http.Request)
 }
 
 type OAuthGoogle struct {
@@ -40,6 +25,16 @@ type OAuthGoogle struct {
 }
 
 func newOAuthGoogle(dbService *database.Service) *OAuthGoogle {
+	systemConfig := system.Config()
+
+	googleOAuthConfig := oauth2.Config{
+		ClientID:     systemConfig.Google.ClientID,
+		ClientSecret: systemConfig.Google.ClientSecret,
+		RedirectURL:  path.Join(systemConfig.HTTPURL, "/oauth-callback/google"),
+		Scopes:       []string{"openid"},
+		Endpoint:     google.Endpoint,
+	}
+
 	return &OAuthGoogle{
 		config:    googleOAuthConfig,
 		dbService: dbService,
