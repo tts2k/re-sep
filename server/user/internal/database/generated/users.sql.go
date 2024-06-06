@@ -32,13 +32,13 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
-const getUserById = `-- name: GetUserById :one
+const getUserByUniqueID = `-- name: GetUserByUniqueID :one
 SELECT id, name, sub, last_login, created_at, updated_at FROM Users
-WHERE id = ? LIMIT 1
+WHERE sub = ? LIMIT 1
 `
 
-func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUserById, id)
+func (q *Queries) GetUserByUniqueID(ctx context.Context, sub string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByUniqueID, sub)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -53,7 +53,7 @@ func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
 
 const insertUser = `-- name: InsertUser :one
 INSERT INTO Users (
-	id, name, sub, last_login, created, updated
+	id, name, sub, last_login, created_at, updated_at
 ) VALUES (
 	?, ?, ?, Datetime('now'), Datetime('now'), Datetime('now')
 )

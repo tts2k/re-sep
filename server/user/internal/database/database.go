@@ -3,55 +3,51 @@ package database
 import (
 	"context"
 	"database/sql"
+	_ "embed"
 	"fmt"
 	"log"
+	"log/slog"
+	"strings"
 	"time"
 
-	database "re-sep-user/internal/database/generated"
-	"re-sep-user/internal/system"
+	g "re-sep-user/internal/database/generated"
+	config "re-sep-user/internal/system/config"
 
-	_ "github.com/joho/godotenv/autoload"
+	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type Service struct {
-	db      *sql.DB
-	queries *database.Queries
-}
+//go:embed schema/schema.sql
+var schema string
 
 var (
-	dburl      = system.Config().DBURL
-	dbInstance *Service
+	dbURL   = config.Config().DBURL
+	db      *sql.DB
+	queries *g.Queries
 )
 
-func NewDBService() *Service {
-	// Reuse Connection
-	if dbInstance != nil {
-		return dbInstance
-	}
-
-	db, err := sql.Open("sqlite3", dburl)
+func InitDB() {
+	dbCon, err := sql.Open("sqlite3", dbURL)
 	if err != nil {
 		// This will not be a connection error, but a DSN parse error or
 		// another initialization error.
 		log.Fatal(err)
 	}
 
-	queries := database.New(db)
+	db = dbCon
+	queries = g.New(db)
 
-	dbInstance = &Service{
-		queries: queries,
-		db:      db,
+	queryStrings := strings.Split(string(schema), ";\n")
+	for _, query := range queryStrings {
+		db.Exec(query)
 	}
-
-	return dbInstance
 }
 
-func (s *Service) Health() map[string]string {
+func Health() map[string]string {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	err := s.db.PingContext(ctx)
+	err := db.PingContext(ctx)
 	if err != nil {
 		log.Fatalf(fmt.Sprintf("db down: %v", err))
 	}
@@ -59,4 +55,58 @@ func (s *Service) Health() map[string]string {
 	return map[string]string{
 		"message": "It's healthy",
 	}
+}
+
+func InsertToken(state string, token string, refreshToken string, duration time.Duration) *g.Token {
+	expires := time.Now().Add(duration)
+	params := g.InsertTokenParams{
+		State:        state,
+		Token:        token,
+		Refreshtoken: refreshToken,
+		Expires:      &expires,
+	}
+
+	result, err := queries.InsertToken(context.Background(), params)
+	if err != nil {
+		slog.Error("InsertToken:", "error", err)
+		return nil
+	}
+
+	return &result
+}
+
+func GetTokenByState(state string) string {
+	result, err := queries.GetTokenByState(context.Background(), state)
+	if err != nil {
+		slog.Error("GetTokenByState:", "error", err)
+		return result.Token
+	}
+
+	return result.Token
+}
+
+func InsertUser(sub string, name string) *g.User {
+	params := g.InsertUserParams{
+		ID:   uuid.New(),
+		Name: name,
+		Sub:  sub,
+	}
+
+	user, err := queries.InsertUser(context.Background(), params)
+	if err != nil {
+		slog.Error("InsertUser:", "error", err)
+		return nil
+	}
+
+	return &user
+}
+
+func GetUserByUniqueID(id string) *g.User {
+	result, err := queries.GetUserByUniqueID(context.Background(), id)
+	if err != nil {
+		slog.Error("Cannot get token by unique ID", "error", err)
+		return nil
+	}
+
+	return &result
 }

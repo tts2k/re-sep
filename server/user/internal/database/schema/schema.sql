@@ -1,17 +1,17 @@
-CREATE TABLE Users (
+CREATE TABLE IF NOT EXISTS Users (
 	id UUID PRIMARY KEY,
 	name TEXT NOT NULL,
 	sub TEXT NOT NULL,
-	last_login TIME NOT NULL,
-	created_at TIME NOT NULL,
-	updated_at TIME NOT NULL
+	last_login DATETIME NOT NULL,
+	created_at DATETIME NOT NULL,
+	updated_at DATETIME NOT NULL,
+
+	UNIQUE(sub)
 );
 
-CREATE TABLE Tokens (
-	id UUID PRIMARY KEY,
-	userId UUID NOT NULL,
+CREATE TABLE IF NOT EXISTS Tokens (
+	state TEXT PRIMARY KEY,
+	token TEXT NOT NULL,
 	expires TIME NOT NULL,
-	state TEXT NOT NULL,
-
-	FOREIGN KEY(userId) REFERENCES Users(id)
+	refreshToken TEXT NOT NULL
 );

@@ -7,9 +7,6 @@ package database
 
 import (
 	"context"
-	"time"
-
-	"github.com/google/uuid"
 )
 
 const cleanTokens = `-- name: CleanTokens :exec
@@ -23,86 +20,76 @@ func (q *Queries) CleanTokens(ctx context.Context) error {
 }
 
 const getTokenByState = `-- name: GetTokenByState :one
-SELECT id, userid, expires, state FROM Tokens
-WHERE state = ? LIMIT 1
+SELECT state, token, expires, refreshtoken FROM Tokens
+WHERE state = ? AND expires > Datetime("now")
+LIMIT 1
 `
 
 func (q *Queries) GetTokenByState(ctx context.Context, state string) (Token, error) {
 	row := q.db.QueryRowContext(ctx, getTokenByState, state)
 	var i Token
 	err := row.Scan(
-		&i.ID,
-		&i.Userid,
-		&i.Expires,
 		&i.State,
-	)
-	return i, err
-}
-
-const getUserByTokenId = `-- name: GetUserByTokenId :one
-SELECT id, userid, expires, state FROM Tokens
-WHERE id = ? LIMIT 1
-`
-
-func (q *Queries) GetUserByTokenId(ctx context.Context, id uuid.UUID) (Token, error) {
-	row := q.db.QueryRowContext(ctx, getUserByTokenId, id)
-	var i Token
-	err := row.Scan(
-		&i.ID,
-		&i.Userid,
+		&i.Token,
 		&i.Expires,
-		&i.State,
+		&i.Refreshtoken,
 	)
 	return i, err
 }
 
 const insertToken = `-- name: InsertToken :one
 INSERT INTO Tokens (
-	id, userId, expires
+	state, token, refreshToken, expires
 ) VALUES (
-	?, ?, ?
+	?, ?, ?, ?
 )
-RETURNING id, userid, expires, state
+RETURNING state, token, expires, refreshtoken
 `
 
 type InsertTokenParams struct {
-	ID      uuid.UUID
-	Userid  uuid.UUID
-	Expires time.Time
+	State        string
+	Token        string
+	Refreshtoken string
+	Expires      interface{}
 }
 
 func (q *Queries) InsertToken(ctx context.Context, arg InsertTokenParams) (Token, error) {
-	row := q.db.QueryRowContext(ctx, insertToken, arg.ID, arg.Userid, arg.Expires)
+	row := q.db.QueryRowContext(ctx, insertToken,
+		arg.State,
+		arg.Token,
+		arg.Refreshtoken,
+		arg.Expires,
+	)
 	var i Token
 	err := row.Scan(
-		&i.ID,
-		&i.Userid,
-		&i.Expires,
 		&i.State,
+		&i.Token,
+		&i.Expires,
+		&i.Refreshtoken,
 	)
 	return i, err
 }
 
-const updateToken = `-- name: UpdateToken :one
+const refreshToken = `-- name: RefreshToken :one
 UPDATE Tokens
 SET expires = ?
-WHERE id = ?
-RETURNING id, userid, expires, state
+WHERE state = ?
+RETURNING state, token, expires, refreshtoken
 `
 
-type UpdateTokenParams struct {
-	Expires time.Time
-	ID      uuid.UUID
+type RefreshTokenParams struct {
+	Expires interface{}
+	State   string
 }
 
-func (q *Queries) UpdateToken(ctx context.Context, arg UpdateTokenParams) (Token, error) {
-	row := q.db.QueryRowContext(ctx, updateToken, arg.Expires, arg.ID)
+func (q *Queries) RefreshToken(ctx context.Context, arg RefreshTokenParams) (Token, error) {
+	row := q.db.QueryRowContext(ctx, refreshToken, arg.Expires, arg.State)
 	var i Token
 	err := row.Scan(
-		&i.ID,
-		&i.Userid,
-		&i.Expires,
 		&i.State,
+		&i.Token,
+		&i.Expires,
+		&i.Refreshtoken,
 	)
 	return i, err
 }

@@ -1,10 +1,10 @@
--- name: GetUserById :one
+-- name: GetUserByUniqueID :one
 SELECT * FROM Users
-WHERE id = ? LIMIT 1;
+WHERE sub = ? LIMIT 1;
 
 -- name: InsertUser :one
 INSERT INTO Users (
-	id, name, sub, last_login, created, updated
+	id, name, sub, last_login, created_at, updated_at
 ) VALUES (
 	?, ?, ?, Datetime('now'), Datetime('now'), Datetime('now')
 )

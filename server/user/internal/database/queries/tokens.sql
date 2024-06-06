@@ -1,23 +1,20 @@
 -- name: GetTokenByState :one
 SELECT * FROM Tokens
-WHERE state = ? LIMIT 1;
-
--- name: GetUserByTokenId :one
-SELECT * FROM Tokens
-WHERE id = ? LIMIT 1;
+WHERE state = ? AND expires > Datetime("now")
+LIMIT 1;
 
 -- name: InsertToken :one
 INSERT INTO Tokens (
-	id, userId, expires
+	state, token, refreshToken, expires
 ) VALUES (
-	?, ?, ?
+	?, ?, ?, ?
 )
 RETURNING *;
 
--- name: UpdateToken :one
+-- name: RefreshToken :one
 UPDATE Tokens
 SET expires = ?
-WHERE id = ?
+WHERE state = ?
 RETURNING *;
 
 -- name: CleanTokens :exec

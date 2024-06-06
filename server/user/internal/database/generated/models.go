@@ -11,10 +11,10 @@ import (
 )
 
 type Token struct {
-	ID      uuid.UUID
-	Userid  uuid.UUID
-	Expires time.Time
-	State   string
+	State        string
+	Token        string
+	Expires      interface{}
+	Refreshtoken string
 }
 
 type User struct {
