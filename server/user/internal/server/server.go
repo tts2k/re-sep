@@ -8,21 +8,18 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 
-	"re-sep-user/internal/database"
-	"re-sep-user/internal/system"
+	config "re-sep-user/internal/system/config"
 )
 
 type Server struct {
-	db   *database.Service
 	port int
 }
 
 func NewServer() *http.Server {
-	port, _ := strconv.Atoi(system.Config().HTTPPort)
+	config := config.Config()
+	port, _ := strconv.Atoi(config.BaseURL)
 	NewServer := &Server{
 		port: port,
-
-		db: database.NewDBService(),
 	}
 
 	// Register route handlers
@@ -31,7 +28,7 @@ func NewServer() *http.Server {
 
 	// Declare Server config
 	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", NewServer.port),
+		Addr:         fmt.Sprintf("%s:%d", config.BaseURL, port),
 		Handler:      serverHandler,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,

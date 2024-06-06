@@ -3,6 +3,8 @@ package system
 import (
 	"os"
 	"testing"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 type OAuthConfig struct {
@@ -53,10 +55,9 @@ func init() {
 
 	// Get http url from base url and port if the value is not provided
 	if config.BaseURL[len(config.BaseURL)-1] == '/' {
-		httpURL = config.BaseURL[:len(config.BaseURL)-1] + ":" + config.HTTPPort
-	} else {
-		httpURL = config.BaseURL + ":" + config.HTTPPort
+		config.BaseURL = config.BaseURL[:len(config.BaseURL)-1]
 	}
+	httpURL = config.BaseURL + ":" + config.HTTPPort
 
 	config.HTTPURL = httpURL
 }
