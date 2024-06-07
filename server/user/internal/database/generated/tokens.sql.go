@@ -20,7 +20,7 @@ func (q *Queries) CleanTokens(ctx context.Context) error {
 }
 
 const getTokenByState = `-- name: GetTokenByState :one
-SELECT state, token, expires, refreshtoken FROM Tokens
+SELECT state, userid, expires FROM Tokens
 WHERE state = ? AND expires > Datetime("now")
 LIMIT 1
 `
@@ -28,45 +28,29 @@ LIMIT 1
 func (q *Queries) GetTokenByState(ctx context.Context, state string) (Token, error) {
 	row := q.db.QueryRowContext(ctx, getTokenByState, state)
 	var i Token
-	err := row.Scan(
-		&i.State,
-		&i.Token,
-		&i.Expires,
-		&i.Refreshtoken,
-	)
+	err := row.Scan(&i.State, &i.Userid, &i.Expires)
 	return i, err
 }
 
 const insertToken = `-- name: InsertToken :one
 INSERT INTO Tokens (
-	state, token, refreshToken, expires
+	state, userId, expires
 ) VALUES (
-	?, ?, ?, ?
+	?, ?, ?
 )
-RETURNING state, token, expires, refreshtoken
+RETURNING state, userid, expires
 `
 
 type InsertTokenParams struct {
-	State        string
-	Token        string
-	Refreshtoken string
-	Expires      interface{}
+	State   string
+	Userid  string
+	Expires interface{}
 }
 
 func (q *Queries) InsertToken(ctx context.Context, arg InsertTokenParams) (Token, error) {
-	row := q.db.QueryRowContext(ctx, insertToken,
-		arg.State,
-		arg.Token,
-		arg.Refreshtoken,
-		arg.Expires,
-	)
+	row := q.db.QueryRowContext(ctx, insertToken, arg.State, arg.Userid, arg.Expires)
 	var i Token
-	err := row.Scan(
-		&i.State,
-		&i.Token,
-		&i.Expires,
-		&i.Refreshtoken,
-	)
+	err := row.Scan(&i.State, &i.Userid, &i.Expires)
 	return i, err
 }
 
@@ -74,7 +58,7 @@ const refreshToken = `-- name: RefreshToken :one
 UPDATE Tokens
 SET expires = ?
 WHERE state = ?
-RETURNING state, token, expires, refreshtoken
+RETURNING state, userid, expires
 `
 
 type RefreshTokenParams struct {
@@ -85,11 +69,6 @@ type RefreshTokenParams struct {
 func (q *Queries) RefreshToken(ctx context.Context, arg RefreshTokenParams) (Token, error) {
 	row := q.db.QueryRowContext(ctx, refreshToken, arg.Expires, arg.State)
 	var i Token
-	err := row.Scan(
-		&i.State,
-		&i.Token,
-		&i.Expires,
-		&i.Refreshtoken,
-	)
+	err := row.Scan(&i.State, &i.Userid, &i.Expires)
 	return i, err
 }

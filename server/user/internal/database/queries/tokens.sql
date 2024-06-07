@@ -5,9 +5,9 @@ LIMIT 1;
 
 -- name: InsertToken :one
 INSERT INTO Tokens (
-	state, token, refreshToken, expires
+	state, userId, expires
 ) VALUES (
-	?, ?, ?, ?
+	?, ?, ?
 )
 RETURNING *;
 

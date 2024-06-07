@@ -11,10 +11,9 @@ import (
 )
 
 type Token struct {
-	State        string
-	Token        string
-	Expires      interface{}
-	Refreshtoken string
+	State   string
+	Userid  string
+	Expires interface{}
 }
 
 type User struct {

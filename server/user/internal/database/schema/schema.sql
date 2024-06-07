@@ -1,3 +1,5 @@
+PRAGMA foreign_keys = ON;
+
 CREATE TABLE IF NOT EXISTS Users (
 	id UUID PRIMARY KEY,
 	name TEXT NOT NULL,
@@ -11,7 +13,8 @@ CREATE TABLE IF NOT EXISTS Users (
 
 CREATE TABLE IF NOT EXISTS Tokens (
 	state TEXT PRIMARY KEY,
-	token TEXT NOT NULL,
+	userId TEXT NOT NULL,
 	expires TIME NOT NULL,
-	refreshToken TEXT NOT NULL
+
+	FOREIGN KEY(userId) REFERENCES Users(sub)
 );

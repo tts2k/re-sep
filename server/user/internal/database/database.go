@@ -57,13 +57,12 @@ func Health() map[string]string {
 	}
 }
 
-func InsertToken(state string, token string, refreshToken string, duration time.Duration) *g.Token {
+func InsertToken(state string, userID string, duration time.Duration) *g.Token {
 	expires := time.Now().Add(duration)
 	params := g.InsertTokenParams{
-		State:        state,
-		Token:        token,
-		Refreshtoken: refreshToken,
-		Expires:      &expires,
+		State:   state,
+		Userid:  userID,
+		Expires: &expires,
 	}
 
 	result, err := queries.InsertToken(context.Background(), params)
@@ -75,14 +74,14 @@ func InsertToken(state string, token string, refreshToken string, duration time.
 	return &result
 }
 
-func GetTokenByState(state string) string {
+func GetTokenByState(state string) g.Token {
 	result, err := queries.GetTokenByState(context.Background(), state)
 	if err != nil {
 		slog.Error("GetTokenByState:", "error", err)
-		return result.Token
+		return result
 	}
 
-	return result.Token
+	return result
 }
 
 func InsertUser(sub string, name string) *g.User {
