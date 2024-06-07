@@ -9,4 +9,8 @@ require (
 	golang.org/x/oauth2 v0.20.0
 )
 
-require cloud.google.com/go/compute/metadata v0.3.0 // indirect
+require (
+	github.com/coreos/go-oidc/v3 v3.10.0
+	github.com/go-jose/go-jose/v4 v4.0.1 // indirect
+	golang.org/x/crypto v0.19.0 // indirect
+)

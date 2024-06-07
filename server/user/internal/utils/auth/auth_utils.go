@@ -1,13 +1,15 @@
 package utils
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
 )
 
-func httpCall(method, rawURL, accessToken string) ([]byte, error) {
+func HTTPCall(method, rawURL, accessToken string) ([]byte, error) {
 	httpClient := http.Client{
 		Timeout: 30 * time.Second,
 	}
@@ -30,8 +32,24 @@ func httpCall(method, rawURL, accessToken string) ([]byte, error) {
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	return body, nil
+}
+
+func RandString(nByte int) string {
+	b := make([]byte, nByte)
+	rand.Read(b)
+	return base64.URLEncoding.EncodeToString(b)
+}
+
+func SetCallbackCookie(w http.ResponseWriter, r *http.Request, name, value string) {
+	c := &http.Cookie{
+		Name:     name,
+		Value:    value,
+		Secure:   r.TLS != nil,
+		HttpOnly: true,
+	}
+	http.SetCookie(w, c)
 }
