@@ -20,7 +20,7 @@ import (
 var schema string
 
 var (
-	dbURL   = "file:" + config.Config().DBURL + "?cache=shared&_journal_mode=WAL"
+	dbURL   = config.Config().ConstructDBPath("token.db") + "?cache=shared&_journal_mode=WAL"
 	db      *sql.DB
 	queries *g.Queries
 )

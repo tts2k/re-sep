@@ -2,6 +2,7 @@ package system
 
 import (
 	"os"
+	"path"
 	"testing"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -13,11 +14,15 @@ type OAuthConfig struct {
 }
 
 type EnvConfig struct {
-	DBURL    string
+	DBPATH   string
 	HTTPPort string
 	BaseURL  string
 	HTTPURL  string
 	Google   OAuthConfig
+}
+
+func (c EnvConfig) ConstructDBPath(dbName string) string {
+	return "file:" + path.Join(c.DBPATH, dbName)
 }
 
 func mustHaveEnv(key string) string {
@@ -35,7 +40,7 @@ func mustHaveEnv(key string) string {
 
 // Put env into a struct for lsp autocompletion
 var config EnvConfig = EnvConfig{
-	DBURL:    mustHaveEnv("DB_URL"),
+	DBPATH:   mustHaveEnv("DB_PATH"),
 	HTTPPort: mustHaveEnv("HTTP_PORT"),
 	BaseURL:  mustHaveEnv("BASE_URL"),
 	Google: OAuthConfig{
