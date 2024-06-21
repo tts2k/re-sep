@@ -1,0 +1,14 @@
+version: "2"
+sql:
+  - engine: "sqlite"
+    queries: "internal/database/token/queries"
+    schema: "internal/database/token/schema"
+    gen:
+      go:
+        package: "database"
+        out: "internal/database/token/generated"
+        overrides:
+          - db_type: "UUID"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"

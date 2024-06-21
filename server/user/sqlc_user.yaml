@@ -1,15 +1,14 @@
 version: "2"
 sql:
   - engine: "sqlite"
-    queries: "internal/database/queries"
-    schema: "internal/database/schema"
+    queries: "internal/database/user/queries"
+    schema: "internal/database/user/schema"
     gen:
       go:
         package: "database"
-        out: "internal/database/generated"
+        out: "internal/database/user/generated"
         overrides:
           - db_type: "UUID"
             go_type:
               import: "github.com/google/uuid"
               type: "UUID"
-

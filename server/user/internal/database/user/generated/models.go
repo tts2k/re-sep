@@ -10,12 +10,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type Token struct {
-	State   string
-	Userid  string
-	Expires interface{}
-}
-
 type User struct {
 	ID        uuid.UUID
 	Name      string

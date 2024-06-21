@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	g "re-sep-user/internal/database/generated"
+	g "re-sep-user/internal/database/user/generated"
 	config "re-sep-user/internal/system/config"
 
 	"github.com/google/uuid"
@@ -21,12 +21,12 @@ import (
 var schema string
 
 var (
-	dbURL   = config.Config().DBURL
+	dbURL   = "file:" + config.Config().DBURL + "?cache=shared&_journal_mode=WAL"
 	db      *sql.DB
 	queries *g.Queries
 )
 
-func InitDB() {
+func InitUserDB() {
 	dbCon, err := sql.Open("sqlite3", dbURL)
 	if err != nil {
 		// This will not be a connection error, but a DSN parse error or
@@ -55,33 +55,6 @@ func Health() map[string]string {
 	return map[string]string{
 		"message": "It's healthy",
 	}
-}
-
-func InsertToken(state string, userID string, duration time.Duration) *g.Token {
-	expires := time.Now().Add(duration)
-	params := g.InsertTokenParams{
-		State:   state,
-		Userid:  userID,
-		Expires: &expires,
-	}
-
-	result, err := queries.InsertToken(context.Background(), params)
-	if err != nil {
-		slog.Error("InsertToken:", "error", err)
-		return nil
-	}
-
-	return &result
-}
-
-func GetTokenByState(state string) g.Token {
-	result, err := queries.GetTokenByState(context.Background(), state)
-	if err != nil {
-		slog.Error("GetTokenByState:", "error", err)
-		return result
-	}
-
-	return result
 }
 
 func InsertUser(sub string, name string) *g.User {

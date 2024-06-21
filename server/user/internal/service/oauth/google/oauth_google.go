@@ -7,7 +7,9 @@ import (
 	"path"
 	"time"
 
-	"re-sep-user/internal/database"
+	tokenDB "re-sep-user/internal/database/token"
+	userDB "re-sep-user/internal/database/user"
+
 	common "re-sep-user/internal/service/oauth/common"
 	config "re-sep-user/internal/system/config"
 	authUtils "re-sep-user/internal/utils/auth"
@@ -121,10 +123,10 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	idToken.Claims(&claims)
 
-	user := database.GetUserByUniqueID(claims.Sub)
+	user := userDB.GetUserByUniqueID(claims.Sub)
 	if user == nil {
 		slog.Warn("User not found. Creating new user", "error", err)
-		user = database.InsertUser(google.name+":"+claims.Sub, common.DefaultUsername)
+		user = userDB.InsertUser(google.name+":"+claims.Sub, common.DefaultUsername)
 		if user == nil {
 			slog.Error("User creation failed", "error", err)
 			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
@@ -133,7 +135,7 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create 10 seconds token
-	token := database.InsertToken(state, user.Sub, 10*time.Second)
+	token := tokenDB.InsertToken(state, user.Sub, 10*time.Second)
 	if token == nil {
 		slog.Error("Token insertion failed", "error", err)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)

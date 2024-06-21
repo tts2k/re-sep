@@ -5,39 +5,10 @@ import (
 	"time"
 )
 
-func TestInsertUser(t *testing.T) {
-	dbURL = "file:insertUserTest?mode=memory"
-	InitDB()
-	defer db.Close()
-
-	user := InsertUser("sub", "name")
-	if user == nil || user.ID.String() == "" {
-		t.Fatal("User insertion failed")
-	}
-}
-
-func TestGetUserByUniqueID(t *testing.T) {
-	dbURL = "file:getUserTest?mode=memory"
-	InitDB()
-	defer db.Close()
-
-	InsertUser("sub", "name")
-
-	user := GetUserByUniqueID("sub")
-	if user == nil || user.ID.String() == "" {
-		t.Fatal("Token insertion failed")
-	}
-}
-
 func TestInsertToken(t *testing.T) {
 	dbURL = "file:insertTest?mode=memory"
-	InitDB()
+	InitTokenDB()
 	defer db.Close()
-
-	user := InsertUser("sub", "testUser")
-	if user == nil {
-		t.Fatal("Insert user failed")
-	}
 
 	t.Run("insert", func(t *testing.T) {
 		token := InsertToken("test", "sub", 1*time.Second)
@@ -62,10 +33,9 @@ func TestInsertToken(t *testing.T) {
 
 func TestGetTokenByState(t *testing.T) {
 	dbURL = "file:getTokenTest?mode=memory"
-	InitDB()
+	InitTokenDB()
 	defer db.Close()
 
-	InsertUser("sub", "testUser")
 	InsertToken("test", "sub", 1*time.Second)
 
 	token := GetTokenByState("test")

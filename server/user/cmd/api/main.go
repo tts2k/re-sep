@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	tokenDB "re-sep-user/internal/database/token"
+	userDB "re-sep-user/internal/database/user"
 	"re-sep-user/internal/server"
 	config "re-sep-user/internal/system/config"
 	logger "re-sep-user/internal/system/logger"
@@ -11,9 +13,14 @@ import (
 func main() {
 	logger.InitLogger()
 
-	server := server.NewServer()
+	//init DBs
+	tokenDB.InitTokenDB()
+	userDB.InitUserDB()
 
-	fmt.Printf("Server listening on port: %s\n", config.Config().HTTPPort)
+	server := server.NewServer()
+	systemConfig := config.Config()
+
+	fmt.Printf("Server listening on: %s:%s\n", systemConfig.BaseURL, systemConfig.HTTPPort)
 	err := server.ListenAndServe()
 	if err != nil {
 		panic(fmt.Sprintf("cannot start server: %s", err))

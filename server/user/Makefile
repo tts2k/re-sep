@@ -5,7 +5,7 @@ all: build
 
 build:
 	@echo "Building..."
-	
+
 	@go build -o main cmd/api/main.go
 
 # Run the application
@@ -21,6 +21,14 @@ test:
 clean:
 	@echo "Cleaning..."
 	@rm -f main
+
+# Generate database code
+db-generate:
+	@echo "Generating user database files..."
+	@sqlc generate -f sqlc_user.yaml
+
+	@echo "Generating token database files..."
+	@sqlc generate -f sqlc_token.yaml
 
 # Live Reload
 watch:

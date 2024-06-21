@@ -5,7 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	db "re-sep-user/internal/database"
+	tokenDB "re-sep-user/internal/database/token"
+	userDB "re-sep-user/internal/database/user"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -30,11 +31,16 @@ func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
-	jsonResp, err := json.Marshal(db.Health())
 
+	res := make(map[string]map[string]string)
+
+	res["user"] = userDB.Health()
+	res["token"] = tokenDB.Health()
+
+	jsonRes, err := json.Marshal(res)
 	if err != nil {
 		log.Fatalf("error handling JSON marshal. Err: %v", err)
 	}
 
-	_, _ = w.Write(jsonResp)
+	w.Write(jsonRes)
 }

@@ -17,14 +17,14 @@ type Server struct {
 
 func NewServer() *http.Server {
 	config := config.Config()
-	port, _ := strconv.Atoi(config.BaseURL)
+	port, _ := strconv.Atoi(config.HTTPPort)
 	NewServer := &Server{
 		port: port,
 	}
 
 	// Register route handlers
 	serverHandler := http.NewServeMux()
-	serverHandler.Handle("/api/v1", NewServer.RegisterRoutes())
+	serverHandler.Handle("/", NewServer.RegisterRoutes())
 
 	// Declare Server config
 	server := &http.Server{
