@@ -4,7 +4,10 @@
 	$: scaleStyle = `transform: scale(${scale / 100});`;
 </script>
 
-<div class="origin-center" style={scaleStyle}>
+<div
+	class="origin-center transition-transform ease-in-out duration-300"
+	style={scaleStyle}
+>
 	<h1>Unix Philosophy</h1>
 
 	<p>
