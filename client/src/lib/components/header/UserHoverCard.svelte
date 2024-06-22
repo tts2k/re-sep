@@ -25,7 +25,7 @@
 		<div>Not logged in</div>
 		<div>
 			<Button>
-				<GoogleIcon font-size="24" /> &nbsp; Login with google
+				<GoogleIcon font-size="24" /> &nbsp; Login with Google
 			</Button>
 		</div>
 	</HoverCard.Content>

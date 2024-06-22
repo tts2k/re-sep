@@ -1,8 +1,10 @@
 <script lang="ts">
-	export let scale: string;
+	export let scale: number;
+
+	$: scaleStyle = `transform: scale(${scale / 100});`;
 </script>
 
-<div class="{scale} origin-center">
+<div class="origin-center" style={scaleStyle}>
 	<h1>Unix Philosophy</h1>
 
 	<p>

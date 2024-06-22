@@ -9,6 +9,7 @@
 	let curZoomLvl = 1;
 
 	$: zoomlvl = zoomLvls[curZoomLvl];
+	$: console.log(zoomlvl);
 
 	const zoomIn = () => {
 		if (curZoomLvl + 1 < zoomLvls.length) {
@@ -29,7 +30,7 @@
 		class="border p-4 h-full flex-col
 		rounded-md relative"
 	>
-		<PreviewContent scale="scale-{zoomlvl}" />
+		<PreviewContent scale={zoomlvl} />
 		<div class="absolute bottom-4 right-4 flex flex-col gap-4">
 			<Button variant="outline" size="icon" on:click={zoomIn}>
 				<PlusIcon />
