@@ -11,9 +11,11 @@
 	import ConfigDialog from "./ConfigDialog.svelte";
 	import { sidebarStatus } from "$lib/components/sidebar/stores/sidebarStore";
 	import { metadata } from "@/stores/articleMetadata";
+	import UserHoverCard from "./UserHoverCard.svelte";
 
 	let fullscreenElement: Document["fullscreenElement"];
 	let dropdownOpen: boolean;
+	let userHoverOpen: boolean;
 	let configDialogOpen: boolean;
 	let showHeader = false;
 	let hovering = false;
@@ -25,7 +27,7 @@
 
 	const onMouseLeave = () => {
 		hovering = false;
-		if (dropdownOpen) {
+		if (dropdownOpen || userHoverOpen) {
 			return;
 		}
 
@@ -51,6 +53,16 @@
 		$sidebarStatus.open = true;
 	};
 
+	const onHoverCardOpenChange = (value: boolean) => {
+		if (value) {
+			return;
+		}
+
+		if (!hovering) {
+			showHeader = false;
+		}
+	};
+
 	$: toggleFullScreen = !fullscreenElement ? enterFullScreen : exitFullScreen;
 
 	$: headerVisibility = showHeader ? "opacity-100" : "opacity-0";
@@ -67,10 +79,14 @@
 	bg-background px-4 md:px-6 transition-opacity duration-500 shadow-md
 	shadow-foreground/5 z-10"
 >
-	<div class="flex flex-1 justify-start">
+	<div class="flex flex-1 justify-start gap-4">
 		<Button variant="ghost" size="icon" on:click={openSidebar}>
 			<TextLeftIcon font-size="24" />
 		</Button>
+		<UserHoverCard
+			bind:open={userHoverOpen}
+			onOpenChange={onHoverCardOpenChange}
+		/>
 	</div>
 
 	<div class="flex flex-1 justify-center">
