@@ -9,6 +9,7 @@
 	import { metadata } from "@/stores/articleMetadata";
 	import { currentTocItem } from "./stores/tocStore";
 	import ResizeHandle from "./ResizeHandle.svelte";
+	import ArticleInfo from "./ArticleInfo.svelte";
 
 	let tocRoot: HTMLElement;
 	let resizing: boolean;
@@ -72,6 +73,9 @@
 						class="-rotate-45"
 					/>
 				</Button>
+			</div>
+			<div>
+				<ArticleInfo />
 			</div>
 			<div id="toc" class="mx-10 my-5" bind:this={tocRoot}>
 				<Toc items={$metadata.toc} />
