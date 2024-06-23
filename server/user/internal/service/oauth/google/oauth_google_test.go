@@ -25,7 +25,7 @@ func TestGoogleLogin(t *testing.T) {
 	req := httptest.NewRequest("POST", "/", nil)
 	res := httptest.NewRecorder()
 
-	GoogleLogin(res, req)
+	Login(res, req)
 
 	result := res.Result()
 	cookies := result.Cookies()

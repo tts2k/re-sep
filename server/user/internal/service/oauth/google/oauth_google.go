@@ -42,16 +42,21 @@ func init() {
 	}
 	google.provider = oidcProvider
 
+	oidcConfig := &oidc.Config{
+		ClientID: systemConfig.Google.ClientID,
+	}
+	google.verifier = oidcProvider.Verifier(oidcConfig)
+
 	google.oAuthConfig = &oauth2.Config{
 		ClientID:     systemConfig.Google.ClientID,
 		ClientSecret: systemConfig.Google.ClientSecret,
-		RedirectURL:  path.Join(systemConfig.HTTPURL, "/oauth-callback/google"),
+		RedirectURL:  "http://" + path.Join(systemConfig.HTTPURL, "/oauth/google/callback"),
 		Scopes:       []string{oidc.ScopeOpenID},
 		Endpoint:     google.provider.Endpoint(),
 	}
 }
 
-func GoogleLogin(w http.ResponseWriter, r *http.Request) {
+func Login(w http.ResponseWriter, r *http.Request) {
 	// Create state cookie
 	oAuthState := authUtils.RandString(16)
 	nonce := authUtils.RandString(16)
@@ -63,7 +68,7 @@ func GoogleLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, oAuthURL, http.StatusTemporaryRedirect)
 }
 
-func GoogleCallback(w http.ResponseWriter, r *http.Request) {
+func Callback(w http.ResponseWriter, r *http.Request) {
 	oAuthState, err := r.Cookie("state")
 	if err != nil {
 		slog.Error("Cannot find state cookie", "error", err)
@@ -80,7 +85,6 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 
 	code := r.FormValue("code")
 	if code == "" {
-		slog.Error("No auth code provided", "error", err)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
