@@ -9,7 +9,6 @@
 	let curZoomLvl = 1;
 
 	$: zoomlvl = zoomLvls[curZoomLvl];
-	$: console.log(zoomlvl);
 
 	const zoomIn = () => {
 		if (curZoomLvl + 1 < zoomLvls.length) {

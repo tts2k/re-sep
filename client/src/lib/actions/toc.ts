@@ -24,7 +24,6 @@ export const toc: Action<HTMLElement, ActionProps> = (
 				continue;
 			}
 
-			console.log("Reading:", entry.target.id);
 			props.store.set(entry.target.id);
 		}
 	};
