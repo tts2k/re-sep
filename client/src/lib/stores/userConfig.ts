@@ -3,26 +3,26 @@ import { writable } from "svelte/store";
 
 export const AvailableFonts = ["serif", "sans-serif", "Open Dyslexic"] as const;
 
-type Font = (typeof AvailableFonts)[number];
+export type Font = (typeof AvailableFonts)[number];
 
 export type UserConfig = {
 	layered: boolean;
 	font: Font;
+	fontSize: number;
 	margin: {
 		left: number;
 		right: number;
 	};
-	lineHeight: number;
 };
 
 const defaultConfig: UserConfig = {
 	layered: false,
 	font: "serif",
+	fontSize: 3,
 	margin: {
 		left: 300,
 		right: 300,
 	},
-	lineHeight: 1.5,
 };
 
 let stored: UserConfig = defaultConfig;
