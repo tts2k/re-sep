@@ -3,14 +3,13 @@
 	import * as Select from "@/components/ui/select";
 	import { AvailableFonts, type Font } from "@/stylePresets";
 	import { Slider } from "@/components/ui/slider";
+	import { Button } from "@/components/ui/button";
+	import { Checkbox } from "@/components/ui/checkbox"
 	import { userConfig } from "@/stores/userConfig";
 	import { previewConfig } from "../store/previewConfig";
-	import { Button } from "@/components/ui/button";
 	import { getContext, onMount } from "svelte";
 	import type { Selected } from "bits-ui";
 	import type { ConfigDialogContext } from "../ConfigDialog.svelte";
-
-	let selectedFont: Selected<Font>;
 
 	const configDialog = getContext<ConfigDialogContext>("config-dialog");
 
@@ -20,7 +19,7 @@
 		$previewConfig.fontSize = $userConfig.fontSize;
 	});
 
-	// Mapping values for Select components
+	// Mapping values for Select component(s)
 	$: selectedFont = {
 		label: $previewConfig.font,
 		value: $previewConfig.font,
@@ -68,7 +67,7 @@
 
 	<!-- Font size -->
 	<div class="border border-border p-8 rounded-md">
-		<Label for="font-size" class="text-md font-bold">Font size</Label>
+		<Label for="font-size" class="text-md font-bold">Font Size</Label>
 		<Slider
 			id="font-size"
 			class="mt-8"
@@ -78,6 +77,15 @@
 			value={[$previewConfig.fontSize]}
 			onValueChange={onSliderValueChange}
 		/>
+	</div>
+
+	<!-- Text alignment -->
+	<div class="border border-border p-8 rounded-md flex flex-col">
+		<Label for="" class="text-md font-bold">Text Alignment</Label>
+		<div class="flex flex-row items-center mt-8">
+			<Checkbox class="mr-4" bind:checked={$previewConfig.justify} name="justify"/>
+			<Label for="justify" class="text-md">Justified</Label>
+		</div>
 	</div>
 
 	<!-- Margin -->

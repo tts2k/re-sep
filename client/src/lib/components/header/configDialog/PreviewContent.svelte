@@ -6,13 +6,13 @@
 
 	$: fontSizePreset = getFontSizePreset($previewConfig.fontSize - 1);
 	$: fontFamily = FontPreset[$previewConfig.font];
-
 	$: scaleStyle = `transform: scale(${scale / 100});`;
+	$: justified = $previewConfig.justify ? "text-justify" : ""
 </script>
 
 <div
 	class="origin-center transition-transform ease-in-out duration-300
-	overflow-scroll {fontFamily}"
+	overflow-scroll {fontFamily} {justified}"
 	style={scaleStyle}
 >
 	<h1 class={fontSizePreset.h1}>Unix Philosophy</h1>
