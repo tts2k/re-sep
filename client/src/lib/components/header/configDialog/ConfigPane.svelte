@@ -1,39 +1,53 @@
 <script lang="ts">
 	import { Label } from "@/components/ui/label";
 	import * as Select from "@/components/ui/select";
-	import { type Font, AvailableFonts } from "@/stores/userConfig";
+	import { AvailableFonts, type Font } from "@/stores/userConfig";
 	import { Slider } from "@/components/ui/slider";
 	import { userConfig } from "@/stores/userConfig";
-	import type { Selected } from "bits-ui";
+	import { previewConfig } from "../store/previewConfig";
 	import { Button } from "@/components/ui/button";
+	import { onMount } from "svelte";
+	import type { Selected } from "bits-ui";
 
-	type FormValues = {
-		font: Selected<Font>;
-		fontSize: number;
-	};
+	let selectedFont: Selected<Font>;
 
-	const formValues: FormValues = {
-		font: {
-			label: $userConfig.font,
-			value: $userConfig.font,
-		},
-		fontSize: $userConfig.fontSize
+	onMount(() => {
+		// Staging preview config before applying to global config
+		$previewConfig.font = $userConfig.font;
+		$previewConfig.fontSize = $userConfig.fontSize;
+	});
+
+	$: selectedFont = {
+		label: $previewConfig.font,
+		value: $previewConfig.font,
 	};
 
 	const onSliderValueChange = (value: number[]) => {
-		formValues.fontSize = value[0]
-	}
+		$previewConfig.fontSize = value[0];
+	};
+
+	const onFontSelectChange = (selected: Selected<Font> | undefined) => {
+		if (!selected) {
+			return;
+		}
+
+		$previewConfig.font = selected.value;
+	};
 
 	const saveConfig = () => {
-		$userConfig.fontSize = formValues.fontSize
-		$userConfig.font = formValues.font.value
-	}
+		$userConfig.layered = true
+		$userConfig.fontSize = $previewConfig.fontSize;
+		$userConfig.font = $previewConfig.font;
+	};
 </script>
 
 <div class="w-[30%] flex flex-col gap-4">
 	<div class="border border-border p-8 rounded-md">
 		<Label for="font" class="text-md font-bold">Font</Label>
-		<Select.Root bind:selected={formValues.font}>
+		<Select.Root
+			selected={selectedFont}
+			onSelectedChange={onFontSelectChange}
+		>
 			<Select.Trigger id="font" class="mt-8">
 				<Select.Value />
 			</Select.Trigger>
@@ -53,7 +67,7 @@
 			min={1}
 			max={5}
 			step={1}
-			value={[formValues.fontSize]}
+			value={[$previewConfig.fontSize]}
 			onValueChange={onSliderValueChange}
 		/>
 	</div>
@@ -70,10 +84,9 @@
 			<Label for="margin-left" class="min-w-14">Right</Label>
 			<Slider id="margin-left" min={1} max={5} step={1} />
 		</div>
-
 	</div>
 
 	<div class="mt-8">
-		<Button on:click={saveConfig}> Save </Button>
+		<Button on:click={saveConfig}>Save</Button>
 	</div>
 </div>

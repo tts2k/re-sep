@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { getFontSizePreset } from "$lib/stylePresets"
+	import { previewConfig } from "../store/previewConfig";
 
 	export let scale: number;
-	export let fontSize: number;
 
-	$: fontSizePreset = getFontSizePreset(fontSize - 1)
+	$: fontSizePreset = getFontSizePreset($previewConfig.fontSize - 1)
+
+	$: console.log(fontSizePreset)
 
 	$: scaleStyle = `transform: scale(${scale / 100});`;
 </script>
@@ -134,11 +136,11 @@
 <!-- shadcn typography -->
 <style lang="postcss">
 	h1 {
-		@apply scroll-m-20 text-4xl font-extrabold tracking-tight text-center mb-32;
+		@apply scroll-m-20 font-extrabold tracking-tight text-center mb-32;
 	}
 
 	h2 {
-		@apply scroll-m-20 border-b pb-2 text-4xl font-semibold tracking-tight
+		@apply scroll-m-20 border-b pb-2 font-semibold tracking-tight
 		transition-colors mt-10;
 	}
 

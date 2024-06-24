@@ -29,7 +29,7 @@
 		class="border p-4 h-full flex-col
 		rounded-md relative"
 	>
-		<PreviewContent scale={zoomlvl} fontSize={3}/>
+		<PreviewContent scale={zoomlvl} />
 		<div class="absolute bottom-4 right-4 flex flex-col gap-4">
 			<Button variant="outline" size="icon" on:click={zoomIn}>
 				<PlusIcon />
