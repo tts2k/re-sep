@@ -3,16 +3,23 @@
 	import { previewConfig } from "../store/previewConfig";
 
 	export let scale: number;
+	export let showBorder: boolean;
 
 	$: fontSizePreset = getFontSizePreset($previewConfig.fontSize - 1);
 	$: fontFamily = FontPreset[$previewConfig.font];
-	$: scaleStyle = `transform: scale(${scale / 100});`;
 	$: justified = $previewConfig.justify ? "text-justify" : ""
+
+	$: scaleStyle = `transform: scale(${scale / 100});`;
+
+	// Border on small scale to view margin easier
+	$: border = (showBorder && scale < 100)
+		? "outline outline-4 outline-foreground"
+		: ""
 </script>
 
 <div
 	class="origin-center transition-transform ease-in-out duration-300
-	overflow-scroll {fontFamily} {justified}"
+	overflow-scroll {fontFamily} {justified} {border}"
 	style={scaleStyle}
 >
 	<h1 class={fontSizePreset.h1}>Unix Philosophy</h1>
@@ -48,17 +55,20 @@
 		1. Make each program do one thing well. To do a new job, build afresh
 		rather than complicate old programs by adding new "features".
 	</h4>
+
 	<h4 class={fontSizePreset.h4}>
 		2. Expect the output of every program to become the input to another, as
 		yet unknown, program. Don't clutter output with extraneous information.
 		Avoid stringently columnar or binary input formats. Don't insist on
 		interactive input
 	</h4>
+
 	<h4 class={fontSizePreset.h4}>
 		3. Design and build software, even operating systems, to be tried early,
 		ideally within weeks. Don't hesitate to throw away the clumsy parts and
 		rebuild them.
 	</h4>
+
 	<h4 class={fontSizePreset.h4}>
 		4. Use tools in preference to unskilled help to lighten a programming
 		task, even if you have to detour to build the tools and expect to throw
