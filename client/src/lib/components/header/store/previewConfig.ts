@@ -1,4 +1,5 @@
-import { userConfig, type Font } from "@/stores/userConfig";
+import type { Font } from "$lib/stylePresets";
+import { userConfig } from "@/stores/userConfig";
 import { writable } from "svelte/store";
 
 type PreviewConfig = {
@@ -12,10 +13,3 @@ const defaultPreviewConfig: PreviewConfig = {
 };
 
 export const previewConfig = writable<PreviewConfig>(defaultPreviewConfig);
-
-userConfig.subscribe((value) => {
-	previewConfig.set({
-		fontSize: value.fontSize,
-		font: value.font,
-	});
-});

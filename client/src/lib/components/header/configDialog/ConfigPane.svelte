@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Label } from "@/components/ui/label";
 	import * as Select from "@/components/ui/select";
-	import { AvailableFonts, type Font } from "@/stores/userConfig";
+	import { AvailableFonts, type Font } from "@/stylePresets";
 	import { Slider } from "@/components/ui/slider";
 	import { userConfig } from "@/stores/userConfig";
 	import { previewConfig } from "../store/previewConfig";
@@ -12,7 +12,7 @@
 
 	let selectedFont: Selected<Font>;
 
-	const configDialog = getContext<ConfigDialogContext>('config-dialog')
+	const configDialog = getContext<ConfigDialogContext>("config-dialog");
 
 	onMount(() => {
 		// Staging preview config before applying to global config
@@ -20,6 +20,7 @@
 		$previewConfig.fontSize = $userConfig.fontSize;
 	});
 
+	// Mapping values for Select components
 	$: selectedFont = {
 		label: $previewConfig.font,
 		value: $previewConfig.font,
@@ -38,15 +39,16 @@
 	};
 
 	const saveConfig = () => {
-		$userConfig.layered = true
+		$userConfig.layered = true;
 		$userConfig.fontSize = $previewConfig.fontSize;
 		$userConfig.font = $previewConfig.font;
 
-		configDialog.closeDialog()
+		configDialog.closeDialog();
 	};
 </script>
 
 <div class="w-[30%] flex flex-col gap-4">
+	<!-- Font family -->
 	<div class="border border-border p-8 rounded-md">
 		<Label for="font" class="text-md font-bold">Font</Label>
 		<Select.Root
@@ -64,6 +66,7 @@
 		</Select.Root>
 	</div>
 
+	<!-- Font size -->
 	<div class="border border-border p-8 rounded-md">
 		<Label for="font-size" class="text-md font-bold">Font size</Label>
 		<Slider
@@ -77,6 +80,7 @@
 		/>
 	</div>
 
+	<!-- Margin -->
 	<div class="border border-border p-8 rounded-md">
 		<Label for="" class="text-md font-bold">Margin</Label>
 

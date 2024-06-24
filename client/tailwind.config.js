@@ -60,6 +60,8 @@ const config = {
 			},
 			fontFamily: {
 				sans: [...fontFamily.sans],
+				serif: [...fontFamily.serif],
+				"open-dyslexic": ["Open Dyslexic"],
 			},
 		},
 	},

@@ -1,3 +1,14 @@
+/* Font */
+export const AvailableFonts = ["serif", "sans-serif", "Open Dyslexic"] as const;
+export type Font = (typeof AvailableFonts)[number];
+
+export const FontPreset: Record<Font, string> = {
+	serif: "font-serif",
+	"sans-serif": "font-sans",
+	"Open Dyslexic": "font-open-dyslexic",
+} as const;
+
+/* Font size */
 export type FontSizePreset = {
 	h1: string;
 	h2: string;
