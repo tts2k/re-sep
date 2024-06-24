@@ -6,10 +6,13 @@
 	import { userConfig } from "@/stores/userConfig";
 	import { previewConfig } from "../store/previewConfig";
 	import { Button } from "@/components/ui/button";
-	import { onMount } from "svelte";
+	import { getContext, onMount } from "svelte";
 	import type { Selected } from "bits-ui";
+	import type { ConfigDialogContext } from "../ConfigDialog.svelte";
 
 	let selectedFont: Selected<Font>;
+
+	const configDialog = getContext<ConfigDialogContext>('config-dialog')
 
 	onMount(() => {
 		// Staging preview config before applying to global config
@@ -38,6 +41,8 @@
 		$userConfig.layered = true
 		$userConfig.fontSize = $previewConfig.fontSize;
 		$userConfig.font = $previewConfig.font;
+
+		configDialog.closeDialog()
 	};
 </script>
 

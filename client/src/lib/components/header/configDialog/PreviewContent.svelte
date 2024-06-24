@@ -6,8 +6,6 @@
 
 	$: fontSizePreset = getFontSizePreset($previewConfig.fontSize - 1)
 
-	$: console.log(fontSizePreset)
-
 	$: scaleStyle = `transform: scale(${scale / 100});`;
 </script>
 
