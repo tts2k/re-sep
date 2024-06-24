@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { FontPreset, getFontSizePreset, type Font } from "$lib/stylePresets";
+	import { FontPreset, getFontSizePreset } from "$lib/stylePresets";
 	import { previewConfig } from "../store/previewConfig";
 
 	export let scale: number;
@@ -153,7 +153,7 @@
 	}
 
 	p {
-		@apply leading-7 [&:not(:first-child)]:mt-6;
+		@apply [&:not(:first-child)]:mt-6;
 	}
 
 	ul {
