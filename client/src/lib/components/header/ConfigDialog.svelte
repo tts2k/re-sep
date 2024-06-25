@@ -1,7 +1,7 @@
 <script lang="ts" context="module">
 	export type ConfigDialogContext = {
-		closeDialog: () => void
-	}
+		closeDialog: () => void;
+	};
 </script>
 
 <script lang="ts">
@@ -12,13 +12,13 @@
 
 	export let open = false;
 
-	const closeDialog = () => open = false
+	const closeDialog = () => (open = false);
 
-	setContext<ConfigDialogContext>("config-dialog", { closeDialog })
+	setContext<ConfigDialogContext>("config-dialog", { closeDialog });
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="sm:max-w-screen-2xl">
+	<Dialog.Content class="max-w-[95vw]">
 		<Dialog.Header>
 			<Dialog.Title>Font and Layout Settings</Dialog.Title>
 		</Dialog.Header>

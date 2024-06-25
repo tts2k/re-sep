@@ -27,17 +27,17 @@
 	};
 
 	const toggleBorder = () => {
-		showBorder = !showBorder
-	}
+		showBorder = !showBorder;
+	};
 </script>
 
-<div class="w-[70%] h-[85vh] font-serif">
+<div class="w-[80%] h-[85vh] font-serif">
 	<ScrollArea
 		orientation="both"
 		class="border p-4 h-full flex-col
 		rounded-md relative"
 	>
-		<PreviewContent scale={zoomlvl} showBorder={showBorder}/>
+		<PreviewContent scale={zoomlvl} {showBorder} />
 
 		<div class="absolute bottom-4 right-4 flex flex-col gap-4">
 			<TooltipWrapper text="Zoom in">

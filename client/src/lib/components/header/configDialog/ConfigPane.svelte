@@ -4,7 +4,7 @@
 	import { AvailableFonts, type Font } from "@/stylePresets";
 	import { Slider } from "@/components/ui/slider";
 	import { Button } from "@/components/ui/button";
-	import { Checkbox } from "@/components/ui/checkbox"
+	import { Checkbox } from "@/components/ui/checkbox";
 	import { userConfig } from "@/stores/userConfig";
 	import { previewConfig } from "../store/previewConfig";
 	import { getContext, onMount } from "svelte";
@@ -25,7 +25,7 @@
 		value: $previewConfig.font,
 	};
 
-	const onSliderValueChange = (value: number[]) => {
+	const onFontSizeChange = (value: number[]) => {
 		$previewConfig.fontSize = value[0];
 	};
 
@@ -44,9 +44,15 @@
 
 		configDialog.closeDialog();
 	};
+
+	const createOnMarginChange = (direction: "left" | "right") => {
+		return (value: number[]) => {
+			$previewConfig.margin[direction] = value[0];
+		};
+	};
 </script>
 
-<div class="w-[30%] flex flex-col gap-4">
+<div class="w-[20%] flex flex-col gap-4">
 	<!-- Font family -->
 	<div class="border border-border p-8 rounded-md">
 		<Label for="font" class="text-md font-bold">Font</Label>
@@ -75,7 +81,7 @@
 			max={5}
 			step={1}
 			value={[$previewConfig.fontSize]}
-			onValueChange={onSliderValueChange}
+			onValueChange={onFontSizeChange}
 		/>
 	</div>
 
@@ -83,23 +89,41 @@
 	<div class="border border-border p-8 rounded-md flex flex-col">
 		<Label for="" class="text-md font-bold">Text Alignment</Label>
 		<div class="flex flex-row items-center mt-8">
-			<Checkbox class="mr-4" bind:checked={$previewConfig.justify} name="justify"/>
+			<Checkbox
+				class="mr-4"
+				bind:checked={$previewConfig.justify}
+				name="justify"
+			/>
 			<Label for="justify" class="text-md">Justified</Label>
 		</div>
 	</div>
 
 	<!-- Margin -->
 	<div class="border border-border p-8 rounded-md">
-		<Label for="" class="text-md font-bold">Margin</Label>
+		<Label for="" class="text-md font-bold">Margin (percentage)</Label>
 
 		<div class="flex flex-row mt-8">
 			<Label for="margin-left" class="min-w-14">Left</Label>
-			<Slider id="margin-left" min={1} max={5} step={1} />
+			<Slider
+				id="margin-left"
+				min={1}
+				max={5}
+				step={1}
+				value={[$previewConfig.margin.left]}
+				onValueChange={createOnMarginChange("left")}
+			/>
 		</div>
 
 		<div class="flex flex-row mt-8">
 			<Label for="margin-left" class="min-w-14">Right</Label>
-			<Slider id="margin-left" min={1} max={5} step={1} />
+			<Slider
+				id="margin-left"
+				min={1}
+				max={5}
+				step={1}
+				value={[$previewConfig.margin.right]}
+				onValueChange={createOnMarginChange("right")}
+			/>
 		</div>
 	</div>
 

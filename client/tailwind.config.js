@@ -63,6 +63,12 @@ const config = {
 				serif: [...fontFamily.serif],
 				"open-dyslexic": ["Open Dyslexic"],
 			},
+			spacing: {
+				"5p": "5%",
+				"10p": "10%",
+				"20p": "20%",
+				"30p": "30%",
+			},
 		},
 	},
 };

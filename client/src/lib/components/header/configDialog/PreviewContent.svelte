@@ -1,3 +1,11 @@
+<script lang="ts" context="module">
+	/* Margin */
+	const PreviewMarginPresets = {
+		left: ["pl-0", "pl-5p", "pl-10p", "pl-20p", "pl-30p"],
+		right: ["pr-0", "pr-5p", "pr-10p", "pr-20p", "pr-30p"],
+	} as const;
+</script>
+
 <script lang="ts">
 	import { FontPreset, getFontSizePreset } from "$lib/stylePresets";
 	import { previewConfig } from "../store/previewConfig";
@@ -7,19 +15,25 @@
 
 	$: fontSizePreset = getFontSizePreset($previewConfig.fontSize - 1);
 	$: fontFamily = FontPreset[$previewConfig.font];
-	$: justified = $previewConfig.justify ? "text-justify" : ""
+	$: justified = $previewConfig.justify ? "text-justify" : "";
+	$: marginLeft = PreviewMarginPresets.left[$previewConfig.margin.left - 1];
+	$: marginRight =
+		PreviewMarginPresets.right[$previewConfig.margin.right - 1];
 
 	$: scaleStyle = `transform: scale(${scale / 100});`;
 
-	// Border on small scale to view margin easier
-	$: border = (showBorder && scale < 100)
-		? "outline outline-4 outline-foreground"
-		: ""
+	/* Border is mandatory for viewing margin on small scale so by default it's
+	 * gonna be on a accent color.
+	 * For preview, margin will be displayed as padding instead and use
+	 * border as a way to preview margin size
+	 */
+	$: borderColor = showBorder ? "outline-foreground" : "outline-accent";
 </script>
 
 <div
 	class="origin-center transition-transform ease-in-out duration-300
-	overflow-scroll {fontFamily} {justified} {border}"
+	{fontFamily} {justified} outline outline-4 {borderColor} {marginLeft}
+	{marginRight}"
 	style={scaleStyle}
 >
 	<h1 class={fontSizePreset.h1}>Unix Philosophy</h1>

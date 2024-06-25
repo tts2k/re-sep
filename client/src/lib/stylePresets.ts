@@ -17,52 +17,26 @@ export type FontSizePreset = {
 	text: string;
 };
 
-const h1SizePresets = [
-	"text-5xl",
-	"text-6xl",
-	"text-7xl",
-	"text-8xl",
-	"text-9xl",
-] as const;
-
-const h2SizePresets = [
-	"text-2xl",
-	"text-3xl",
-	"text-4xl",
-	"text-5xl",
-	"text-6xl",
-] as const;
-
-const h3SizePresets = [
-	"text-xl",
-	"text-2xl",
-	"text-3xl",
-	"text-4xl",
-	"text-5xl",
-] as const;
-
-const h4SizePresets = [
-	"text-lg",
-	"text-xl",
-	"text-2xl",
-	"text-3xl",
-	"text-4xl",
-] as const;
-
-const textSizePresets = [
-	"text-base",
-	"text-lg",
-	"text-xl",
-	"text-3xl",
-	"text-4xl",
-] as const;
+const fontSizePresets = {
+	h1: ["text-5xl", "text-6xl", "text-7xl", "text-8xl", "text-9xl"],
+	h2: ["text-2xl", "text-3xl", "text-4xl", "text-5xl", "text-6xl"],
+	h3: ["text-xl", "text-2xl", "text-3xl", "text-4xl", "text-5xl"],
+	h4: ["text-lg", "text-xl", "text-2xl", "text-3xl", "text-4xl"],
+	text: ["text-base", "text-lg", "text-xl", "text-3xl", "text-4xl"],
+};
 
 export const getFontSizePreset = (preset: number): FontSizePreset => {
 	return {
-		h1: h1SizePresets[preset],
-		h2: h2SizePresets[preset],
-		h3: h3SizePresets[preset],
-		h4: h4SizePresets[preset],
-		text: textSizePresets[preset],
+		h1: fontSizePresets.h1[preset],
+		h2: fontSizePresets.h2[preset],
+		h3: fontSizePresets.h3[preset],
+		h4: fontSizePresets.h4[preset],
+		text: fontSizePresets.text[preset],
 	};
 };
+
+/* Margin */
+export const MarginPresets = {
+	left: ["ml-0", "ml-1", "ml-2", "ml-3", "ml-4"],
+	right: ["mr-0", "mr-1", "mr-2", "mr-3", "mr-4"],
+} as const;
