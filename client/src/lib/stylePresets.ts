@@ -37,6 +37,6 @@ export const getFontSizePreset = (preset: number): FontSizePreset => {
 
 /* Margin */
 export const MarginPresets = {
-	left: ["ml-0", "ml-1", "ml-2", "ml-3", "ml-4"],
-	right: ["mr-0", "mr-1", "mr-2", "mr-3", "mr-4"],
+	left: ["ml-0", "ml-5p", "ml-10p", "ml-20p", "ml-30p", "ml-40p"],
+	right: ["mr-0", "mr-5p", "mr-10p", "mr-20p", "mr-30p", "ml-40p"],
 } as const;

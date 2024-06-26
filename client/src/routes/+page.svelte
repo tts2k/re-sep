@@ -6,6 +6,7 @@
 	import { currentTocItem } from "$lib/components/sidebar/stores/tocStore";
 	import { metadata } from "@/stores/articleMetadata";
 	import { userConfig } from "@/stores/userConfig";
+	import { FontPreset, MarginPresets } from "@/stylePresets";
 
 	export let data: PageServerData;
 
@@ -14,6 +15,11 @@
 		authors: data.author,
 		toc: data.toc,
 	};
+
+	$: font = $userConfig.font ? FontPreset[$userConfig.font] : "font-serif";
+	$: justified = $userConfig.justify ? "text-justify" : "";
+	$: marginLeft = MarginPresets.left[$userConfig.margin.left - 1];
+	$: marginRight = MarginPresets.right[$userConfig.margin.right - 1];
 </script>
 
 <svelte:head>
@@ -28,8 +34,8 @@
 	<article
 		use:toc={{ store: currentTocItem }}
 		use:layerConfig={userConfig}
-		class="mt-24 mb-24 font-serif h-screen flex flex-col"
-		style="margin-left: 300px; margin-right: 300px;"
+		class="mt-24 mb-24 h-screen flex flex-col {justified} {marginLeft}
+		{marginRight} {font}"
 	>
 		{@html data.htmlText}
 	</article>
@@ -42,8 +48,7 @@
 	}
 
 	article :global(h1) {
-		@apply scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-7xl
-		text-center mb-32;
+		@apply scroll-m-20 font-extrabold tracking-tight text-7xl text-center mb-32;
 	}
 
 	article :global(h2) {
@@ -60,15 +65,15 @@
 	}
 
 	article :global(p) {
-		@apply leading-7 [&:not(:first-child)]:mt-6 text-lg lg:text-xl;
+		@apply leading-7 [&:not(:first-child)]:mt-6 text-xl;
 	}
 
 	article :global(em) {
-		@apply text-lg lg:text-xl;
+		@apply text-xl;
 	}
 
 	article :global(ul) {
-		@apply my-6 ml-6 list-disc text-lg lg:text-xl;
+		@apply my-6 ml-6 list-disc text-xl;
 	}
 
 	article :global(li) {
@@ -76,6 +81,6 @@
 	}
 
 	article :global(blockquote) {
-		@apply mt-6 border-l-2 pl-6 italic text-lg;
+		@apply mt-6 border-l-2 pl-6 italic text-xl;
 	}
 </style>

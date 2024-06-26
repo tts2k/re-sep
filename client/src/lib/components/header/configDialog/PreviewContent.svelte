@@ -1,8 +1,8 @@
 <script lang="ts" context="module">
 	/* Margin */
 	const PreviewMarginPresets = {
-		left: ["pl-0", "pl-5p", "pl-10p", "pl-20p", "pl-30p"],
-		right: ["pr-0", "pr-5p", "pr-10p", "pr-20p", "pr-30p"],
+		left: ["pl-0", "pl-5p", "pl-10p", "pl-20p", "pl-30p", "pl-40p"],
+		right: ["pr-0", "pr-5p", "pr-10p", "pr-20p", "pr-30p", "pr-40p"],
 	} as const;
 </script>
 
@@ -22,7 +22,8 @@
 
 	$: scaleStyle = `transform: scale(${scale / 100});`;
 
-	/* Border is mandatory for viewing margin on small scale so by default it's
+	/*
+	 * Border is mandatory for viewing margin on small scale so by default it's
 	 * gonna be on a accent color.
 	 * For preview, margin will be displayed as padding instead and use
 	 * border as a way to preview margin size
