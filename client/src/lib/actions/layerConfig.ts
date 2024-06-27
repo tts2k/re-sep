@@ -59,16 +59,10 @@ const replaceElementClass = (
 	const nodes = rootElement.querySelectorAll(query);
 
 	for (const element of nodes.values()) {
-		if (element.classList.contains(oldClass)) {
-			const ok = element.classList.replace(oldClass, newClass);
-			if (!ok) {
-				throw new Error("Replacing class failed");
-			}
-
-			continue;
+		const ok = element.classList.replace(oldClass, newClass);
+		if (!ok) {
+			element.classList.add(newClass);
 		}
-
-		element.classList.add(newClass);
 	}
 };
 
