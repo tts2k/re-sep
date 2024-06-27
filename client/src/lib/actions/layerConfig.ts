@@ -1,6 +1,7 @@
 import type { Action } from "svelte/action";
-import type { UserConfig } from "@/stores/userConfig";
-import { type Writable } from "svelte/store";
+import { userConfig, type UserConfig } from "@/stores/userConfig";
+import type { Writable } from "svelte/store";
+import { getFontSizePreset, type FontSizePreset } from "@/stylePresets";
 
 let currentConfig: UserConfig;
 let rootElement: HTMLElement;
@@ -58,10 +59,16 @@ const replaceElementClass = (
 	const nodes = rootElement.querySelectorAll(query);
 
 	for (const element of nodes.values()) {
-		const ok = element.classList.replace(oldClass, newClass);
-		if (!ok) {
-			throw new Error(`Replacing class failed`);
+		if (element.classList.contains(oldClass)) {
+			const ok = element.classList.replace(oldClass, newClass);
+			if (!ok) {
+				throw new Error("Replacing class failed");
+			}
+
+			continue;
 		}
+
+		element.classList.add(newClass);
 	}
 };
 
@@ -73,6 +80,31 @@ const userConfigSubscribe = (value: UserConfig) => {
 
 	if (!value.layered) {
 		return;
+	}
+
+	if (value.fontSize === currentConfig.fontSize) {
+		return;
+	}
+
+	const oldFontSizePreset = getFontSizePreset(currentConfig.fontSize - 1);
+	const newFontSizePreset = getFontSizePreset(value.fontSize - 1);
+
+	for (const key of Object.keys(
+		oldFontSizePreset,
+	) as (keyof FontSizePreset)[]) {
+		let htmlTag: string = key;
+
+		if (htmlTag === "text") {
+			htmlTag = "p, li, em";
+		}
+
+		replaceElementClass(
+			htmlTag,
+			oldFontSizePreset[key],
+			newFontSizePreset[key],
+		);
+
+		currentConfig = value;
 	}
 };
 

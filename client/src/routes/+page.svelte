@@ -48,32 +48,28 @@
 	}
 
 	article :global(h1) {
-		@apply scroll-m-20 font-extrabold tracking-tight text-7xl text-center mb-32;
+		@apply scroll-m-20 font-extrabold tracking-tight text-center mb-32;
 	}
 
 	article :global(h2) {
-		@apply scroll-m-20 border-b pb-2 text-4xl font-semibold tracking-tight
+		@apply scroll-m-20 border-b pb-2 font-semibold tracking-tight
 		transition-colors mt-10;
 	}
 
 	article :global(h3) {
-		@apply scroll-m-20 text-3xl font-semibold tracking-tight mt-10;
+		@apply scroll-m-20 font-semibold tracking-tight mt-10;
 	}
 
 	article :global(h4) {
-		@apply scroll-m-20 text-2xl font-semibold tracking-tight mt-10;
+		@apply scroll-m-20 font-semibold tracking-tight mt-10;
 	}
 
 	article :global(p) {
-		@apply leading-7 [&:not(:first-child)]:mt-6 text-xl;
-	}
-
-	article :global(em) {
-		@apply text-xl;
+		@apply [&:not(:first-child)]:mt-6;
 	}
 
 	article :global(ul) {
-		@apply my-6 ml-6 list-disc text-xl;
+		@apply my-6 ml-6 list-disc;
 	}
 
 	article :global(li) {
@@ -81,6 +77,6 @@
 	}
 
 	article :global(blockquote) {
-		@apply mt-6 border-l-2 pl-6 italic text-xl;
+		@apply mt-6 border-l-2 pl-6 italic;
 	}
 </style>
