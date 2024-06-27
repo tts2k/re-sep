@@ -1,5 +1,5 @@
 import type { Action } from "svelte/action";
-import { userConfig, type UserConfig } from "@/stores/userConfig";
+import type { UserConfig } from "@/stores/userConfig";
 import type { Writable } from "svelte/store";
 import { getFontSizePreset, type FontSizePreset } from "@/stylePresets";
 
