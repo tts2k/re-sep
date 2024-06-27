@@ -15,7 +15,7 @@ let stored: User = defaultConfig;
 const user = writable<User>(defaultConfig);
 
 if (browser) {
-	const localUser = localStorage.getItem("userConfig");
+	const localUser = localStorage.getItem("user");
 	stored = localUser ? JSON.parse(localUser) : stored;
 
 	user.subscribe((value) => {
