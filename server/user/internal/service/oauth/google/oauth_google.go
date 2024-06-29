@@ -150,6 +150,7 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	redirectURL, _ := url.Parse(systemConfig.ClientURL)
 	q := redirectURL.Query()
 	q.Set("token", state)
+	redirectURL.RawQuery = q.Encode()
 
 	http.Redirect(w, r, redirectURL.String(), http.StatusTemporaryRedirect)
 }
