@@ -5,9 +5,11 @@
 	import { ModeWatcher } from "mode-watcher";
 	import { sidebarStatus } from "@/components/sidebar/stores/sidebarStore";
 	import { fade } from "svelte/transition";
+	import { Toaster } from "svelte-sonner";
 </script>
 
 <ModeWatcher />
+<Toaster position="top-center" />
 <!--Dim the background on sidebar open-->
 {#if $sidebarStatus.open && !$sidebarStatus.pin}
 	<div
