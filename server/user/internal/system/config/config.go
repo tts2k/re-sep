@@ -14,11 +14,12 @@ type OAuthConfig struct {
 }
 
 type EnvConfig struct {
-	DBPATH   string
-	HTTPPort string
-	BaseURL  string
-	HTTPURL  string
-	Google   OAuthConfig
+	DBPATH    string
+	HTTPPort  string
+	BaseURL   string
+	HTTPURL   string
+	ClientURL string
+	Google    OAuthConfig
 }
 
 func (c EnvConfig) ConstructDBPath(dbName string) string {
@@ -40,9 +41,10 @@ func mustHaveEnv(key string) string {
 
 // Put env into a struct for lsp autocompletion
 var config EnvConfig = EnvConfig{
-	DBPATH:   mustHaveEnv("DB_PATH"),
-	HTTPPort: mustHaveEnv("HTTP_PORT"),
-	BaseURL:  mustHaveEnv("BASE_URL"),
+	DBPATH:    mustHaveEnv("DB_PATH"),
+	HTTPPort:  mustHaveEnv("HTTP_PORT"),
+	BaseURL:   mustHaveEnv("BASE_URL"),
+	ClientURL: mustHaveEnv("CLIENT_URL"),
 	Google: OAuthConfig{
 		ClientID:     mustHaveEnv("GOOGLE_CLIENT_ID"),
 		ClientSecret: mustHaveEnv("GOOGLE_CLIENT_SECRET"),
