@@ -9,7 +9,7 @@ require (
 	golang.org/x/oauth2 v0.20.0
 )
 
-require github.com/rs/cors v1.11.0 // indirect
+require github.com/rs/cors v1.11.0
 
 require (
 	github.com/coreos/go-oidc/v3 v3.10.0
