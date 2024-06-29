@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"path"
 	"time"
 
@@ -26,7 +27,7 @@ type googleOIDC struct {
 }
 
 var google googleOIDC
-var systemConfig config.EnvConfig
+var systemConfig config.EnvConfig = config.Config()
 
 type OAuthStrategy interface {
 	Login(w http.ResponseWriter, r *http.Request)
@@ -34,7 +35,6 @@ type OAuthStrategy interface {
 }
 
 func init() {
-	systemConfig = config.Config()
 	google = googleOIDC{name: "google"}
 
 	oidcProvider, err := oidc.NewProvider(context.Background(), "https://accounts.google.com")
@@ -128,7 +128,7 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	}
 	idToken.Claims(&claims)
 
-	user := userDB.GetUserByUniqueID(claims.Sub)
+	user := userDB.GetUserByUniqueID(google.name + ":" + claims.Sub)
 	if user == nil {
 		slog.Warn("User not found. Creating new user", "error", err)
 		user = userDB.InsertUser(google.name+":"+claims.Sub, common.DefaultUsername)
@@ -147,5 +147,9 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/?token="+state, http.StatusTemporaryRedirect)
+	redirectURL, _ := url.Parse(systemConfig.ClientURL)
+	q := redirectURL.Query()
+	q.Set("token", state)
+
+	http.Redirect(w, r, redirectURL.String(), http.StatusTemporaryRedirect)
 }

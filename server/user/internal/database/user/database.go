@@ -76,7 +76,7 @@ func InsertUser(sub string, name string) *g.User {
 func GetUserByUniqueID(id string) *g.User {
 	result, err := queries.GetUserByUniqueID(context.Background(), id)
 	if err != nil {
-		slog.Error("Cannot get token by unique ID", "error", err)
+		slog.Error("Cannot get user by unique ID", "error", err)
 		return nil
 	}
 
