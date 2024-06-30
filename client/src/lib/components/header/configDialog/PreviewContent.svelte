@@ -12,7 +12,6 @@
 		FontSizePresets,
 		FontSizeTag as Tag,
 	} from "$lib/stylePresets";
-	import DialogFooter from "@/components/ui/dialog/dialog-footer.svelte";
 	import { previewConfig } from "../store/previewConfig";
 
 	export let scale: number;
