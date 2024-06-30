@@ -1,7 +1,7 @@
 import type { Action } from "svelte/action";
 import type { UserConfig } from "@/stores/userConfig";
 import type { Writable } from "svelte/store";
-import { getFontSizePreset, type FontSizePreset } from "@/stylePresets";
+import { FontSizePresets, FontSizeTag as Tag } from "@/stylePresets";
 
 let currentConfig: UserConfig;
 let rootElement: HTMLElement;
@@ -51,11 +51,7 @@ let rootElement: HTMLElement;
 // 	return diffMap;
 // };
 
-const replaceElementClass = (
-	query: string,
-	oldClass: string,
-	newClass: string,
-) => {
+const replaceClass = (query: string, oldClass: string, newClass: string) => {
 	const nodes = rootElement.querySelectorAll(query);
 
 	for (const element of nodes.values()) {
@@ -80,25 +76,27 @@ const userConfigSubscribe = (value: UserConfig) => {
 		return;
 	}
 
-	const oldFontSizePreset = getFontSizePreset(currentConfig.fontSize - 1);
-	const newFontSizePreset = getFontSizePreset(value.fontSize - 1);
+	const oldFontSize = FontSizePresets[currentConfig.fontSize - 1];
+	const newFontSize = FontSizePresets[value.fontSize - 1];
 
-	for (const key of Object.keys(
-		oldFontSizePreset,
-	) as (keyof FontSizePreset)[]) {
-		let htmlTag: string = key;
-
-		if (htmlTag === "text") {
-			htmlTag = "p, li, em";
+	for (let i = 0; i < oldFontSize.length; i++) {
+		switch (i) {
+			case Tag.H1:
+				replaceClass("h1", oldFontSize[i], newFontSize[i]);
+				break;
+			case Tag.H2:
+				replaceClass("h2", oldFontSize[i], newFontSize[i]);
+				break;
+			case Tag.H3:
+				replaceClass("h3", oldFontSize[i], newFontSize[i]);
+				break;
+			case Tag.H4:
+				replaceClass("h4", oldFontSize[i], newFontSize[i]);
+				break;
+			case Tag.TEXT:
+				replaceClass("p, li, em", oldFontSize[i], newFontSize[i]);
+				break;
 		}
-
-		replaceElementClass(
-			htmlTag,
-			oldFontSizePreset[key],
-			newFontSizePreset[key],
-		);
-
-		currentConfig = value;
 	}
 };
 
