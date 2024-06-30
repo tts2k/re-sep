@@ -79,25 +79,11 @@ const userConfigSubscribe = (value: UserConfig) => {
 	const oldFontSize = FontSizePresets[currentConfig.fontSize - 1];
 	const newFontSize = FontSizePresets[value.fontSize - 1];
 
-	for (let i = 0; i < oldFontSize.length; i++) {
-		switch (i) {
-			case Tag.H1:
-				replaceClass("h1", oldFontSize[i], newFontSize[i]);
-				break;
-			case Tag.H2:
-				replaceClass("h2", oldFontSize[i], newFontSize[i]);
-				break;
-			case Tag.H3:
-				replaceClass("h3", oldFontSize[i], newFontSize[i]);
-				break;
-			case Tag.H4:
-				replaceClass("h4", oldFontSize[i], newFontSize[i]);
-				break;
-			case Tag.TEXT:
-				replaceClass("p, li, em", oldFontSize[i], newFontSize[i]);
-				break;
-		}
-	}
+	replaceClass("h1", oldFontSize[Tag.H1], newFontSize[Tag.H1]);
+	replaceClass("h2", oldFontSize[Tag.H2], newFontSize[Tag.H2]);
+	replaceClass("h3", oldFontSize[Tag.H3], newFontSize[Tag.H3]);
+	replaceClass("h4", oldFontSize[Tag.H4], newFontSize[Tag.H4]);
+	replaceClass("p, li, em", oldFontSize[Tag.TEXT], newFontSize[Tag.TEXT]);
 };
 
 // Config changes will be layered on exisiting config for better UX and server
