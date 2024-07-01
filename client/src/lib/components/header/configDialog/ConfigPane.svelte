@@ -38,9 +38,13 @@
 	};
 
 	const saveConfig = () => {
-		$userConfig.layered = true;
-		$userConfig.fontSize = $previewConfig.fontSize;
-		$userConfig.font = $previewConfig.font;
+		$userConfig = {
+			layered: true,
+			justify: $previewConfig.justify,
+			fontSize: $previewConfig.fontSize,
+			font: $previewConfig.font,
+			margin: $previewConfig.margin,
+		};
 
 		configDialog.closeDialog();
 	};
