@@ -200,8 +200,8 @@ export type DeepPartial<T> = T extends Builtin ? T
   : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<p class="text-xl", I extends P> = P extends Builtin ? P
-  : P & { [K in keyof P]: Exact<p class="text-xl"[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<p class="text-xl">>]: never };
+export type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
 
 function longToNumber(long: Long): number {
   if (long.gt(globalThis.Number.MAX_SAFE_INTEGER)) {

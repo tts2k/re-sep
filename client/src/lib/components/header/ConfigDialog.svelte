@@ -24,7 +24,7 @@
 		</Dialog.Header>
 		<div class="flex flex-row gap-4">
 			<ConfigPane />
-			<p class="text-xl"reviewPane />
+			<PreviewPane />
 		</div>
 	</Dialog.Content>
 </Dialog.Root>

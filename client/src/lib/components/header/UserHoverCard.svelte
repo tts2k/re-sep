@@ -14,7 +14,7 @@
 	const onLogin = async (provider: string) => {
 		try {
 			loading = true;
-			await login(provider)
+			await login(provider);
 		} catch (err) {
 			console.error(err);
 			toast.error("Error: Server is not running");
@@ -32,7 +32,7 @@
 			ease-in-out duration-300"
 		>
 			<Button variant="ghost" size="icon">
-				<p class="text-xl"ersonIcon font-size="24" />
+				<PersonIcon font-size="24" />
 			</Button>
 		</div>
 	</HoverCard.Trigger>
@@ -40,7 +40,7 @@
 		<HoverCard.Content class="flex flex-col gap-4">
 			<div>Logged in as {$user.name}</div>
 			<div>
-				<Button on:click={onLogout} {loading}>Log out </Button>
+				<Button on:click={onLogout} {loading}>Log out</Button>
 			</div>
 		</HoverCard.Content>
 	{:else}

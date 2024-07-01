@@ -37,12 +37,12 @@
 		class="border p-4 h-full flex-col
 		rounded-md relative"
 	>
-		<p class="text-xl"reviewContent scale={zoomlvl} {showBorder} />
+		<PreviewContent scale={zoomlvl} {showBorder} />
 
 		<div class="absolute bottom-4 right-4 flex flex-col gap-4">
 			<TooltipWrapper text="Zoom in">
 				<Button variant="outline" size="icon" on:click={zoomIn}>
-					<p class="text-xl"lusIcon />
+					<PlusIcon />
 				</Button>
 			</TooltipWrapper>
 
