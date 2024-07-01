@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "re-sep-content/internal/proto";
+
+message Empty {}
+
+service Auth {
+	rpc Auth(Empty) returns (AuthResponse) {}
+}
+
+message User {
+	string sub = 1;
+	string name = 2;
+}
+
+message AuthResponse {
+	string token = 1;
+	User user = 2;
+}

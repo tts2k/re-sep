@@ -56,7 +56,6 @@ func (s *Server) handleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
-
 	res := make(map[string]map[string]string)
 
 	res["user"] = userDB.Health()

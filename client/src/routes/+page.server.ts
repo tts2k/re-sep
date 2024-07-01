@@ -1,15 +1,14 @@
 import type { PageServerLoad } from "./$types";
 import articleService from "$lib/server/articleService";
 import { error } from "@sveltejs/kit";
+import { promiseResult } from "@/server/utils";
 
 export const prerender = false;
 
 export const load: PageServerLoad = async () => {
-	try {
-		const article = await articleService.getArticle("blame");
-		return article;
-	} catch (err) {
-		console.error(err);
-		error(500, "Internal server error");
+	const article = await promiseResult(articleService.getArticle("blame"));
+	if (article.isErr()) {
+		throw error(500, article.error);
 	}
+	return article.value;
 };
