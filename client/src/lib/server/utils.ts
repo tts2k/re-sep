@@ -8,7 +8,7 @@ export const promiseResult = async <T>(
 	try {
 		const res = await promise;
 		result = Ok(res);
-	} catch (error: any) {
+	} catch (error: unknown) {
 		if (!(error instanceof Error)) {
 			throw Error("Cannot handle non-Error type");
 		}
