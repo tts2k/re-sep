@@ -83,7 +83,7 @@ const userConfigSubscribe = (value: UserConfig) => {
 	replaceClass("h2", oldFontSize[Tag.H2], newFontSize[Tag.H2]);
 	replaceClass("h3", oldFontSize[Tag.H3], newFontSize[Tag.H3]);
 	replaceClass("h4", oldFontSize[Tag.H4], newFontSize[Tag.H4]);
-	replaceClass("p, li, em", oldFontSize[Tag.TEXT], newFontSize[Tag.TEXT]);
+	replaceClass("p, ul, em", oldFontSize[Tag.TEXT], newFontSize[Tag.TEXT]);
 };
 
 // Config changes will be layered on exisiting config for better UX and server
