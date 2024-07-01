@@ -1,7 +1,7 @@
 import { contentClient } from "../grpc";
 import type { Article, ArticleService } from "./type";
 
-export const getArticle = async (entryName: string) => {
+const getArticle = async (entryName: string) => {
 	return new Promise<Article>((resolve, reject) => {
 		contentClient.getArticle({ entryName }, (error, response) => {
 			if (error !== null) {

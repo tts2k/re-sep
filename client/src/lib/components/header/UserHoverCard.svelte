@@ -4,8 +4,7 @@
 	import PersonIcon from "~icons/radix-icons/person";
 	import GoogleIcon from "~icons/logos/google-icon";
 	import { toast } from "svelte-sonner";
-	import { env } from "$env/dynamic/public";
-
+	import { user, login } from "@/stores/user";
 	export let open: boolean;
 	export let onOpenChange: (value: boolean) => void;
 	export let loading = false;
@@ -15,21 +14,15 @@
 	const onLogin = async (provider: string) => {
 		try {
 			loading = true;
-
-			const response = await fetch(`${env.PUBLIC_AUTH_URL}/health`);
-			if (response.status !== 200) {
-				console.error(response);
-				toast.error("Error: Server is not running");
-				return;
-			}
-
-			window.location.href = `${env.PUBLIC_AUTH_URL}/oauth/${provider}/login`;
+			await login(provider)
 		} catch (err) {
 			console.error(err);
 			toast.error("Error: Server is not running");
 			loading = false;
 		}
 	};
+
+	const onLogout = async () => {};
 </script>
 
 <HoverCard.Root bind:open bind:onOpenChange openDelay={300}>
@@ -39,16 +32,25 @@
 			ease-in-out duration-300"
 		>
 			<Button variant="ghost" size="icon">
-				<PersonIcon font-size="24" />
+				<p class="text-xl"ersonIcon font-size="24" />
 			</Button>
 		</div>
 	</HoverCard.Trigger>
-	<HoverCard.Content class="flex flex-col gap-4">
-		<div>Not logged in</div>
-		<div>
-			<Button on:click={() => onLogin("google")} {loading}>
-				<GoogleIcon font-size="24" /> &nbsp; Login with Google
-			</Button>
-		</div>
-	</HoverCard.Content>
+	{#if $user.loggedIn}
+		<HoverCard.Content class="flex flex-col gap-4">
+			<div>Logged in as {$user.name}</div>
+			<div>
+				<Button on:click={onLogout} {loading}>Log out </Button>
+			</div>
+		</HoverCard.Content>
+	{:else}
+		<HoverCard.Content class="flex flex-col gap-4">
+			<div>Not logged in</div>
+			<div>
+				<Button on:click={() => onLogin("google")} {loading}>
+					<GoogleIcon font-size="24" /> &nbsp; Login with Google
+				</Button>
+			</div>
+		</HoverCard.Content>
+	{/if}
 </HoverCard.Root>

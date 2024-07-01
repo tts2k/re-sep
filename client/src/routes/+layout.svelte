@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import Header from "@/components/header/Header.svelte";
 	import Sidebar from "@/components/sidebar/Sidebar.svelte";
 	import "../app.pcss";
@@ -6,6 +6,21 @@
 	import { sidebarStatus } from "@/components/sidebar/stores/sidebarStore";
 	import { fade } from "svelte/transition";
 	import { Toaster } from "svelte-sonner";
+	import type { LayoutServerData } from "./$types"
+	import { user } from "@/stores/user";
+
+	export let data: LayoutServerData
+
+	if (data.user) {
+		$user = {
+			loggedIn: true,
+			name: data.user.name
+		}
+	} else {
+		$user = {
+			loggedIn: false
+		}
+	}
 </script>
 
 <ModeWatcher />
