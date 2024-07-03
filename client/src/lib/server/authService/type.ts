@@ -8,7 +8,7 @@ export type AuthResponse = {
 	user: User;
 };
 
-/* Gonna need to do something about auth on platforms.
+/* Gonna need to do something about auth on different platforms.
  * But that's something I'm gonna think about later on
  */
 export interface AuthService {

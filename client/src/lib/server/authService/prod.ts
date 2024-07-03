@@ -1,37 +1,5 @@
-import { Metadata } from "@grpc/grpc-js";
-import { SignJWT } from "jose";
-import { env } from "$env/dynamic/private";
-import { authClient } from "../grpc";
+import { authClient, createMetadata } from "../grpc";
 import type { AuthService, AuthResponse } from "./type";
-
-const JWT_SECRET = env.JWT_SECRET;
-if (!JWT_SECRET) {
-	throw new Error("JWT Secret is not defined");
-}
-
-/**
- * Create a GRPC Metadata object with the correct authorization headers
- * Short lived token only for getting the data
- */
-const createMetadata = async (id: string): Promise<Metadata> => {
-	const metadata = new Metadata();
-
-	const tokenPayload = {
-		id: id,
-	};
-
-	const secret = new TextEncoder().encode(JWT_SECRET);
-
-	// Generate and sign the token
-	const oAuthToken = await new SignJWT(tokenPayload)
-		.setProtectedHeader({ alg: "HS256" })
-		.setIssuedAt()
-		.setExpirationTime("1h")
-		.sign(secret);
-
-	metadata.set("x-authorization", `bearer ${oAuthToken}`);
-	return metadata;
-};
 
 const auth = async (token: string): Promise<AuthResponse> => {
 	const metadata = await createMetadata(token);

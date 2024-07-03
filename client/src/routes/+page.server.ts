@@ -5,7 +5,7 @@ import { promiseResult } from "@/server/utils";
 
 export const prerender = false;
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
 	const article = await promiseResult(articleService.getArticle("blame"));
 	if (article.isErr()) {
 		throw error(500, article.error);
