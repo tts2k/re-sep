@@ -6,8 +6,13 @@ option go_package = "re-sep-content/internal/proto";
 
 message Empty {}
 
+message Username {
+	string name = 1;
+}
+
 service Auth {
 	rpc Auth(Empty) returns (AuthResponse) {}
+	rpc UpdateUsername(Username) returns (User) {}
 }
 
 message User {

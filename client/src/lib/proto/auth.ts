@@ -24,6 +24,10 @@ export const protobufPackage = "auth";
 export interface Empty {
 }
 
+export interface Username {
+  name: string;
+}
+
 export interface User {
   sub: string;
   name: string;
@@ -73,6 +77,63 @@ export const Empty = {
   },
   fromPartial<I extends Exact<DeepPartial<Empty>, I>>(_: I): Empty {
     const message = createBaseEmpty();
+    return message;
+  },
+};
+
+function createBaseUsername(): Username {
+  return { name: "" };
+}
+
+export const Username = {
+  encode(message: Username, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.name !== "") {
+      writer.uint32(10).string(message.name);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Username {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUsername();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Username {
+    return { name: isSet(object.name) ? globalThis.String(object.name) : "" };
+  },
+
+  toJSON(message: Username): unknown {
+    const obj: any = {};
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Username>, I>>(base?: I): Username {
+    return Username.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Username>, I>>(object: I): Username {
+    const message = createBaseUsername();
+    message.name = object.name ?? "";
     return message;
   },
 };
@@ -236,10 +297,20 @@ export const AuthService = {
     responseSerialize: (value: AuthResponse) => Buffer.from(AuthResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => AuthResponse.decode(value),
   },
+  updateUsername: {
+    path: "/auth.Auth/UpdateUsername",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: Username) => Buffer.from(Username.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Username.decode(value),
+    responseSerialize: (value: User) => Buffer.from(User.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => User.decode(value),
+  },
 } as const;
 
 export interface AuthServer extends UntypedServiceImplementation {
   auth: handleUnaryCall<Empty, AuthResponse>;
+  updateUsername: handleUnaryCall<Username, User>;
 }
 
 export interface AuthClient extends Client {
@@ -254,6 +325,18 @@ export interface AuthClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: AuthResponse) => void,
+  ): ClientUnaryCall;
+  updateUsername(request: Username, callback: (error: ServiceError | null, response: User) => void): ClientUnaryCall;
+  updateUsername(
+    request: Username,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: User) => void,
+  ): ClientUnaryCall;
+  updateUsername(
+    request: Username,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: User) => void,
   ): ClientUnaryCall;
 }
 
