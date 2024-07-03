@@ -4,7 +4,7 @@
 	import PersonIcon from "~icons/radix-icons/person";
 	import GoogleIcon from "~icons/logos/google-icon";
 	import { toast } from "svelte-sonner";
-	import { user, login } from "@/stores/user";
+	import { user, login, logout } from "@/stores/user";
 	export let open: boolean;
 	export let onOpenChange: (value: boolean) => void;
 	export let loading = false;
@@ -15,6 +15,7 @@
 		try {
 			loading = true;
 			await login(provider);
+			loading = false;
 		} catch (err) {
 			console.error(err);
 			toast.error("Error: Server is not running");
@@ -22,7 +23,7 @@
 		}
 	};
 
-	const onLogout = async () => {};
+	const onLogout = () => logout();
 </script>
 
 <HoverCard.Root bind:open bind:onOpenChange openDelay={300}>
