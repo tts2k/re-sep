@@ -25,7 +25,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const auth = await promiseResult(authService.auth(token));
 	if (auth.isErr()) {
 		logger.error(`Error during auth: ${auth.error}`);
-		throw redirect(302, "/auth?error=unauthorized");
+		throw redirect(302, "/?error=unauthorized");
 	}
 
 	event.locals.user = auth.value.user;
