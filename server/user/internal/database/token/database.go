@@ -82,3 +82,13 @@ func GetTokenByState(state string) g.Token {
 
 	return result
 }
+
+func DeleteToken(state string) g.Token {
+	result, err := queries.DeleteToken(context.Background(), state)
+	if err != nil {
+		slog.Error("GetTokenByState:", "error", err)
+		return result
+	}
+
+	return result
+}

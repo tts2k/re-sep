@@ -131,6 +131,7 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	user := userDB.GetUserByUniqueID(google.name + ":" + claims.Sub)
 	if user == nil {
 		slog.Warn("User not found. Creating new user", "error", err)
+
 		user = userDB.InsertUser(google.name+":"+claims.Sub, common.DefaultUsername)
 		if user == nil {
 			slog.Error("User creation failed", "error", err)

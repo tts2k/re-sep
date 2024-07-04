@@ -19,6 +19,19 @@ func (q *Queries) CleanTokens(ctx context.Context) error {
 	return err
 }
 
+const deleteToken = `-- name: DeleteToken :one
+DELETE FROM Tokens
+WHERE state = ?
+RETURNING state, userid, expires
+`
+
+func (q *Queries) DeleteToken(ctx context.Context, state string) (Token, error) {
+	row := q.db.QueryRowContext(ctx, deleteToken, state)
+	var i Token
+	err := row.Scan(&i.State, &i.Userid, &i.Expires)
+	return i, err
+}
+
 const getTokenByState = `-- name: GetTokenByState :one
 SELECT state, userid, expires FROM Tokens
 WHERE state = ? AND expires > Datetime("now")
