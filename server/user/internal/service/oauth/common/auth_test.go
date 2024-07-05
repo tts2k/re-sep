@@ -60,6 +60,8 @@ func TestAuth(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	waitGroup.Wait()
+
 	if res.Token != cl.Subject {
 		t.Fatalf("Mismatched token. Expected %s but got %s instead.", cl.Subject, res.Token)
 	}
@@ -68,4 +70,12 @@ func TestAuth(t *testing.T) {
 		t.Fatalf("Mismatched user. Expected user with sub %s but got %s instead.", "test", res.User.Sub)
 	}
 
+	token := tokenDB.GetTokenByState(context.Background(), "token")
+	if token == nil {
+		t.Fatalf("Error getting token. Expected a token in database.")
+	}
+
+	if !token.Expires.After(time.Now().Add(10 * time.Second)) {
+		t.Fatal("Token was not refreshed. Expected a token that last a week.")
+	}
 }
