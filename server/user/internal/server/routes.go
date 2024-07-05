@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -23,8 +24,6 @@ func (s *Server) RegisterRoutes() http.Handler {
 }
 
 func (s *Server) helloWorldHandler(w http.ResponseWriter, r *http.Request) {
-
-	print(r.PathValue("provider"))
 
 	resp := make(map[string]string)
 	resp["message"] = "Hello World"
@@ -73,7 +72,7 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, c)
 
-	token := tokenDB.DeleteToken(state.Value)
+	token := tokenDB.DeleteToken(context.Background(), state.Value)
 	if token.State == "" {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}

@@ -21,7 +21,7 @@ import (
 var schema string
 
 var (
-	dbURL   = config.Config().ConstructDBPath("user.db") + "?cache=shared&_journal_mode=WAL"
+	dbURL   = config.Config().ConstructDBPath("user.db")
 	db      *sql.DB
 	queries *g.Queries
 )
@@ -57,14 +57,14 @@ func Health() map[string]string {
 	}
 }
 
-func InsertUser(sub string, name string) *g.User {
+func InsertUser(ctx context.Context, sub string, name string) *g.User {
 	params := g.InsertUserParams{
 		ID:   uuid.New(),
 		Name: name,
 		Sub:  sub,
 	}
 
-	user, err := queries.InsertUser(context.Background(), params)
+	user, err := queries.InsertUser(ctx, params)
 	if err != nil {
 		slog.Error("InsertUser:", "error", err)
 		return nil
@@ -73,8 +73,8 @@ func InsertUser(sub string, name string) *g.User {
 	return &user
 }
 
-func GetUserByUniqueID(id string) *g.User {
-	result, err := queries.GetUserByUniqueID(context.Background(), id)
+func GetUserByUniqueID(ctx context.Context, id string) *g.User {
+	result, err := queries.GetUserByUniqueID(ctx, id)
 	if err != nil {
 		slog.Error("Cannot get user by unique ID", "error", err)
 		return nil

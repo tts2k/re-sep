@@ -3,7 +3,8 @@ import { env } from "$env/dynamic/private";
 import { ContentClient } from "@/proto/content";
 import { building } from "$app/environment";
 import { AuthClient } from "@/proto/auth";
-import { SignJWT } from "jose";
+import { SignJWT, type JWTPayload } from "jose";
+import { logger } from "./logger";
 
 const AUTH_URL = env.AUTH_URL;
 const CONTENT_URL = env.CONTENT_URL;
@@ -20,15 +21,13 @@ let authClient: AuthClient;
 export const createMetadata = async (id: string): Promise<Metadata> => {
 	const metadata = new Metadata();
 
-	const tokenPayload = {
-		id: id,
-	};
+	const tokenPayload: JWTPayload = { sub: id };
 
 	const secret = new TextEncoder().encode(JWT_SECRET);
 
 	// Generate and sign the token
 	const oAuthToken = await new SignJWT(tokenPayload)
-		.setProtectedHeader({ alg: "HS256" })
+		.setProtectedHeader({ alg: "HS256", typ: "JWT" })
 		.setIssuedAt()
 		.setExpirationTime("1h")
 		.sign(secret);
@@ -69,13 +68,13 @@ const initGRPC = () => {
 
 	contentClient.waitForReady(deadline, (error?: Error) => {
 		if (error) {
-			console.log(`GRPC content client connect error: ${error.message}`);
+			logger.error(`GRPC content client connect error: ${error.message}`);
 		}
 	});
 
 	authClient.waitForReady(deadline, (error?: Error) => {
 		if (error) {
-			console.log(`GRPC auth client connect error: ${error.message}`);
+			logger.error(`GRPC auth client connect error: ${error.message}`);
 		}
 	});
 };

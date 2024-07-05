@@ -128,11 +128,11 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	}
 	idToken.Claims(&claims)
 
-	user := userDB.GetUserByUniqueID(google.name + ":" + claims.Sub)
+	user := userDB.GetUserByUniqueID(context.Background(), google.name+":"+claims.Sub)
 	if user == nil {
 		slog.Warn("User not found. Creating new user", "error", err)
 
-		user = userDB.InsertUser(google.name+":"+claims.Sub, common.DefaultUsername)
+		user = userDB.InsertUser(context.Background(), google.name+":"+claims.Sub, common.DefaultUsername)
 		if user == nil {
 			slog.Error("User creation failed", "error", err)
 			http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
@@ -141,7 +141,7 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create 10 seconds token
-	token := tokenDB.InsertToken(state, user.Sub, 10*time.Second)
+	token := tokenDB.InsertToken(context.Background(), state, user.Sub, 10*time.Second)
 	if token == nil {
 		slog.Error("Token insertion failed", "error", err)
 		http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)

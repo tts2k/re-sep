@@ -43,5 +43,21 @@ export const login = async (provider: string) => {
 
 // @ts-ignore
 // biome-ignore lint/suspicious/noRedeclare: conditional compile
-export const logout = async () => {};
+export const logout = async () => {
+	user.set({
+		loggedIn: false,
+	});
+
+	let response = await fetch(`${env.PUBLIC_AUTH_URL}/health`);
+	if (response.status !== 200) {
+		console.error(response);
+		throw new Error("Error: Server is not running");
+	}
+
+	response = await fetch(`${env.PUBLIC_AUTH_URL}/oauth/logout`);
+	if (response.status !== 200) {
+		console.error(response);
+		throw new Error("Error: Log out failed");
+	}
+};
 // #v-endif

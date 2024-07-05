@@ -10,6 +10,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return await resolve(event);
 	}
 
+	delete event.locals.user;
+
 	// Token check
 	const token = event.url.searchParams.get("token");
 	if (!token) {
@@ -29,7 +31,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	event.locals.user = auth.value.user;
-	event.locals.token = auth.value.token;
+
+	if (!event.locals.user?.id) {
+		logger.error("No user found");
+		throw redirect(302, "/?error=unauthorized");
+	}
 
 	event.cookies.set("token", auth.value.token, {
 		path: "/",

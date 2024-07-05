@@ -24,6 +24,6 @@ require (
 
 require (
 	github.com/coreos/go-oidc/v3 v3.10.0
-	github.com/go-jose/go-jose/v4 v4.0.1 // indirect
+	github.com/go-jose/go-jose/v4 v4.0.1
 	golang.org/x/crypto v0.23.0 // indirect
 )

@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"testing"
 )
 
@@ -9,7 +10,7 @@ func TestInsertUser(t *testing.T) {
 	InitUserDB()
 	defer db.Close()
 
-	user := InsertUser("sub", "name")
+	user := InsertUser(context.Background(), "sub", "name")
 	if user == nil || user.ID.String() == "" {
 		t.Fatal("User insertion failed")
 	}
@@ -20,9 +21,9 @@ func TestGetUserByUniqueID(t *testing.T) {
 	InitUserDB()
 	defer db.Close()
 
-	InsertUser("sub", "name")
+	InsertUser(context.Background(), "sub", "name")
 
-	user := GetUserByUniqueID("sub")
+	user := GetUserByUniqueID(context.Background(), "sub")
 	if user == nil || user.ID.String() == "" {
 		t.Fatal("Token insertion failed")
 	}
