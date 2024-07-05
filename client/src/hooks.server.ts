@@ -10,7 +10,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return await resolve(event);
 	}
 
-	delete event.locals.user;
+	event.locals.user = undefined;
 
 	// Token check
 	const token = event.url.searchParams.get("token");

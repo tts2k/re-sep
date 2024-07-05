@@ -1,7 +1,6 @@
-import { describe, test } from "bun:test";
+import { expect, describe, test } from "bun:test";
 import { createMetadata } from "./grpc";
 import { jwtVerify } from "jose";
-import { expect } from "vitest";
 import { env } from "$env/dynamic/private";
 
 describe("test createMetadata", () => {
