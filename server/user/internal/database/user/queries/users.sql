@@ -8,13 +8,12 @@ INSERT INTO Users (
 ) VALUES (
 	?, ?, ?, Datetime('now'), Datetime('now'), Datetime('now')
 )
-RETURNING *
-;
+RETURNING *;
 
 -- name: UpdateUsername :one
 UPDATE Users
 SET name = ?
-WHERE id = ?
+WHERE sub = ?
 RETURNING *;
 
 -- name: DeleteUser :exec

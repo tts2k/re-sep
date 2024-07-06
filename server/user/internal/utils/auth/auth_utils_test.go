@@ -12,7 +12,7 @@ import (
 )
 
 func TestExtractToken(t *testing.T) {
-	key := []byte(config.JWTSecret)
+	key := []byte(systemConfig.JWTSecret)
 
 	sig, err := jose.NewSigner(
 		jose.SigningKey{Algorithm: jose.HS256, Key: key},

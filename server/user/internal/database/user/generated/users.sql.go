@@ -85,17 +85,17 @@ const updateUsername = `-- name: UpdateUsername :one
 
 UPDATE Users
 SET name = ?
-WHERE id = ?
+WHERE sub = ?
 RETURNING id, name, sub, last_login, created_at, updated_at
 `
 
 type UpdateUsernameParams struct {
 	Name string
-	ID   uuid.UUID
+	Sub  string
 }
 
 func (q *Queries) UpdateUsername(ctx context.Context, arg UpdateUsernameParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUsername, arg.Name, arg.ID)
+	row := q.db.QueryRowContext(ctx, updateUsername, arg.Name, arg.Sub)
 	var i User
 	err := row.Scan(
 		&i.ID,

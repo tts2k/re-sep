@@ -66,7 +66,7 @@ func InsertUser(ctx context.Context, sub string, name string) *g.User {
 
 	user, err := queries.InsertUser(ctx, params)
 	if err != nil {
-		slog.Error("InsertUser:", "error", err)
+		slog.Error("Cannot insert user", "error", err)
 		return nil
 	}
 
@@ -78,6 +78,20 @@ func GetUserByUniqueID(ctx context.Context, id string) *g.User {
 	if err != nil {
 		slog.Error("Cannot get user by unique ID", "error", err)
 		return nil
+	}
+
+	return &result
+}
+
+func UpdateUsername(ctx context.Context, sub string, username string) *g.User {
+	params := g.UpdateUsernameParams{
+		Name: username,
+		Sub:  sub,
+	}
+
+	result, err := queries.UpdateUsername(ctx, params)
+	if err != nil {
+		slog.Error("Cannot update username", "error", err)
 	}
 
 	return &result

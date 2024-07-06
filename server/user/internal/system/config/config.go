@@ -16,6 +16,7 @@ type OAuthConfig struct {
 type EnvConfig struct {
 	DBPATH    string
 	HTTPPort  string
+	GRPCPort  string
 	BaseURL   string
 	HTTPURL   string
 	ClientURL string
@@ -46,7 +47,7 @@ func mustHaveEnv(key string) string {
 	return value
 }
 
-func mustHaveEnvDefault(key string, defaultValue string) string {
+func mustHaveEnvTestDefault(key string, defaultValue string) string {
 	if testing.Testing() {
 		return defaultValue
 	}
@@ -63,9 +64,10 @@ func mustHaveEnvDefault(key string, defaultValue string) string {
 var config EnvConfig = EnvConfig{
 	DBPATH:    mustHaveEnv("DB_PATH"),
 	HTTPPort:  mustHaveEnv("HTTP_PORT"),
+	GRPCPort:  mustHaveEnv("GRPC_PORT"),
 	BaseURL:   mustHaveEnv("BASE_URL"),
 	ClientURL: mustHaveEnv("CLIENT_URL"),
-	JWTSecret: mustHaveEnvDefault("JWT_SECRET", "hTZ66AYJgxylQJmiTXstSdhTuq2D3DUw"),
+	JWTSecret: mustHaveEnvTestDefault("JWT_SECRET", "hTZ66AYJgxylQJmiTXstSdhTuq2D3DUw"),
 	Google: OAuthConfig{
 		ClientID:     mustHaveEnv("GOOGLE_CLIENT_ID"),
 		ClientSecret: mustHaveEnv("GOOGLE_CLIENT_SECRET"),
@@ -73,7 +75,7 @@ var config EnvConfig = EnvConfig{
 }
 
 func init() {
-	httpURL := os.Getenv("httpURL")
+	httpURL := os.Getenv("HTTP_URL")
 	if httpURL != "" {
 		config.HTTPURL = httpURL
 		return

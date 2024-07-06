@@ -62,3 +62,22 @@ func PbAuth(ctx context.Context) (*pb.AuthResponse, error) {
 		},
 	}, nil
 }
+
+func PbGetUser(ctx context.Context) (*pb.User, error) {
+	claims, err := authUtils.ExtractToken(ctx)
+	if err != nil {
+		slog.Error("Error extracting token", "authUtils.ExtractToken", err)
+		return nil, err
+	}
+
+	// Get user
+	user := userDB.GetUserByUniqueID(ctx, claims.Subject)
+	if user == nil {
+		slog.Error("Error getting user", "auth.PbGetUser", nil)
+		return nil, err
+	}
+
+	return &pb.User{
+		Name: user.Name,
+	}, nil
+}

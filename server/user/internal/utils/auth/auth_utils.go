@@ -66,7 +66,6 @@ func SetCallbackCookie(w http.ResponseWriter, r *http.Request, name, value strin
 
 func ExtractToken(ctx context.Context) (*jwt.Claims, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
-
 	if !ok {
 		return nil, fmt.Errorf("missing context metadata")
 	}
