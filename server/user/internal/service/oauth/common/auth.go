@@ -70,14 +70,22 @@ func PbGetUser(ctx context.Context) (*pb.User, error) {
 		return nil, err
 	}
 
+	// Get token
+	token := tokenDB.GetTokenByState(ctx, claims.Subject)
+	if token == nil {
+		slog.Error("Error getting token", "tokenDB.GetUserByUniqueID", nil)
+		return nil, err
+	}
+
 	// Get user
-	user := userDB.GetUserByUniqueID(ctx, claims.Subject)
+	user := userDB.GetUserByUniqueID(ctx, token.Userid)
 	if user == nil {
-		slog.Error("Error getting user", "auth.PbGetUser", nil)
+		slog.Error("Error getting user", "userDB.GetUserByUniqueID", nil)
 		return nil, err
 	}
 
 	return &pb.User{
 		Name: user.Name,
+		Sub:  user.Sub,
 	}, nil
 }

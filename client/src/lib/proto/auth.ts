@@ -38,6 +38,18 @@ export interface AuthResponse {
   user: User | undefined;
 }
 
+export interface Margin {
+  left: number;
+  right: number;
+}
+
+export interface UserConfig {
+  font: string;
+  fontSize: number;
+  justify: boolean;
+  margin: Margin | undefined;
+}
+
 function createBaseEmpty(): Empty {
   return {};
 }
@@ -286,6 +298,186 @@ export const AuthResponse = {
   },
 };
 
+function createBaseMargin(): Margin {
+  return { left: 0, right: 0 };
+}
+
+export const Margin = {
+  encode(message: Margin, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.left !== 0) {
+      writer.uint32(8).int32(message.left);
+    }
+    if (message.right !== 0) {
+      writer.uint32(16).int32(message.right);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Margin {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMargin();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.left = reader.int32();
+          continue;
+        case 2:
+          if (tag !== 16) {
+            break;
+          }
+
+          message.right = reader.int32();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Margin {
+    return {
+      left: isSet(object.left) ? globalThis.Number(object.left) : 0,
+      right: isSet(object.right) ? globalThis.Number(object.right) : 0,
+    };
+  },
+
+  toJSON(message: Margin): unknown {
+    const obj: any = {};
+    if (message.left !== 0) {
+      obj.left = Math.round(message.left);
+    }
+    if (message.right !== 0) {
+      obj.right = Math.round(message.right);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Margin>, I>>(base?: I): Margin {
+    return Margin.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Margin>, I>>(object: I): Margin {
+    const message = createBaseMargin();
+    message.left = object.left ?? 0;
+    message.right = object.right ?? 0;
+    return message;
+  },
+};
+
+function createBaseUserConfig(): UserConfig {
+  return { font: "", fontSize: 0, justify: false, margin: undefined };
+}
+
+export const UserConfig = {
+  encode(message: UserConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.font !== "") {
+      writer.uint32(10).string(message.font);
+    }
+    if (message.fontSize !== 0) {
+      writer.uint32(16).int32(message.fontSize);
+    }
+    if (message.justify !== false) {
+      writer.uint32(24).bool(message.justify);
+    }
+    if (message.margin !== undefined) {
+      Margin.encode(message.margin, writer.uint32(34).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): UserConfig {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUserConfig();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.font = reader.string();
+          continue;
+        case 2:
+          if (tag !== 16) {
+            break;
+          }
+
+          message.fontSize = reader.int32();
+          continue;
+        case 3:
+          if (tag !== 24) {
+            break;
+          }
+
+          message.justify = reader.bool();
+          continue;
+        case 4:
+          if (tag !== 34) {
+            break;
+          }
+
+          message.margin = Margin.decode(reader, reader.uint32());
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): UserConfig {
+    return {
+      font: isSet(object.font) ? globalThis.String(object.font) : "",
+      fontSize: isSet(object.fontSize) ? globalThis.Number(object.fontSize) : 0,
+      justify: isSet(object.justify) ? globalThis.Boolean(object.justify) : false,
+      margin: isSet(object.margin) ? Margin.fromJSON(object.margin) : undefined,
+    };
+  },
+
+  toJSON(message: UserConfig): unknown {
+    const obj: any = {};
+    if (message.font !== "") {
+      obj.font = message.font;
+    }
+    if (message.fontSize !== 0) {
+      obj.fontSize = Math.round(message.fontSize);
+    }
+    if (message.justify !== false) {
+      obj.justify = message.justify;
+    }
+    if (message.margin !== undefined) {
+      obj.margin = Margin.toJSON(message.margin);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<UserConfig>, I>>(base?: I): UserConfig {
+    return UserConfig.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<UserConfig>, I>>(object: I): UserConfig {
+    const message = createBaseUserConfig();
+    message.font = object.font ?? "";
+    message.fontSize = object.fontSize ?? 0;
+    message.justify = object.justify ?? false;
+    message.margin = (object.margin !== undefined && object.margin !== null)
+      ? Margin.fromPartial(object.margin)
+      : undefined;
+    return message;
+  },
+};
+
 export type AuthService = typeof AuthService;
 export const AuthService = {
   auth: {
@@ -306,11 +498,31 @@ export const AuthService = {
     responseSerialize: (value: User) => Buffer.from(User.encode(value).finish()),
     responseDeserialize: (value: Buffer) => User.decode(value),
   },
+  updateUserConfig: {
+    path: "/auth.Auth/UpdateUserConfig",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: UserConfig) => Buffer.from(UserConfig.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => UserConfig.decode(value),
+    responseSerialize: (value: UserConfig) => Buffer.from(UserConfig.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => UserConfig.decode(value),
+  },
+  getUserConfig: {
+    path: "/auth.Auth/GetUserConfig",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
+    responseSerialize: (value: UserConfig) => Buffer.from(UserConfig.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => UserConfig.decode(value),
+  },
 } as const;
 
 export interface AuthServer extends UntypedServiceImplementation {
   auth: handleUnaryCall<Empty, AuthResponse>;
   updateUsername: handleUnaryCall<Username, User>;
+  updateUserConfig: handleUnaryCall<UserConfig, UserConfig>;
+  getUserConfig: handleUnaryCall<Empty, UserConfig>;
 }
 
 export interface AuthClient extends Client {
@@ -337,6 +549,33 @@ export interface AuthClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: User) => void,
+  ): ClientUnaryCall;
+  updateUserConfig(
+    request: UserConfig,
+    callback: (error: ServiceError | null, response: UserConfig) => void,
+  ): ClientUnaryCall;
+  updateUserConfig(
+    request: UserConfig,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: UserConfig) => void,
+  ): ClientUnaryCall;
+  updateUserConfig(
+    request: UserConfig,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: UserConfig) => void,
+  ): ClientUnaryCall;
+  getUserConfig(request: Empty, callback: (error: ServiceError | null, response: UserConfig) => void): ClientUnaryCall;
+  getUserConfig(
+    request: Empty,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: UserConfig) => void,
+  ): ClientUnaryCall;
+  getUserConfig(
+    request: Empty,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: UserConfig) => void,
   ): ClientUnaryCall;
 }
 

@@ -24,6 +24,8 @@ const _ = grpc.SupportPackageIsVersion7
 type AuthClient interface {
 	Auth(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*AuthResponse, error)
 	UpdateUsername(ctx context.Context, in *Username, opts ...grpc.CallOption) (*User, error)
+	UpdateUserConfig(ctx context.Context, in *UserConfig, opts ...grpc.CallOption) (*UserConfig, error)
+	GetUserConfig(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*UserConfig, error)
 }
 
 type authClient struct {
@@ -52,12 +54,32 @@ func (c *authClient) UpdateUsername(ctx context.Context, in *Username, opts ...g
 	return out, nil
 }
 
+func (c *authClient) UpdateUserConfig(ctx context.Context, in *UserConfig, opts ...grpc.CallOption) (*UserConfig, error) {
+	out := new(UserConfig)
+	err := c.cc.Invoke(ctx, "/auth.Auth/UpdateUserConfig", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) GetUserConfig(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*UserConfig, error) {
+	out := new(UserConfig)
+	err := c.cc.Invoke(ctx, "/auth.Auth/GetUserConfig", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServer is the server API for Auth service.
 // All implementations must embed UnimplementedAuthServer
 // for forward compatibility
 type AuthServer interface {
 	Auth(context.Context, *Empty) (*AuthResponse, error)
 	UpdateUsername(context.Context, *Username) (*User, error)
+	UpdateUserConfig(context.Context, *UserConfig) (*UserConfig, error)
+	GetUserConfig(context.Context, *Empty) (*UserConfig, error)
 	mustEmbedUnimplementedAuthServer()
 }
 
@@ -70,6 +92,12 @@ func (UnimplementedAuthServer) Auth(context.Context, *Empty) (*AuthResponse, err
 }
 func (UnimplementedAuthServer) UpdateUsername(context.Context, *Username) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUsername not implemented")
+}
+func (UnimplementedAuthServer) UpdateUserConfig(context.Context, *UserConfig) (*UserConfig, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserConfig not implemented")
+}
+func (UnimplementedAuthServer) GetUserConfig(context.Context, *Empty) (*UserConfig, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserConfig not implemented")
 }
 func (UnimplementedAuthServer) mustEmbedUnimplementedAuthServer() {}
 
@@ -120,6 +148,42 @@ func _Auth_UpdateUsername_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Auth_UpdateUserConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserConfig)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).UpdateUserConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.Auth/UpdateUserConfig",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).UpdateUserConfig(ctx, req.(*UserConfig))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_GetUserConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).GetUserConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.Auth/GetUserConfig",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).GetUserConfig(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Auth_ServiceDesc is the grpc.ServiceDesc for Auth service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +198,14 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateUsername",
 			Handler:    _Auth_UpdateUsername_Handler,
+		},
+		{
+			MethodName: "UpdateUserConfig",
+			Handler:    _Auth_UpdateUserConfig_Handler,
+		},
+		{
+			MethodName: "GetUserConfig",
+			Handler:    _Auth_GetUserConfig_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

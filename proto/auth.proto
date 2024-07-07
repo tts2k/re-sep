@@ -13,6 +13,8 @@ message Username {
 service Auth {
 	rpc Auth(Empty) returns (AuthResponse) {}
 	rpc UpdateUsername(Username) returns (User) {}
+	rpc UpdateUserConfig(UserConfig) returns (UserConfig) {}
+	rpc GetUserConfig(Empty) returns (UserConfig) {}
 }
 
 message User {
@@ -23,4 +25,16 @@ message User {
 message AuthResponse {
 	string token = 1;
 	User user = 2;
+}
+
+message Margin {
+	int32 left = 1;
+	int32 right = 2;
+}
+
+message UserConfig {
+	string font = 1;
+	int32 fontSize = 2;
+	bool justify = 3;
+	Margin margin = 4;
 }

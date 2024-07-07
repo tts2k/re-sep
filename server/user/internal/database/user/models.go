@@ -1,13 +1,13 @@
 package database
 
 type Margin = struct {
-	Left  int `json:"left"`
-	Right int `json:"right"`
+	Left  int32 `json:"left"`
+	Right int32 `json:"right"`
 }
 
 type UserConfig = struct {
 	Font     string `json:"font"`
-	FontSize int    `json:"fontSize"`
-	Jusitfy  bool   `json:"justify"`
+	FontSize int32  `json:"fontSize"`
+	Justify  bool   `json:"justify"`
 	Margin   Margin `json:"margin"`
 }

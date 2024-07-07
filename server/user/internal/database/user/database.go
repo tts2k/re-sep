@@ -27,10 +27,10 @@ var (
 	queries *g.Queries
 )
 
-var defaultUserConfig = UserConfig{
+var DefaultUserConfig = UserConfig{
 	Font:     "serif",
 	FontSize: 3,
-	Jusitfy:  false,
+	Justify:  false,
 	Margin: Margin{
 		Left:  3,
 		Right: 3,
@@ -150,7 +150,7 @@ func UpdateUserConfig(ctx context.Context, sub string, config UserConfig) *g.VUs
 func GetUserConfig(ctx context.Context, sub string) *UserConfig {
 	result, err := queries.GetUserConfig(ctx, sub)
 	if err != nil {
-		slog.Error("Cannot update user config", "database_error", err)
+		slog.Error("Cannot get user config", "database_error", err)
 		return nil
 	}
 
