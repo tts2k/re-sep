@@ -12,3 +12,5 @@ sql:
             go_type:
               import: "github.com/google/uuid"
               type: "UUID"
+          - column: "v_user_config.config"
+            go_type: "string"

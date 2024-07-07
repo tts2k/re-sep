@@ -23,7 +23,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	return mux
 }
 
-func (s *Server) helloWorldHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) helloWorldHandler(w http.ResponseWriter, _ *http.Request) {
 
 	resp := make(map[string]string)
 	resp["message"] = "Hello World"

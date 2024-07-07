@@ -2,6 +2,8 @@ package database
 
 import (
 	"context"
+	"encoding/json"
+	"reflect"
 	"testing"
 )
 
@@ -30,7 +32,7 @@ func TestGetUserByUniqueID(t *testing.T) {
 }
 
 func TestUpdateUsername(t *testing.T) {
-	dbURL = "file:getUserTest?mode=memory"
+	dbURL = "file:testUpdateUsername?mode=memory"
 	InitUserDB()
 	defer db.Close()
 
@@ -42,5 +44,38 @@ func TestUpdateUsername(t *testing.T) {
 	}
 	if user.Name != "different_name" {
 		t.Fatalf("Mismatched username. Expected %s but got %s instead", "different_name", user.Name)
+	}
+}
+
+func TestUpdateUserConfig(t *testing.T) {
+	dbURL = "file:testUpdateconfig?mode=memory"
+	InitUserDB()
+	defer db.Close()
+
+	defConfString, _ := json.Marshal(defaultUserConfig)
+
+	user := InsertUser(context.Background(), "sub", "name")
+	config := UpdateUserConfig(context.Background(), user.Sub, defaultUserConfig)
+
+	if config.Config != string(defConfString) {
+		t.Fatal("Mismatched returned config string")
+	}
+}
+
+func TestGetUserConfig(t *testing.T) {
+	dbURL = "file:testUpdateconfig?mode=memory"
+	InitUserDB()
+	defer db.Close()
+
+	user := InsertUser(context.Background(), "sub", "name")
+	UpdateUserConfig(context.Background(), user.Sub, defaultUserConfig)
+
+	config := GetUserConfig(context.Background(), user.Sub)
+	if config == nil {
+		t.Fatal("Get user config failed")
+	}
+
+	if !reflect.DeepEqual(*config, defaultUserConfig) {
+		t.Fatal("Mismatched type")
 	}
 }

@@ -10,10 +10,20 @@ INSERT INTO Users (
 )
 RETURNING *;
 
+-- name: GetUserConfig :one
+SELECT * FROM v_user_config
+WHERE sub = ? LIMIT 1;
+
 -- name: UpdateUsername :one
 UPDATE Users
 SET name = ?
 WHERE sub = ?
+RETURNING *;
+
+-- name: UpdateUserConfig :one
+UPDATE v_user_config
+SET config = ?
+WHERE SUB = ?
 RETURNING *;
 
 -- name: DeleteUser :exec

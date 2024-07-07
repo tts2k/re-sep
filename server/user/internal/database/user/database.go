@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
@@ -26,6 +27,16 @@ var (
 	queries *g.Queries
 )
 
+var defaultUserConfig = UserConfig{
+	Font:     "serif",
+	FontSize: 3,
+	Jusitfy:  false,
+	Margin: Margin{
+		Left:  3,
+		Right: 3,
+	},
+}
+
 func InitUserDB() {
 	dbCon, err := sql.Open("sqlite3", dbURL)
 	if err != nil {
@@ -37,9 +48,26 @@ func InitUserDB() {
 	db = dbCon
 	queries = g.New(db)
 
-	queryStrings := strings.Split(string(schema), ";\n")
-	for _, query := range queryStrings {
-		db.Exec(query)
+	splitted := strings.Split(string(schema), ";\n")
+	var queries []string
+
+	for i, split := range splitted {
+
+		lowered := strings.ToLower(split)
+		if strings.Contains(lowered, "end") {
+			queries[i-1] = queries[i-1] + " ;END;"
+			continue
+		}
+
+		queries = append(queries, split)
+	}
+
+	for _, query := range queries {
+		_, err := db.Exec(query)
+		if err != nil {
+			log.Println(query)
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -66,7 +94,7 @@ func InsertUser(ctx context.Context, sub string, name string) *g.User {
 
 	user, err := queries.InsertUser(ctx, params)
 	if err != nil {
-		slog.Error("Cannot insert user", "error", err)
+		slog.Error("Cannot insert user", "database_error", err)
 		return nil
 	}
 
@@ -76,7 +104,7 @@ func InsertUser(ctx context.Context, sub string, name string) *g.User {
 func GetUserByUniqueID(ctx context.Context, id string) *g.User {
 	result, err := queries.GetUserByUniqueID(ctx, id)
 	if err != nil {
-		slog.Error("Cannot get user by unique ID", "error", err)
+		slog.Error("Cannot get user by unique ID", "database_error", err)
 		return nil
 	}
 
@@ -91,8 +119,43 @@ func UpdateUsername(ctx context.Context, sub string, username string) *g.User {
 
 	result, err := queries.UpdateUsername(ctx, params)
 	if err != nil {
-		slog.Error("Cannot update username", "error", err)
+		slog.Error("Cannot update username", "database_error", err)
+		return nil
 	}
 
 	return &result
+}
+
+func UpdateUserConfig(ctx context.Context, sub string, config UserConfig) *g.VUserConfig {
+	jsonConfig, err := json.Marshal(config)
+	if err != nil {
+		slog.Error("Cannot update username", "json_error", err)
+		return nil
+	}
+
+	params := g.UpdateUserConfigParams{
+		Sub:    sub,
+		Config: string(jsonConfig),
+	}
+
+	result, err := queries.UpdateUserConfig(ctx, params)
+	if err != nil {
+		slog.Error("Cannot update user config", "database_error", err)
+		return nil
+	}
+
+	return &result
+}
+
+func GetUserConfig(ctx context.Context, sub string) *UserConfig {
+	result, err := queries.GetUserConfig(ctx, sub)
+	if err != nil {
+		slog.Error("Cannot update user config", "database_error", err)
+		return nil
+	}
+
+	var userConfig UserConfig
+	json.Unmarshal([]byte(result.Config), &userConfig)
+
+	return &userConfig
 }

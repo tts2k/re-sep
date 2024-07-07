@@ -31,7 +31,7 @@ func Serve() error {
 
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
-		slog.Error("failed to listen: %v", err)
+		slog.Error("failed to listen: %v", "net.Listen", err)
 		return err
 	}
 	slog.Info(fmt.Sprintf("Listening on port %s", port))
