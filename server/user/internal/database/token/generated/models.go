@@ -4,8 +4,12 @@
 
 package database
 
+import (
+	"time"
+)
+
 type Token struct {
 	State   string
 	Userid  string
-	Expires interface{}
+	Expires time.Time
 }

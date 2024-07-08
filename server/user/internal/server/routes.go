@@ -1,9 +1,11 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	tokenDB "re-sep-user/internal/database/token"
 	userDB "re-sep-user/internal/database/user"
@@ -15,14 +17,13 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	mux.HandleFunc("/oauth/{provider}/login", s.handleOAuthLogin)
 	mux.HandleFunc("/oauth/{provider}/callback", s.handleOAuthCallback)
+	mux.HandleFunc("/oauth/logout", s.handleLogout)
 	mux.HandleFunc("/health", s.healthHandler)
 
 	return mux
 }
 
-func (s *Server) helloWorldHandler(w http.ResponseWriter, r *http.Request) {
-
-	print(r.PathValue("provider"))
+func (s *Server) helloWorldHandler(w http.ResponseWriter, _ *http.Request) {
 
 	resp := make(map[string]string)
 	resp["message"] = "Hello World"
@@ -55,8 +56,29 @@ func (s *Server) handleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	googleOAuth.Callback(w, r)
 }
 
-func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
+	state, err := r.Cookie("token")
+	if err != nil {
+		http.Error(w, "Not logged in", http.StatusBadRequest)
+		return
+	}
 
+	c := &http.Cookie{
+		Name:     "token",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+	}
+	http.SetCookie(w, c)
+
+	token := tokenDB.DeleteToken(context.Background(), state.Value)
+	if token.State == "" {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 	res := make(map[string]map[string]string)
 
 	res["user"] = userDB.Health()

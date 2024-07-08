@@ -33,7 +33,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 }
 
 const getUserByUniqueID = `-- name: GetUserByUniqueID :one
-SELECT id, name, sub, last_login, created_at, updated_at FROM Users
+SELECT id, name, sub, config, last_login, created_at, updated_at FROM Users
 WHERE sub = ? LIMIT 1
 `
 
@@ -44,10 +44,23 @@ func (q *Queries) GetUserByUniqueID(ctx context.Context, sub string) (User, erro
 		&i.ID,
 		&i.Name,
 		&i.Sub,
+		&i.Config,
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
+	return i, err
+}
+
+const getUserConfig = `-- name: GetUserConfig :one
+SELECT sub, config FROM v_user_config
+WHERE sub = ? LIMIT 1
+`
+
+func (q *Queries) GetUserConfig(ctx context.Context, sub string) (VUserConfig, error) {
+	row := q.db.QueryRowContext(ctx, getUserConfig, sub)
+	var i VUserConfig
+	err := row.Scan(&i.Sub, &i.Config)
 	return i, err
 }
 
@@ -57,7 +70,7 @@ INSERT INTO Users (
 ) VALUES (
 	?, ?, ?, Datetime('now'), Datetime('now'), Datetime('now')
 )
-RETURNING id, name, sub, last_login, created_at, updated_at
+RETURNING id, name, sub, config, last_login, created_at, updated_at
 `
 
 type InsertUserParams struct {
@@ -73,6 +86,7 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (User, e
 		&i.ID,
 		&i.Name,
 		&i.Sub,
+		&i.Config,
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -80,27 +94,45 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (User, e
 	return i, err
 }
 
-const updateUsername = `-- name: UpdateUsername :one
-;
+const updateUserConfig = `-- name: UpdateUserConfig :one
+UPDATE v_user_config
+SET config = ?
+WHERE SUB = ?
+RETURNING sub, config
+`
 
+type UpdateUserConfigParams struct {
+	Config string
+	Sub    string
+}
+
+func (q *Queries) UpdateUserConfig(ctx context.Context, arg UpdateUserConfigParams) (VUserConfig, error) {
+	row := q.db.QueryRowContext(ctx, updateUserConfig, arg.Config, arg.Sub)
+	var i VUserConfig
+	err := row.Scan(&i.Sub, &i.Config)
+	return i, err
+}
+
+const updateUsername = `-- name: UpdateUsername :one
 UPDATE Users
 SET name = ?
-WHERE id = ?
-RETURNING id, name, sub, last_login, created_at, updated_at
+WHERE sub = ?
+RETURNING id, name, sub, config, last_login, created_at, updated_at
 `
 
 type UpdateUsernameParams struct {
 	Name string
-	ID   uuid.UUID
+	Sub  string
 }
 
 func (q *Queries) UpdateUsername(ctx context.Context, arg UpdateUsernameParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUsername, arg.Name, arg.ID)
+	row := q.db.QueryRowContext(ctx, updateUsername, arg.Name, arg.Sub)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Sub,
+		&i.Config,
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,

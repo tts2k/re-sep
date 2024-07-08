@@ -14,7 +14,13 @@ type User struct {
 	ID        uuid.UUID
 	Name      string
 	Sub       string
+	Config    []byte
 	LastLogin time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+type VUserConfig struct {
+	Sub    string
+	Config string
 }

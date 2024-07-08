@@ -1,20 +1,66 @@
-import { credentials } from "@grpc/grpc-js";
+import { Metadata, credentials } from "@grpc/grpc-js";
 import { env } from "$env/dynamic/private";
 import { ContentClient } from "@/proto/content";
 import { building } from "$app/environment";
+import { AuthClient } from "@/proto/auth";
+import { SignJWT, type JWTPayload } from "jose";
+import { logger } from "./logger";
 
-const GRPC_URL = env.GRPC_URL;
+const AUTH_URL = env.AUTH_URL;
+const CONTENT_URL = env.CONTENT_URL;
+const NODE_ENV = env.NODE_ENV;
+const JWT_SECRET = env.JWT_SECRET;
 
 let contentClient: ContentClient;
+let authClient: AuthClient;
 
-if (!building) {
-	if (!env.GRPC_URL) {
-		throw new Error("No gRPC URL");
+/**
+ * Create a GRPC Metadata object with the correct authorization headers
+ * Short lived token only for getting the data
+ */
+export const createMetadata = async (id: string): Promise<Metadata> => {
+	const metadata = new Metadata();
+
+	const tokenPayload: JWTPayload = { sub: id };
+
+	const secret = new TextEncoder().encode(JWT_SECRET);
+
+	// Generate and sign the token
+	const oAuthToken = await new SignJWT(tokenPayload)
+		.setProtectedHeader({ alg: "HS256", typ: "JWT" })
+		.setIssuedAt()
+		.setExpirationTime("1h")
+		.sign(secret);
+
+	metadata.set("x-authorization", `bearer ${oAuthToken}`);
+	return metadata;
+};
+
+const initGRPC = () => {
+	if (!AUTH_URL) {
+		throw new Error("No auth URL");
+	}
+
+	if (!CONTENT_URL) {
+		throw new Error("No content URL");
+	}
+
+	if (!JWT_SECRET) {
+		throw new Error("No JWT secret");
 	}
 
 	contentClient = new ContentClient(
-		GRPC_URL || "",
-		credentials.createInsecure(),
+		CONTENT_URL || "",
+		NODE_ENV === "production"
+			? credentials.createSsl()
+			: credentials.createInsecure(),
+	);
+
+	authClient = new AuthClient(
+		AUTH_URL || "",
+		NODE_ENV === "production"
+			? credentials.createSsl()
+			: credentials.createInsecure(),
 	);
 
 	const deadline = new Date();
@@ -22,9 +68,19 @@ if (!building) {
 
 	contentClient.waitForReady(deadline, (error?: Error) => {
 		if (error) {
-			console.log(`GRPC content client connect error: ${error.message}`);
+			logger.error(`GRPC content client connect error: ${error.message}`);
 		}
 	});
+
+	authClient.waitForReady(deadline, (error?: Error) => {
+		if (error) {
+			logger.error(`GRPC auth client connect error: ${error.message}`);
+		}
+	});
+};
+
+if (!building) {
+	initGRPC();
 }
 
-export { contentClient };
+export { contentClient, authClient };

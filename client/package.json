@@ -14,11 +14,12 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"test:integration": "playwright test",
-		"test:unit": "vitest"
+		"test:unit": "bun test"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.6.3",
 		"@iconify-json/logos": "^1.1.43",
+		"@iconify-json/prime": "^1.1.12",
 		"@iconify-json/radix-icons": "^1.1.14",
 		"@playwright/test": "^1.28.1",
 		"@sveltejs/adapter-auto": "^3.0.0",
@@ -26,8 +27,10 @@
 		"@sveltejs/adapter-node": "^5.0.1",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
+		"@types/bun": "^1.1.6",
 		"@types/node": "^20.12.2",
 		"autoprefixer": "^10.4.16",
+		"pino-pretty": "^11.2.1",
 		"postcss": "^8.4.32",
 		"postcss-load-config": "^5.0.2",
 		"svelte": "^4.2.7",
@@ -38,17 +41,20 @@
 		"typescript": "^5.0.0",
 		"unplugin-icons": "^0.18.5",
 		"vite": "^5.0.3",
-		"vite-plugin-conditional-compiler": "^0.3.1",
-		"vitest": "^1.2.0"
+		"vite-plugin-conditional-compiler": "^0.3.1"
 	},
 	"type": "module",
 	"dependencies": {
 		"@grpc/grpc-js": "^1.10.7",
 		"bits-ui": "^0.21.10",
 		"clsx": "^2.1.0",
-		"mode-watcher": "^0.3.0",
+		"jose": "^5.6.2",
+		"mode-watcher": "^0.3.1",
+		"pino": "^9.2.0",
 		"svelte-radix": "^1.1.0",
+		"svelte-sonner": "^0.3.24",
 		"tailwind-merge": "^2.2.2",
-		"tailwind-variants": "^0.2.1"
+		"tailwind-variants": "^0.2.1",
+		"ts-results-es": "^4.2.0"
 	}
 }
