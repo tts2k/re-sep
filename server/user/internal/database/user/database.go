@@ -51,11 +51,11 @@ func InitUserDB() {
 	splitted := strings.Split(string(schema), ";\n")
 	var queries []string
 
-	for i, split := range splitted {
+	for _, split := range splitted {
 
 		lowered := strings.ToLower(split)
 		if strings.Contains(lowered, "end") {
-			queries[i-1] = queries[i-1] + " ;END;"
+			queries[len(queries)-1] = queries[len(queries)-1] + " ;END;"
 			continue
 		}
 
@@ -69,6 +69,10 @@ func InitUserDB() {
 			log.Fatal(err)
 		}
 	}
+}
+
+func CloseUserDB() {
+	db.Close()
 }
 
 func Health() map[string]string {
@@ -126,7 +130,7 @@ func UpdateUsername(ctx context.Context, sub string, username string) *g.User {
 	return &result
 }
 
-func UpdateUserConfig(ctx context.Context, sub string, config UserConfig) *g.VUserConfig {
+func UpdateUserConfig(ctx context.Context, sub string, config *UserConfig) *UserConfig {
 	jsonConfig, err := json.Marshal(config)
 	if err != nil {
 		slog.Error("Cannot update username", "json_error", err)
@@ -138,10 +142,16 @@ func UpdateUserConfig(ctx context.Context, sub string, config UserConfig) *g.VUs
 		Config: string(jsonConfig),
 	}
 
-	result, err := queries.UpdateUserConfig(ctx, params)
+	uc, err := queries.UpdateUserConfig(ctx, params)
 	if err != nil {
 		slog.Error("Cannot update user config", "database_error", err)
 		return nil
+	}
+
+	var result UserConfig
+	err = json.Unmarshal([]byte(uc.Config), &result)
+	if err != nil {
+		slog.Error("Cannot parse user config", "json_error", err)
 	}
 
 	return &result

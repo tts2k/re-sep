@@ -53,15 +53,53 @@ func (*AuthServer) GetUserConfig(ctx context.Context, _ *pb.Empty) (*pb.UserConf
 	if err != nil || user == nil {
 		getConfig(&userDB.DefaultUserConfig)
 		slog.Error("Get user from context failed", "authService.PbGetUser", err)
-		return result, status.Error(codes.Unauthenticated, "Unauthenticated")
+		println(result.Font)
+		return result, nil
 	}
+
 	userConfig := userDB.GetUserConfig(ctx, user.Sub)
 	if userConfig == nil {
 		getConfig(&userDB.DefaultUserConfig)
 		slog.Error("User has no config", "userDB.GetUserConfig", err)
+		println(result.Font)
 		return result, nil
 	}
 
 	getConfig(userConfig)
 	return result, nil
+}
+
+func (*AuthServer) UpdateUserConfig(ctx context.Context, pbUC *pb.UserConfig) (*pb.UserConfig, error) {
+	user, err := authService.PbGetUser(ctx)
+
+	if err != nil || user == nil {
+		slog.Error("Get user from context failed", "authService.PbGetUser", err)
+		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
+	}
+
+	uc := userDB.UserConfig{
+		FontSize: pbUC.FontSize,
+		Justify:  pbUC.Justify,
+		Font:     pbUC.Font,
+		Margin: userDB.Margin{
+			Left:  pbUC.Margin.Left,
+			Right: pbUC.Margin.Right,
+		},
+	}
+	result := userDB.UpdateUserConfig(ctx, user.Sub, &uc)
+	if result == nil {
+		slog.Error("Update user config failed", "userDB.UpdateUserConfig", err)
+		return nil, status.Error(codes.Internal, "Internal error")
+	}
+
+	return &pb.UserConfig{
+			FontSize: result.FontSize,
+			Justify:  result.Justify,
+			Font:     result.Font,
+			Margin: &pb.Margin{
+				Left:  result.Margin.Left,
+				Right: result.Margin.Right,
+			},
+		},
+		nil
 }

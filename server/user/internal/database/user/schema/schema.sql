@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS Users (
 	UNIQUE(sub)
 );
 
-CREATE VIEW v_user_config
+CREATE VIEW IF NOT EXISTS v_user_config
 AS
 SELECT
 	sub,

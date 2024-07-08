@@ -2,11 +2,13 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"log/slog"
 	"net"
 	"os"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"re-sep-content/internal/database"
 
@@ -26,8 +28,25 @@ func Serve() error {
 		port = DefaultPort
 	}
 
+	// GRPC client
+	authURL := os.Getenv("AUTH_URL")
+	if authURL == "" {
+		log.Fatal("No auth URL")
+	}
+	conn, err :=
+		grpc.NewClient(
+			authURL,
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+		)
+	if err != nil {
+		log.Fatalf("Cannot connect to auth grpc server. Error: %v", authURL)
+	}
+	defer conn.Close()
+	authClient := pb.NewAuthClient(conn)
+
+	// GRPC server
 	grpcServer := grpc.NewServer()
-	pb.RegisterContentServer(grpcServer, newContentServer())
+	pb.RegisterContentServer(grpcServer, newContentServer(authClient))
 
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {

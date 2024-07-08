@@ -42,6 +42,10 @@ func InitTokenDB() {
 	}
 }
 
+func CloseTokenDB() {
+	db.Close()
+}
+
 func Health() map[string]string {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()

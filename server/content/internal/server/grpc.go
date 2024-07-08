@@ -17,12 +17,14 @@ import (
 
 type contentServer struct {
 	pb.UnimplementedContentServer
-	db database.Service
+	db         database.Service
+	authClient pb.AuthClient
 }
 
-func newContentServer() *contentServer {
+func newContentServer(authClient pb.AuthClient) *contentServer {
 	return &contentServer{
-		db: database.New(),
+		db:         database.New(),
+		authClient: authClient,
 	}
 }
 
@@ -34,19 +36,31 @@ func (s *contentServer) GetArticle(ctx context.Context, in *pb.EntryName) (*pb.A
 
 	article := s.db.GetArticle(in.EntryName)
 	if article == nil {
-		return nil, fmt.Errorf("get article failed on entry name: %s", in.EntryName)
+		slog.Error("Get article from context failed", "s.db.GetArticle", nil)
+		return nil, status.Errorf(codes.NotFound, "get article failed on entry name: %s", in.EntryName)
 	}
 
 	issuedTime, err := time.Parse(time.RFC3339, article.Issued)
 	if err != nil {
-		slog.Error(err.Error())
-		return nil, fmt.Errorf("processing issued time failed on entry name: %s, ", in.EntryName)
+		slog.Error("Parse issued time failed", "time.Parse", err)
+		return nil, status.Errorf(codes.Internal, "processing issued time failed on entry name: %s, ", in.EntryName)
 	}
 
 	modifiedTime, err := time.Parse(time.RFC3339, article.Modified)
 	if err != nil {
-		slog.Error(err.Error())
-		return nil, fmt.Errorf("processing modified time failed on entry name: %s, ", in.EntryName)
+		slog.Error("Parse issued time failed", "time.Parse", err)
+		return nil, status.Errorf(codes.Internal, "processing modified time failed on entry name: %s, ", in.EntryName)
+	}
+
+	ucCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	userConfig, err := s.authClient.GetUserConfig(ucCtx, nil)
+	if userConfig == nil && err != nil {
+		slog.Error("Get user config failed", "s.authClient.GetUserConfig", err)
+		return nil, status.Error(codes.Internal, "Internal error")
+	}
+	if err != nil {
+		slog.Warn("Get user config success with error", "s.authClient.GetUserConfig", err)
 	}
 
 	protoArticle := pb.Article{
@@ -59,13 +73,13 @@ func (s *contentServer) GetArticle(ctx context.Context, in *pb.EntryName) (*pb.A
 
 	err = json.Unmarshal([]byte(article.Author), &protoArticle.Authors)
 	if err != nil {
-		slog.Error(err.Error())
+		slog.Error("json unmarshal failed on article author", "json.Unmarshal", err)
 		return nil, fmt.Errorf("json unmarshalling author failed on entry name: %s, ", in.EntryName)
 	}
 
 	err = json.Unmarshal([]byte(article.TOC), &protoArticle.Toc)
 	if err != nil {
-		slog.Error(err.Error())
+		slog.Error("json unmarshal failed on article TOC", "json.Unmarshal", err)
 		return nil, fmt.Errorf("json unmarshalling failed on entry name: %s, ", in.EntryName)
 	}
 

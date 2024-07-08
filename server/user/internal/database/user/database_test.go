@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"encoding/json"
 	"reflect"
 	"testing"
 )
@@ -52,12 +51,10 @@ func TestUpdateUserConfig(t *testing.T) {
 	InitUserDB()
 	defer db.Close()
 
-	defConfString, _ := json.Marshal(DefaultUserConfig)
-
 	user := InsertUser(context.Background(), "sub", "name")
-	config := UpdateUserConfig(context.Background(), user.Sub, DefaultUserConfig)
+	config := UpdateUserConfig(context.Background(), user.Sub, &DefaultUserConfig)
 
-	if config.Config != string(defConfString) {
+	if !reflect.DeepEqual(*config, DefaultUserConfig) {
 		t.Fatal("Mismatched returned config string")
 	}
 }
@@ -68,7 +65,7 @@ func TestGetUserConfig(t *testing.T) {
 	defer db.Close()
 
 	user := InsertUser(context.Background(), "sub", "name")
-	UpdateUserConfig(context.Background(), user.Sub, DefaultUserConfig)
+	UpdateUserConfig(context.Background(), user.Sub, &DefaultUserConfig)
 
 	config := GetUserConfig(context.Background(), user.Sub)
 	if config == nil {
