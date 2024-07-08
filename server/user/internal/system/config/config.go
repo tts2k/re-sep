@@ -14,15 +14,24 @@ type OAuthConfig struct {
 }
 
 type EnvConfig struct {
-	DBPATH   string
-	HTTPPort string
-	BaseURL  string
-	HTTPURL  string
-	Google   OAuthConfig
+	DBPATH    string
+	HTTPPort  string
+	GRPCPort  string
+	BaseURL   string
+	HTTPURL   string
+	ClientURL string
+	JWTSecret string
+	Google    OAuthConfig
 }
 
 func (c EnvConfig) ConstructDBPath(dbName string) string {
-	return "file:" + path.Join(c.DBPATH, dbName)
+	var dbPath string
+
+	if !testing.Testing() {
+		dbPath = "file:" + path.Join(c.DBPATH, dbName) + "?cache=shared&_journal_mode=WAL"
+	}
+
+	return dbPath
 }
 
 func mustHaveEnv(key string) string {
@@ -38,11 +47,27 @@ func mustHaveEnv(key string) string {
 	return value
 }
 
+func mustHaveEnvTestDefault(key string, defaultValue string) string {
+	if testing.Testing() {
+		return defaultValue
+	}
+
+	value := os.Getenv(key)
+	if value == "" {
+		panic("Missing environment variable: " + key)
+	}
+
+	return value
+}
+
 // Put env into a struct for lsp autocompletion
 var config EnvConfig = EnvConfig{
-	DBPATH:   mustHaveEnv("DB_PATH"),
-	HTTPPort: mustHaveEnv("HTTP_PORT"),
-	BaseURL:  mustHaveEnv("BASE_URL"),
+	DBPATH:    mustHaveEnv("DB_PATH"),
+	HTTPPort:  mustHaveEnv("HTTP_PORT"),
+	GRPCPort:  mustHaveEnv("GRPC_PORT"),
+	BaseURL:   mustHaveEnv("BASE_URL"),
+	ClientURL: mustHaveEnv("CLIENT_URL"),
+	JWTSecret: mustHaveEnvTestDefault("JWT_SECRET", "hTZ66AYJgxylQJmiTXstSdhTuq2D3DUw"),
 	Google: OAuthConfig{
 		ClientID:     mustHaveEnv("GOOGLE_CLIENT_ID"),
 		ClientSecret: mustHaveEnv("GOOGLE_CLIENT_SECRET"),
@@ -50,7 +75,7 @@ var config EnvConfig = EnvConfig{
 }
 
 func init() {
-	httpURL := os.Getenv("httpURL")
+	httpURL := os.Getenv("HTTP_URL")
 	if httpURL != "" {
 		config.HTTPURL = httpURL
 		return

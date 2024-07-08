@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"time"
 )
 
 const cleanTokens = `-- name: CleanTokens :exec
@@ -17,6 +18,19 @@ WHERE expires < Datetime("now")
 func (q *Queries) CleanTokens(ctx context.Context) error {
 	_, err := q.db.ExecContext(ctx, cleanTokens)
 	return err
+}
+
+const deleteToken = `-- name: DeleteToken :one
+DELETE FROM Tokens
+WHERE state = ?
+RETURNING state, userid, expires
+`
+
+func (q *Queries) DeleteToken(ctx context.Context, state string) (Token, error) {
+	row := q.db.QueryRowContext(ctx, deleteToken, state)
+	var i Token
+	err := row.Scan(&i.State, &i.Userid, &i.Expires)
+	return i, err
 }
 
 const getTokenByState = `-- name: GetTokenByState :one
@@ -44,7 +58,7 @@ RETURNING state, userid, expires
 type InsertTokenParams struct {
 	State   string
 	Userid  string
-	Expires interface{}
+	Expires time.Time
 }
 
 func (q *Queries) InsertToken(ctx context.Context, arg InsertTokenParams) (Token, error) {
@@ -62,7 +76,7 @@ RETURNING state, userid, expires
 `
 
 type RefreshTokenParams struct {
-	Expires interface{}
+	Expires time.Time
 	State   string
 }
 

@@ -20,7 +20,7 @@ import (
 var schema string
 
 var (
-	dbURL   = config.Config().ConstructDBPath("token.db") + "?cache=shared&_journal_mode=WAL"
+	dbURL   = config.Config().ConstructDBPath("token.db")
 	db      *sql.DB
 	queries *g.Queries
 )
@@ -42,6 +42,10 @@ func InitTokenDB() {
 	}
 }
 
+func CloseTokenDB() {
+	db.Close()
+}
+
 func Health() map[string]string {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
@@ -56,15 +60,15 @@ func Health() map[string]string {
 	}
 }
 
-func InsertToken(state string, userID string, duration time.Duration) *g.Token {
+func InsertToken(ctx context.Context, state string, userID string, duration time.Duration) *g.Token {
 	expires := time.Now().Add(duration)
 	params := g.InsertTokenParams{
 		State:   state,
 		Userid:  userID,
-		Expires: &expires,
+		Expires: expires,
 	}
 
-	result, err := queries.InsertToken(context.Background(), params)
+	result, err := queries.InsertToken(ctx, params)
 	if err != nil {
 		slog.Error("InsertToken:", "error", err)
 		return nil
@@ -73,8 +77,34 @@ func InsertToken(state string, userID string, duration time.Duration) *g.Token {
 	return &result
 }
 
-func GetTokenByState(state string) g.Token {
-	result, err := queries.GetTokenByState(context.Background(), state)
+func RefreshToken(ctx context.Context, state string, duration time.Duration) *g.Token {
+	expires := time.Now().Add(duration)
+	params := g.RefreshTokenParams{
+		State:   state,
+		Expires: expires,
+	}
+
+	result, err := queries.RefreshToken(ctx, params)
+	if err != nil {
+		slog.Error("RefreshToken:", "error", err)
+		return nil
+	}
+
+	return &result
+}
+
+func GetTokenByState(ctx context.Context, state string) *g.Token {
+	result, err := queries.GetTokenByState(ctx, state)
+	if err != nil {
+		slog.Error("GetTokenByState:", "error", err)
+		return nil
+	}
+
+	return &result
+}
+
+func DeleteToken(ctx context.Context, state string) g.Token {
+	result, err := queries.DeleteToken(ctx, state)
 	if err != nil {
 		slog.Error("GetTokenByState:", "error", err)
 		return result

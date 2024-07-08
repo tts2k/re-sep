@@ -6,8 +6,16 @@
 	import { currentTocItem } from "$lib/components/sidebar/stores/tocStore";
 	import { metadata } from "@/stores/articleMetadata";
 	import { userConfig } from "@/stores/userConfig";
+	import { page } from "$app/stores";
+	import { toast } from "svelte-sonner";
 
 	export let data: PageServerData;
+
+	const error = $page.url.searchParams.get("error");
+
+	$: if (error) {
+		toast.error(error);
+	}
 
 	$metadata = {
 		title: data.title,

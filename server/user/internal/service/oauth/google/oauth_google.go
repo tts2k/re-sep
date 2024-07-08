@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"path"
 	"time"
 
@@ -26,6 +27,7 @@ type googleOIDC struct {
 }
 
 var google googleOIDC
+var systemConfig config.EnvConfig = config.Config()
 
 type OAuthStrategy interface {
 	Login(w http.ResponseWriter, r *http.Request)
@@ -33,7 +35,6 @@ type OAuthStrategy interface {
 }
 
 func init() {
-	systemConfig := config.Config()
 	google = googleOIDC{name: "google"}
 
 	oidcProvider, err := oidc.NewProvider(context.Background(), "https://accounts.google.com")
@@ -72,20 +73,20 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	oAuthState, err := r.Cookie("state")
 	if err != nil {
 		slog.Error("Cannot find state cookie", "error", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
 		return
 	}
 
 	state := r.FormValue("state")
 	if state != oAuthState.Value {
 		slog.Error("Mismatched state", "error", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
 		return
 	}
 
 	code := r.FormValue("code")
 	if code == "" {
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
 		return
 	}
 
@@ -93,32 +94,32 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	exchange, err := google.oAuthConfig.Exchange(context.Background(), r.FormValue("code"))
 	if err != nil {
 		slog.Error("Could not exchange token", "error", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
 		return
 	}
 
 	rawIDToken, ok := exchange.Extra("id_token").(string)
 	if !ok {
 		slog.Error("No id_token field in oauth2 token", "error", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
 		return
 	}
 	idToken, err := google.verifier.Verify(context.Background(), rawIDToken)
 	if err != nil {
 		slog.Error("Cannot verify id token", "error", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
 		return
 	}
 
 	nonce, err := r.Cookie("nonce")
 	if err != nil {
 		slog.Error("Nonce not found", "error", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
 		return
 	}
 	if idToken.Nonce != nonce.Value {
 		slog.Error("Mismatched nonce", "error", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
 		return
 	}
 
@@ -127,24 +128,30 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	}
 	idToken.Claims(&claims)
 
-	user := userDB.GetUserByUniqueID(claims.Sub)
+	user := userDB.GetUserByUniqueID(context.Background(), google.name+":"+claims.Sub)
 	if user == nil {
 		slog.Warn("User not found. Creating new user", "error", err)
-		user = userDB.InsertUser(google.name+":"+claims.Sub, common.DefaultUsername)
+
+		user = userDB.InsertUser(context.Background(), google.name+":"+claims.Sub, common.DefaultUsername)
 		if user == nil {
 			slog.Error("User creation failed", "error", err)
-			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+			http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
 			return
 		}
 	}
 
 	// Create 10 seconds token
-	token := tokenDB.InsertToken(state, user.Sub, 10*time.Second)
+	token := tokenDB.InsertToken(context.Background(), state, user.Sub, 10*time.Second)
 	if token == nil {
 		slog.Error("Token insertion failed", "error", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
 		return
 	}
 
-	http.Redirect(w, r, "/?token="+state, http.StatusTemporaryRedirect)
+	redirectURL, _ := url.Parse(systemConfig.ClientURL)
+	q := redirectURL.Query()
+	q.Set("token", state)
+	redirectURL.RawQuery = q.Encode()
+
+	http.Redirect(w, r, redirectURL.String(), http.StatusTemporaryRedirect)
 }

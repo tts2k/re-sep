@@ -17,6 +17,11 @@ SET expires = ?
 WHERE state = ?
 RETURNING *;
 
+-- name: DeleteToken :one
+DELETE FROM Tokens
+WHERE state = ?
+RETURNING *;
+
 -- name: CleanTokens :exec
 DELETE FROM Tokens
-WHERE expires < Datetime("now")
+WHERE expires < Datetime("now");

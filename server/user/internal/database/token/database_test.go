@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"testing"
 	"time"
 )
@@ -11,7 +12,7 @@ func TestInsertToken(t *testing.T) {
 	defer db.Close()
 
 	t.Run("insert", func(t *testing.T) {
-		token := InsertToken("test", "sub", 1*time.Second)
+		token := InsertToken(context.Background(), "test", "sub", 1*time.Second)
 		if token == nil {
 			t.Fatal("Token insertion failed")
 		}
@@ -24,7 +25,7 @@ func TestInsertToken(t *testing.T) {
 	})
 
 	t.Run("insert with duplicate", func(t *testing.T) {
-		token := InsertToken("test", "sub", 1*time.Second)
+		token := InsertToken(context.Background(), "test", "sub", 1*time.Second)
 		if token != nil {
 			t.Fatalf("Expected error on dup")
 		}
@@ -36,9 +37,9 @@ func TestGetTokenByState(t *testing.T) {
 	InitTokenDB()
 	defer db.Close()
 
-	InsertToken("test", "sub", 1*time.Second)
+	InsertToken(context.Background(), "test", "sub", 1*time.Second)
 
-	token := GetTokenByState("test")
+	token := GetTokenByState(context.Background(), "test")
 	if token.Userid != "sub" {
 		t.Fatalf("Invalid state. Expected %s but got %s instead.", "sub", token.Userid)
 	}
