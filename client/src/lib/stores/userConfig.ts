@@ -6,6 +6,7 @@ export type UserConfig = {
 	layered: boolean;
 	font: Font;
 	fontSize: number;
+	justify: boolean;
 	margin: {
 		left: number;
 		right: number;
@@ -16,9 +17,10 @@ const defaultConfig: UserConfig = {
 	layered: false,
 	font: "serif",
 	fontSize: 3,
+	justify: false,
 	margin: {
-		left: 300,
-		right: 300,
+		left: 3,
+		right: 3,
 	},
 };
 
