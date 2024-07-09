@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"re-sep-scraper/database"
 	"re-sep-scraper/scraper"
@@ -11,11 +12,26 @@ import (
 	"github.com/spf13/pflag"
 )
 
+func promptYN(text string) bool {
+	var choice string
+	fmt.Printf("%s [Y/N]:", text)
+	fmt.Scanf("%s", &choice)
+
+	return strings.ToLower(choice) == "y"
+}
+
 func doSingle(url string) error {
 	// fmt.Println(url)
 	outputPath, _ := pflag.CommandLine.GetString("out")
 	if outputPath == "" {
 		return errors.New("flag: no output specified")
+	}
+	_, err := os.Stat(outputPath)
+	if os.IsExist(err) || err == nil {
+		ans := promptYN("File exists. Do you want to update it?")
+		if !ans {
+			return errors.New("Aborted")
+		}
 	}
 
 	// Scrape
