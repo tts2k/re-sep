@@ -257,3 +257,65 @@ func TestParseToc(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestAddCSSTemplateTags(t *testing.T) {
+	type TestCase = struct {
+		name   string
+		input  string
+		expect string
+	}
+
+	testCases := []TestCase{
+		{
+			name:   "h1",
+			input:  `<h1>hello</h1>`,
+			expect: `<h1 class="{{h1}}">hello</h1>`,
+		},
+		{
+			name:   "h2",
+			input:  `<h2>hello</h2>`,
+			expect: `<h2 class="{{h2}}">hello</h2>`,
+		},
+		{
+			name:   "h3",
+			input:  `<h3>hello</h3>`,
+			expect: `<h3 class="{{h3}}">hello</h3>`,
+		},
+		{
+			name:   "h4",
+			input:  `<h4>hello</h4>`,
+			expect: `<h4 class="{{h4}}">hello</h4>`,
+		},
+		{
+			name:   "p",
+			input:  `<p>hello</p>`,
+			expect: `<p class="{{text}}">hello</p>`,
+		},
+		{
+			name:   "ul",
+			input:  `<ul>hello</ul>`,
+			expect: `<ul class="{{text}}">hello</ul>`,
+		},
+		{
+			name:   "em",
+			input:  `<em>hello</em>`,
+			expect: `<em class="{{text}}">hello</em>`,
+		},
+	}
+
+	for _, v := range testCases {
+		t.Run(v.name, func(t *testing.T) {
+			input, _ := goquery.NewDocumentFromReader(strings.NewReader(v.input))
+			expect, _ := goquery.NewDocumentFromReader(strings.NewReader(v.expect))
+
+			addCSSTemplateTags(input.Selection)
+
+			inputHTML, _ := input.Html()
+			expectHTML, _ := expect.Html()
+
+			if inputHTML != expectHTML {
+				t.Fatalf("Mismatched output:\nExpect: %s\nGot: %s\n", expectHTML, inputHTML)
+			}
+		})
+	}
+}

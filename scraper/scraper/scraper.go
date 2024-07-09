@@ -1,6 +1,8 @@
 package scraper
 
 import (
+	"bytes"
+	"compress/gzip"
 	"fmt"
 	"path"
 	"regexp"
@@ -23,7 +25,7 @@ type Article struct {
 	Title     string    `json:"title"`
 	Issued    time.Time `json:"issued"`
 	Modified  time.Time `json:"modified"`
-	HTMLText  string    `json:"htmlText"`
+	HTMLText  []byte    `json:"htmlText"`
 	Author    []string  `json:"author"`
 	TOC       []TOCItem `json:"toc"`
 }
@@ -84,6 +86,14 @@ func parseTOC(root *goquery.Selection) []TOCItem {
 	return parseTOCRecur(root.Find("ul").First())
 }
 
+func addCSSTemplateTags(dom *goquery.Selection) {
+	dom.Find("h1").AddClass("{{h1}}")
+	dom.Find("h2").AddClass("{{h2}}")
+	dom.Find("h3").AddClass("{{h3}}")
+	dom.Find("h4").AddClass("{{h4}}")
+	dom.Find("p, ul, em").AddClass("{{text}}")
+}
+
 func Single(url string) (Article, error) {
 	article := Article{}
 
@@ -126,6 +136,8 @@ func Single(url string) (Article, error) {
 		dom.Find("#toc").Remove()
 		dom.Find("#academic-tools").Remove()
 
+		addCSSTemplateTags(dom)
+
 		HTMLText, err := dom.Html()
 		if err != nil {
 			fmt.Printf("Error extracting content: %v\n", err)
@@ -138,7 +150,14 @@ func Single(url string) (Article, error) {
 		// Sanitize
 		HTMLText = sanitizer.Sanitize(HTMLText)
 
-		article.HTMLText = HTMLText
+		// Compress
+		var b bytes.Buffer
+
+		gz := gzip.NewWriter(&b)
+		gz.Write([]byte(HTMLText))
+		gz.Close()
+
+		article.HTMLText = b.Bytes()
 	})
 
 	err := Collector.Visit(url)
