@@ -1,7 +1,10 @@
 package scraper
 
 import (
+	"bytes"
+	"compress/gzip"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -112,11 +115,21 @@ func TestSingle(t *testing.T) {
 		t.Fatal("Empty HTML text")
 	}
 
-	if strings.Contains(article.HTMLText, `id="toc"`) {
+	// Extract
+	rd, err := gzip.NewReader(bytes.NewReader(article.HTMLText))
+	if err != nil {
+		t.Fatal(err)
+	}
+	htmlText, err := io.ReadAll(rd)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if strings.Contains(string(htmlText), `id="toc"`) {
 		t.Fatal("TOC is not filtered from HTML Text")
 	}
 
-	if strings.Contains(article.HTMLText, `id="academic-tools"`) {
+	if strings.Contains(string(htmlText), `id="academic-tools"`) {
 		t.Fatal("Academic tools is not filtered from HTML Text")
 	}
 
