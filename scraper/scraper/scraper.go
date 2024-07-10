@@ -203,35 +203,35 @@ func spawnWorkers(wCount int, wg *sync.WaitGroup, jobs <-chan string, results ch
 func All() (*sync.WaitGroup, chan Article, error) {
 	url := "https://plato.stanford.edu/contents.html"
 	collector := colly.NewCollector()
-	entrySet := make(map[string]bool)
+	jobs := make(chan string, 100)
+	wg := &sync.WaitGroup{}
 
-	var count int
-	collector.OnHTML(`a[href^="entries"]`, func(e *colly.HTMLElement) {
-		if count >= 20 {
-			return
-		}
-		href := e.Attr("href")
-		if href != "" {
-			entrySet[href] = true
-			count++
-		}
-	})
+	wg.Add(1)
+	go func() {
+		var count int
+		collector.OnHTML(`a[href^="entries"]`, func(e *colly.HTMLElement) {
+			if count >= 20 {
+				return
+			}
+			href := e.Attr("href")
+			if href != "" {
+				jobs <- href
+				count++
+			}
+		})
 
-	err := collector.Visit(url)
-	if err != nil {
-		return nil, nil, err
-	}
+		err := collector.Visit(url)
+
+		if err != nil {
+			panic(err)
+		}
+		close(jobs)
+		wg.Done()
+	}()
 
 	workerCount := 5
-	wg := &sync.WaitGroup{}
-	jobs := make(chan string, len(entrySet))
-	results := make(chan Article, len(entrySet))
+	results := make(chan Article, 100)
 	spawnWorkers(workerCount, wg, jobs, results)
-
-	for entry := range entrySet {
-		jobs <- entry
-	}
-	close(jobs)
 
 	return wg, results, nil
 }
