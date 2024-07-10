@@ -6,6 +6,7 @@ import (
 	"os"
 	"sync"
 
+	"re-sep-scraper/config"
 	"re-sep-scraper/database"
 	"re-sep-scraper/scraper"
 	"re-sep-scraper/utils"
@@ -108,10 +109,10 @@ func initFlags() error {
 	}
 
 	pflag.BoolP("help", "h", false, "Print this help message")
-	pflag.BoolVarP(&config.All, "all", "a", false, "Scrape all available articles")
-	pflag.BoolVarP(&config.Single, "single", "s", false, "Scrape a single article")
-	pflag.StringVarP(&config.Output, "out", "o", "", "Specify output path")
-	pflag.BoolVar(&config.Yes, "yes", false, "No confirm")
+	pflag.BoolVarP(&config.Config.All, "all", "a", false, "Scrape all available articles")
+	pflag.BoolVarP(&config.Config.Single, "single", "s", false, "Scrape a single article")
+	pflag.StringVarP(&config.Config.Output, "out", "o", "", "Specify output path")
+	pflag.BoolVar(&config.Config.Yes, "yes", false, "No confirm")
 
 	pflag.CommandLine.SortFlags = false
 
@@ -119,7 +120,7 @@ func initFlags() error {
 	pflag.Parse()
 
 	// Check conflict
-	if config.All && config.Single {
+	if config.Config.All && config.Config.Single {
 		return fmt.Errorf("cannot have all and single at the same time")
 	}
 
@@ -142,7 +143,7 @@ func main() {
 	}
 
 	// Scrape all
-	if config.All {
+	if config.Config.All {
 		err = doAll()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -151,7 +152,7 @@ func main() {
 	}
 
 	// Scrape once
-	if !config.Single {
+	if !config.Config.Single {
 		fmt.Fprintln(os.Stderr, "No single flag detected when there should be one")
 		return
 	}
