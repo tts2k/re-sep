@@ -7,6 +7,7 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -29,8 +30,6 @@ type Article struct {
 	Author    []string  `json:"author"`
 	TOC       []TOCItem `json:"toc"`
 }
-
-var Collector = colly.NewCollector()
 
 var timeLayout = "2006-01-02"
 var htmlTrimRegex = regexp.MustCompile(`[\t\r\n]+`)
@@ -95,19 +94,21 @@ func addCSSTemplateTags(dom *goquery.Selection) {
 }
 
 func Single(url string) (Article, error) {
+	collector := colly.NewCollector()
+
 	article := Article{}
 
 	article.EntryName = path.Base(url)
 
-	Collector.OnHTML(`meta[name="DC.title"]`, func(e *colly.HTMLElement) {
+	collector.OnHTML(`meta[name="DC.title"]`, func(e *colly.HTMLElement) {
 		article.Title = e.Attr("content")
 	})
 
-	Collector.OnHTML(`meta[name="DC.creator"]`, func(e *colly.HTMLElement) {
+	collector.OnHTML(`meta[name="DC.creator"]`, func(e *colly.HTMLElement) {
 		article.Author = append(article.Author, e.Attr("content"))
 	})
 
-	Collector.OnHTML(`meta[name="DCTERMS.issued"]`, func(e *colly.HTMLElement) {
+	collector.OnHTML(`meta[name="DCTERMS.issued"]`, func(e *colly.HTMLElement) {
 		issuedTime, err := time.Parse(timeLayout, e.Attr("content"))
 		if err != nil {
 			fmt.Printf("Error parsing time: %s\n", e.Attr("content"))
@@ -117,7 +118,7 @@ func Single(url string) (Article, error) {
 		article.Issued = issuedTime
 	})
 
-	Collector.OnHTML(`meta[name="DCTERMS.modified"]`, func(e *colly.HTMLElement) {
+	collector.OnHTML(`meta[name="DCTERMS.modified"]`, func(e *colly.HTMLElement) {
 		modifiedTime, err := time.Parse(timeLayout, e.Attr("content"))
 		if err != nil {
 			fmt.Printf("Error parsing time: %s\n", e.Attr("content"))
@@ -127,11 +128,11 @@ func Single(url string) (Article, error) {
 		article.Modified = modifiedTime
 	})
 
-	Collector.OnHTML("div[id='toc']", func(e *colly.HTMLElement) {
+	collector.OnHTML("div[id='toc']", func(e *colly.HTMLElement) {
 		article.TOC = parseTOC(e.DOM)
 	})
 
-	Collector.OnHTML("div[id='aueditable']", func(e *colly.HTMLElement) {
+	collector.OnHTML("div[id='aueditable']", func(e *colly.HTMLElement) {
 		dom := e.DOM
 		dom.Find("#toc").Remove()
 		dom.Find("#academic-tools").Remove()
@@ -160,10 +161,77 @@ func Single(url string) (Article, error) {
 		article.HTMLText = b.Bytes()
 	})
 
-	err := Collector.Visit(url)
+	err := collector.Visit(url)
 	if err != nil {
 		return Article{}, err
 	}
 
 	return article, nil
+}
+
+func createSafePrintln() func(a ...any) {
+	printLock := &sync.Mutex{}
+
+	return func(a ...any) {
+		printLock.Lock()
+		fmt.Println(a...)
+		printLock.Unlock()
+	}
+}
+
+func spawnWorkers(wCount int, wg *sync.WaitGroup, jobs <-chan string, results chan<- Article) {
+	safePrintln := createSafePrintln()
+
+	for i := 0; i < wCount; i++ {
+		wg.Add(1)
+		go func() {
+			for j := range jobs {
+				safePrintln("Working on:", j)
+				res, err := Single("https://plato.stanford.edu/" + j)
+				if err != nil {
+					safePrintln(err)
+					continue
+				}
+
+				results <- res
+			}
+			wg.Done()
+		}()
+	}
+}
+
+func All() (*sync.WaitGroup, chan Article, error) {
+	url := "https://plato.stanford.edu/contents.html"
+	collector := colly.NewCollector()
+	entrySet := make(map[string]bool)
+
+	var count int
+	collector.OnHTML(`a[href^="entries"]`, func(e *colly.HTMLElement) {
+		if count >= 20 {
+			return
+		}
+		href := e.Attr("href")
+		if href != "" {
+			entrySet[href] = true
+			count++
+		}
+	})
+
+	err := collector.Visit(url)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	workerCount := 5
+	wg := &sync.WaitGroup{}
+	jobs := make(chan string, len(entrySet))
+	results := make(chan Article, len(entrySet))
+	spawnWorkers(workerCount, wg, jobs, results)
+
+	for entry := range entrySet {
+		jobs <- entry
+	}
+	close(jobs)
+
+	return wg, results, nil
 }
