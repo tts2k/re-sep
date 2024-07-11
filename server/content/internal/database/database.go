@@ -10,7 +10,7 @@ import (
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/tursodatabase/go-libsql"
 )
 
 type Service interface {
@@ -23,7 +23,9 @@ type service struct {
 }
 
 var (
-	dburl      = os.Getenv("DB_URL")
+	dbPath     = os.Getenv("DB_PATH")
+	dbURL      = os.Getenv("DB_URL")
+	authToken  = os.Getenv("DB_AUTH_TOKEN")
 	dbInstance *service
 )
 
@@ -33,10 +35,15 @@ func New() Service {
 		return dbInstance
 	}
 
-	db, err := sql.Open("sqlite3", dburl)
+	var db *sql.DB
+	var err error
+	// if turso
+	var connector *libsql.Connector
+	connector, err = libsql.NewEmbeddedReplicaConnector(dbPath, dbURL,
+		libsql.WithAuthToken(authToken),
+	)
+	db = sql.OpenDB(connector)
 	if err != nil {
-		// This will not be a connection error, but a DSN parse error or
-		// another initialization error.
 		log.Fatal(err)
 	}
 
