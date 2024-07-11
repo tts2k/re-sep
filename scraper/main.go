@@ -115,6 +115,7 @@ func initFlags() error {
 	pflag.BoolVar(&config.Yes, "yes", false, "Assume yes")
 	pflag.BoolVarP(&config.Verbose, "verbose", "v", false, "Verbose output")
 	pflag.IntVarP(&config.WorkerCount, "worker", "w", 4, "Number of scraping workers")
+	pflag.Int64Var(&config.Sleep, "sleep", -1, "Adjust worker sleep time after each job")
 
 	pflag.CommandLine.SortFlags = false
 

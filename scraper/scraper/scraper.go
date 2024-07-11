@@ -185,6 +185,7 @@ func spawnWorkers(wg *sync.WaitGroup, jobs <-chan string, results chan<- Article
 				}
 
 				results <- res
+				time.Sleep(time.Duration(config.Sleep) * time.Millisecond)
 			}
 			wg.Done()
 		}()
@@ -218,6 +219,7 @@ func All() (*sync.WaitGroup, chan Article, error) {
 
 			if href != "" {
 				jobs <- href
+				visited[href] = true
 				count++
 			}
 		})
