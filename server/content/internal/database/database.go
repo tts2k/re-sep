@@ -15,7 +15,7 @@ import (
 
 type Service interface {
 	Health() map[string]string
-	GetArticle(entryName string) *Article
+	GetArticle(context context.Context, entryName string) (*Article, error)
 }
 
 type service struct {
@@ -46,18 +46,18 @@ func New() Service {
 	return dbInstance
 }
 
-func (s *service) GetArticle(entryName string) *Article {
+func (s *service) GetArticle(ctx context.Context, entryName string) (*Article, error) {
 	row := s.db.QueryRow(`
 		SELECT title, entry_name, issued, modified, html_text, json(author), json(toc)
 		FROM Articles WHERE entry_name = ?
 	`, entryName)
 	if row.Err() != nil {
 		slog.Error(row.Err().Error())
-		return nil
+		return nil, nil
 	}
 
 	article := Article{}
-	row.Scan(
+	err := row.Scan(
 		&article.Title,
 		&article.EntryName,
 		&article.Issued,
@@ -67,7 +67,7 @@ func (s *service) GetArticle(entryName string) *Article {
 		&article.TOC,
 	)
 
-	return &article
+	return &article, err
 }
 
 func (s *service) Health() map[string]string {

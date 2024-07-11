@@ -5,7 +5,7 @@ type Article struct {
 	Title     string
 	Issued    string
 	Modified  string
-	HTMLText  string
 	Author    string
 	TOC       string
+	HTMLText  []byte
 }
