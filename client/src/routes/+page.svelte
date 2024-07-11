@@ -1,27 +1,33 @@
 <script lang="ts">
-	import type { PageServerData } from "./$types";
-	import { ScrollArea } from "$lib/components/ui/scroll-area";
-	import { toc } from "$lib/actions/toc";
-	import { layerConfig } from "$lib/actions/layerConfig";
-	import { currentTocItem } from "$lib/components/sidebar/stores/tocStore";
-	import { metadata } from "@/stores/articleMetadata";
-	import { userConfig } from "@/stores/userConfig";
-	import { page } from "$app/stores";
-	import { toast } from "svelte-sonner";
+import type { PageServerData } from "./$types";
+import { ScrollArea } from "$lib/components/ui/scroll-area";
+import { toc } from "$lib/actions/toc";
+import { layerConfig } from "$lib/actions/layerConfig";
+import { currentTocItem } from "$lib/components/sidebar/stores/tocStore";
+import { metadata } from "@/stores/articleMetadata";
+import { userConfig } from "@/stores/userConfig";
+import { FontPreset, MarginPresets } from "@/stylePresets";
+import { page } from "$app/stores";
+import { toast } from "svelte-sonner";
 
-	export let data: PageServerData;
+export let data: PageServerData;
 
-	const error = $page.url.searchParams.get("error");
+const error = $page.url.searchParams.get("error");
 
-	$: if (error) {
-		toast.error(error);
-	}
+$: if (error) {
+	toast.error(error);
+}
 
-	$metadata = {
-		title: data.title,
-		authors: data.author,
-		toc: data.toc,
-	};
+$metadata = {
+	title: data.title,
+	authors: data.author,
+	toc: data.toc,
+};
+
+$: font = $userConfig.font ? FontPreset[$userConfig.font] : "font-serif";
+$: justified = $userConfig.justify ? "text-justify" : "";
+$: marginLeft = MarginPresets.left[$userConfig.margin.left - 1];
+$: marginRight = MarginPresets.right[$userConfig.margin.right - 1];
 </script>
 
 <svelte:head>
@@ -36,8 +42,8 @@
 	<article
 		use:toc={{ store: currentTocItem }}
 		use:layerConfig={userConfig}
-		class="mt-24 mb-24 font-serif h-screen flex flex-col"
-		style="margin-left: 300px; margin-right: 300px;"
+		class="mt-24 mb-24 h-screen flex flex-col {justified} {marginLeft}
+		{marginRight} {font}"
 	>
 		{@html data.htmlText}
 	</article>
@@ -50,33 +56,28 @@
 	}
 
 	article :global(h1) {
-		@apply scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-7xl
-		text-center mb-32;
+		@apply scroll-m-20 font-extrabold tracking-tight text-center mb-32;
 	}
 
 	article :global(h2) {
-		@apply scroll-m-20 border-b pb-2 text-4xl font-semibold tracking-tight
+		@apply scroll-m-20 border-b pb-2 font-semibold tracking-tight
 		transition-colors mt-10;
 	}
 
 	article :global(h3) {
-		@apply scroll-m-20 text-3xl font-semibold tracking-tight mt-10;
+		@apply scroll-m-20 font-semibold tracking-tight mt-10;
 	}
 
 	article :global(h4) {
-		@apply scroll-m-20 text-2xl font-semibold tracking-tight mt-10;
+		@apply scroll-m-20 font-semibold tracking-tight mt-10;
 	}
 
 	article :global(p) {
-		@apply leading-7 [&:not(:first-child)]:mt-6 text-lg lg:text-xl;
-	}
-
-	article :global(em) {
-		@apply text-lg lg:text-xl;
+		@apply [&:not(:first-child)]:mt-6;
 	}
 
 	article :global(ul) {
-		@apply my-6 ml-6 list-disc text-lg lg:text-xl;
+		@apply my-6 ml-6 list-disc;
 	}
 
 	article :global(li) {
@@ -84,6 +85,6 @@
 	}
 
 	article :global(blockquote) {
-		@apply mt-6 border-l-2 pl-6 italic text-lg;
+		@apply mt-6 border-l-2 pl-6 italic;
 	}
 </style>

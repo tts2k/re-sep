@@ -13,6 +13,7 @@ import (
 
 	"re-sep-content/internal/database"
 	pb "re-sep-content/internal/proto"
+	"re-sep-content/internal/server/utils"
 )
 
 type contentServer struct {
@@ -63,12 +64,14 @@ func (s *contentServer) GetArticle(ctx context.Context, in *pb.EntryName) (*pb.A
 		slog.Warn("Get user config success with error", "s.authClient.GetUserConfig", err)
 	}
 
+	resultHTML := utils.ApplyTemplate(article.HTMLText, userConfig)
+
 	protoArticle := pb.Article{
 		Title:     article.Title,
 		EntryName: article.EntryName,
 		Issued:    timestamppb.New(issuedTime),
 		Modified:  timestamppb.New(modifiedTime),
-		HtmlText:  article.HTMLText,
+		HtmlText:  resultHTML,
 	}
 
 	err = json.Unmarshal([]byte(article.Author), &protoArticle.Authors)
