@@ -30,8 +30,12 @@ func TestGoogleLogin(t *testing.T) {
 	result := res.Result()
 	cookies := result.Cookies()
 
-	if len(cookies) != 1 {
-		t.Fatalf("Invalid cookie length. Expected %d but got %d instead", 1, len(cookies))
+	for _, v := range cookies {
+		println(v.Name, ":", v.Value)
+	}
+
+	if len(cookies) != 2 {
+		t.Fatalf("Invalid cookie length. Expected %d but got %d instead", 2, len(cookies))
 	}
 
 	state := cookies[0]

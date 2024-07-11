@@ -4,18 +4,27 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sync"
 
+	"re-sep-scraper/config"
 	"re-sep-scraper/database"
 	"re-sep-scraper/scraper"
+	"re-sep-scraper/utils"
 
 	"github.com/spf13/pflag"
 )
 
 func doSingle(url string) error {
-	// fmt.Println(url)
 	outputPath, _ := pflag.CommandLine.GetString("out")
 	if outputPath == "" {
 		return errors.New("flag: no output specified")
+	}
+	_, err := os.Stat(outputPath)
+	if os.IsExist(err) || err == nil {
+		ans := utils.PromptYN("File exists. Do you want to update it?")
+		if !ans {
+			return errors.New("Aborted")
+		}
 	}
 
 	// Scrape
@@ -43,22 +52,47 @@ func doSingle(url string) error {
 	return nil
 }
 
-func checkBoolFlagsConflict(flagList []string) error {
-	hasFlagEnabled := false
-	var enabledFlag string
-
-	for _, flag := range flagList {
-		value, _ := pflag.CommandLine.GetBool(flag)
-
-		if hasFlagEnabled && value {
-			return fmt.Errorf("conflicting flags: %s, %s", enabledFlag, flag)
-		}
-
-		if value {
-			hasFlagEnabled = true
-			enabledFlag = flag
+func doAll() error {
+	outputPath, _ := pflag.CommandLine.GetString("out")
+	if outputPath == "" {
+		return errors.New("flag: no output specified")
+	}
+	_, err := os.Stat(outputPath)
+	if os.IsExist(err) || err == nil {
+		ans := utils.PromptYN("File exists. Do you want to update it?")
+		if !ans {
+			return errors.New("Aborted")
 		}
 	}
+
+	wg, results, err := scraper.All()
+	if err != nil {
+		return err
+	}
+
+	database.InitDB(outputPath)
+	fmt.Println("=> Creating database")
+	err = database.CreateTable()
+	if err != nil {
+		return err
+	}
+
+	dbWg := &sync.WaitGroup{}
+	dbWg.Add(1)
+	go func() {
+		for result := range results {
+			fmt.Println("Inserting: ", result.Title)
+			err := database.InsertArticle(result)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+		dbWg.Done()
+	}()
+
+	wg.Wait()
+	close(results)
+	dbWg.Wait()
 
 	return nil
 }
@@ -75,18 +109,23 @@ func initFlags() error {
 	}
 
 	pflag.BoolP("help", "h", false, "Print this help message")
-	pflag.BoolP("all", "a", false, "Scrape all available articles")
-	pflag.BoolP("single", "s", false, "Scrape a single article")
-	pflag.StringP("out", "o", "", "Specify output path")
+	pflag.BoolVarP(&config.All, "all", "a", false, "Scrape all available articles")
+	pflag.BoolVarP(&config.Single, "single", "s", false, "Scrape a single article")
+	pflag.StringVarP(&config.Output, "out", "o", "", "Specify output path")
+	pflag.BoolVar(&config.Yes, "yes", false, "Assume yes")
+	pflag.BoolVarP(&config.Verbose, "verbose", "v", false, "Verbose output")
+	pflag.IntVarP(&config.WorkerCount, "worker", "w", 4, "Number of scraping workers")
+	pflag.Int64Var(&config.Sleep, "sleep", -1, "Adjust worker sleep time after each job")
 
 	pflag.CommandLine.SortFlags = false
 
-	err := checkBoolFlagsConflict([]string{"json", "single"})
-	if err != nil {
-		return err
-	}
-
+	// Parse
 	pflag.Parse()
+
+	// Check conflict
+	if config.All && config.Single {
+		return fmt.Errorf("cannot have all and single at the same time")
+	}
 
 	return nil
 }
@@ -107,16 +146,18 @@ func main() {
 	}
 
 	// Scrape all
-	allF, _ := pflag.CommandLine.GetBool("all")
-	if allF {
-		fmt.Fprintln(os.Stderr, "Scrape all is not implemented")
+	if config.All {
+		err = doAll()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
 		return
 	}
 
 	// Scrape once
-	singleF, _ := pflag.CommandLine.GetBool("single")
-	if !singleF {
-		panic("no single flag detected when there should be one")
+	if !config.Single {
+		fmt.Fprintln(os.Stderr, "No single flag detected when there should be one")
+		return
 	}
 
 	if pflag.NArg() == 0 {

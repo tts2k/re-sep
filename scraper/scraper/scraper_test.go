@@ -1,7 +1,10 @@
 package scraper
 
 import (
+	"bytes"
+	"compress/gzip"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -112,11 +115,21 @@ func TestSingle(t *testing.T) {
 		t.Fatal("Empty HTML text")
 	}
 
-	if strings.Contains(article.HTMLText, `id="toc"`) {
+	// Extract
+	rd, err := gzip.NewReader(bytes.NewReader(article.HTMLText))
+	if err != nil {
+		t.Fatal(err)
+	}
+	htmlText, err := io.ReadAll(rd)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if strings.Contains(string(htmlText), `id="toc"`) {
 		t.Fatal("TOC is not filtered from HTML Text")
 	}
 
-	if strings.Contains(article.HTMLText, `id="academic-tools"`) {
+	if strings.Contains(string(htmlText), `id="academic-tools"`) {
 		t.Fatal("Academic tools is not filtered from HTML Text")
 	}
 
@@ -255,5 +268,67 @@ func TestParseToc(t *testing.T) {
 	err := compareTOCs("root", testToc, result)
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestAddCSSTemplateTags(t *testing.T) {
+	type TestCase = struct {
+		name   string
+		input  string
+		expect string
+	}
+
+	testCases := []TestCase{
+		{
+			name:   "h1",
+			input:  `<h1>hello</h1>`,
+			expect: `<h1 class="{{h1}}">hello</h1>`,
+		},
+		{
+			name:   "h2",
+			input:  `<h2>hello</h2>`,
+			expect: `<h2 class="{{h2}}">hello</h2>`,
+		},
+		{
+			name:   "h3",
+			input:  `<h3>hello</h3>`,
+			expect: `<h3 class="{{h3}}">hello</h3>`,
+		},
+		{
+			name:   "h4",
+			input:  `<h4>hello</h4>`,
+			expect: `<h4 class="{{h4}}">hello</h4>`,
+		},
+		{
+			name:   "p",
+			input:  `<p>hello</p>`,
+			expect: `<p class="{{text}}">hello</p>`,
+		},
+		{
+			name:   "ul",
+			input:  `<ul>hello</ul>`,
+			expect: `<ul class="{{text}}">hello</ul>`,
+		},
+		{
+			name:   "em",
+			input:  `<em>hello</em>`,
+			expect: `<em class="{{text}}">hello</em>`,
+		},
+	}
+
+	for _, v := range testCases {
+		t.Run(v.name, func(t *testing.T) {
+			input, _ := goquery.NewDocumentFromReader(strings.NewReader(v.input))
+			expect, _ := goquery.NewDocumentFromReader(strings.NewReader(v.expect))
+
+			addCSSTemplateTags(input.Selection)
+
+			inputHTML, _ := input.Html()
+			expectHTML, _ := expect.Html()
+
+			if inputHTML != expectHTML {
+				t.Fatalf("Mismatched output:\nExpect: %s\nGot: %s\n", expectHTML, inputHTML)
+			}
+		})
 	}
 }

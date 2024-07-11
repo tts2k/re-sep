@@ -1,11 +1,17 @@
 package scraper
 
 import (
+	"bytes"
+	"compress/gzip"
 	"fmt"
 	"path"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
+
+	"re-sep-scraper/config"
+	"re-sep-scraper/utils"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
@@ -23,12 +29,10 @@ type Article struct {
 	Title     string    `json:"title"`
 	Issued    time.Time `json:"issued"`
 	Modified  time.Time `json:"modified"`
-	HTMLText  string    `json:"htmlText"`
+	HTMLText  []byte    `json:"htmlText"`
 	Author    []string  `json:"author"`
 	TOC       []TOCItem `json:"toc"`
 }
-
-var Collector = colly.NewCollector()
 
 var timeLayout = "2006-01-02"
 var htmlTrimRegex = regexp.MustCompile(`[\t\r\n]+`)
@@ -84,20 +88,30 @@ func parseTOC(root *goquery.Selection) []TOCItem {
 	return parseTOCRecur(root.Find("ul").First())
 }
 
+func addCSSTemplateTags(dom *goquery.Selection) {
+	dom.Find("h1").AddClass("{{h1}}")
+	dom.Find("h2").AddClass("{{h2}}")
+	dom.Find("h3").AddClass("{{h3}}")
+	dom.Find("h4").AddClass("{{h4}}")
+	dom.Find("p, ul, em").AddClass("{{text}}")
+}
+
 func Single(url string) (Article, error) {
+	collector := colly.NewCollector()
+
 	article := Article{}
 
 	article.EntryName = path.Base(url)
 
-	Collector.OnHTML(`meta[name="DC.title"]`, func(e *colly.HTMLElement) {
+	collector.OnHTML(`meta[name="DC.title"]`, func(e *colly.HTMLElement) {
 		article.Title = e.Attr("content")
 	})
 
-	Collector.OnHTML(`meta[name="DC.creator"]`, func(e *colly.HTMLElement) {
+	collector.OnHTML(`meta[name="DC.creator"]`, func(e *colly.HTMLElement) {
 		article.Author = append(article.Author, e.Attr("content"))
 	})
 
-	Collector.OnHTML(`meta[name="DCTERMS.issued"]`, func(e *colly.HTMLElement) {
+	collector.OnHTML(`meta[name="DCTERMS.issued"]`, func(e *colly.HTMLElement) {
 		issuedTime, err := time.Parse(timeLayout, e.Attr("content"))
 		if err != nil {
 			fmt.Printf("Error parsing time: %s\n", e.Attr("content"))
@@ -107,7 +121,7 @@ func Single(url string) (Article, error) {
 		article.Issued = issuedTime
 	})
 
-	Collector.OnHTML(`meta[name="DCTERMS.modified"]`, func(e *colly.HTMLElement) {
+	collector.OnHTML(`meta[name="DCTERMS.modified"]`, func(e *colly.HTMLElement) {
 		modifiedTime, err := time.Parse(timeLayout, e.Attr("content"))
 		if err != nil {
 			fmt.Printf("Error parsing time: %s\n", e.Attr("content"))
@@ -117,14 +131,16 @@ func Single(url string) (Article, error) {
 		article.Modified = modifiedTime
 	})
 
-	Collector.OnHTML("div[id='toc']", func(e *colly.HTMLElement) {
+	collector.OnHTML("div[id='toc']", func(e *colly.HTMLElement) {
 		article.TOC = parseTOC(e.DOM)
 	})
 
-	Collector.OnHTML("div[id='aueditable']", func(e *colly.HTMLElement) {
+	collector.OnHTML("div[id='aueditable']", func(e *colly.HTMLElement) {
 		dom := e.DOM
 		dom.Find("#toc").Remove()
 		dom.Find("#academic-tools").Remove()
+
+		addCSSTemplateTags(dom)
 
 		HTMLText, err := dom.Html()
 		if err != nil {
@@ -138,13 +154,87 @@ func Single(url string) (Article, error) {
 		// Sanitize
 		HTMLText = sanitizer.Sanitize(HTMLText)
 
-		article.HTMLText = HTMLText
+		// Compress
+		var b bytes.Buffer
+
+		gz := gzip.NewWriter(&b)
+		gz.Write([]byte(HTMLText))
+		gz.Close()
+
+		article.HTMLText = b.Bytes()
 	})
 
-	err := Collector.Visit(url)
+	err := collector.Visit(url)
 	if err != nil {
 		return Article{}, err
 	}
 
 	return article, nil
+}
+
+func spawnWorkers(wg *sync.WaitGroup, jobs <-chan string, results chan<- Article) {
+	for i := 0; i < config.WorkerCount; i++ {
+		wg.Add(1)
+		go func() {
+			for j := range jobs {
+				utils.Debugln("Working on:", j)
+				res, err := Single("https://plato.stanford.edu/" + j)
+				if err != nil {
+					utils.Debugln(err)
+					continue
+				}
+
+				results <- res
+				time.Sleep(time.Duration(config.Sleep) * time.Millisecond)
+			}
+			wg.Done()
+		}()
+	}
+}
+
+func All() (*sync.WaitGroup, chan Article, error) {
+	// Just scrape the TOC. No need for bfs/dfs scraping!
+	url := "https://plato.stanford.edu/contents.html"
+	collector := colly.NewCollector()
+	jobs := make(chan string, 100)
+	wg := &sync.WaitGroup{}
+
+	wg.Add(1)
+	go func() {
+		var count int
+		visited := make(map[string]bool)
+		collector.OnHTML(`a[href^="entries"]`, func(e *colly.HTMLElement) {
+			// Hard-coded arbitrary limit for development
+			// I don't wanna scrape 1800 articles to test
+			if count >= 20 {
+				return
+			}
+
+			href := e.Attr("href")
+			// Skip visited sites
+			if visited[href] {
+				utils.Debugf("Skipping visited entry: %s", href)
+				return
+			}
+
+			if href != "" {
+				jobs <- href
+				visited[href] = true
+				count++
+			}
+		})
+
+		err := collector.Visit(url)
+
+		if err != nil {
+			panic(err)
+		}
+		close(jobs)
+		wg.Done()
+	}()
+
+	results := make(chan Article, 100)
+	spawnWorkers(wg, jobs, results)
+
+	return wg, results, nil
 }

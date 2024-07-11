@@ -29,7 +29,7 @@ func CreateTable() error {
 	defer db.Close()
 
 	_, err = db.Exec(
-		`CREATE TABLE articles (
+		`CREATE TABLE IF NOT EXISTS articles (
 			id uuid PRIMARY KEY,
 			title text NOT NULL,
 			entry_name text NOT NULL UNIQUE,
@@ -37,7 +37,9 @@ func CreateTable() error {
 			modified timestamp,
 			html_text text,
 			author blob,
-			toc blob
+			toc blob,
+
+			UNIQUE(entry_name)
 		)`,
 	)
 	if err != nil {
@@ -60,6 +62,13 @@ func InsertArticle(article scraper.Article) error {
 		) VALUES (
 			?, ?, ?, ?, ?, ?, jsonb(?), jsonb(?)
 		)
+		ON CONFLICT (entry_name) DO UPDATE SET
+			title=excluded.title,
+			issued=excluded.issued,
+			modified=excluded.modified,
+			html_text=excluded.html_text,
+			author=excluded.author,
+			author=excluded.toc
 	`)
 	if err != nil {
 		return err

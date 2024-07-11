@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"testing"
@@ -121,7 +122,7 @@ func TestGetUserConfig(t *testing.T) {
 				expect := v.err.Error()
 				result := err.Error()
 
-				if expect != result {
+				if !errors.Is(v.err, err) {
 					t.Fatalf("Mismatched error.\n Expected: %s\n Got: %s\n", expect, result)
 				}
 			}
@@ -208,7 +209,7 @@ func TestUpdateUserConfig(t *testing.T) {
 				expect := v.err.Error()
 				result := err.Error()
 
-				if expect != result {
+				if !errors.Is(v.err, err) {
 					t.Fatalf("Mismatched error.\n Expected: %s\n Got: %s\n", expect, result)
 				}
 			}
