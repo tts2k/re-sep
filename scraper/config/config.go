@@ -1,10 +1,8 @@
 package config
 
-type UserConfig = struct {
-	Output string
-	All    bool
-	Single bool
-	Yes    bool
-}
-
-var Config UserConfig = UserConfig{}
+var Output string
+var All bool
+var Single bool
+var Yes bool
+var Verbose bool
+var WorkerCount int

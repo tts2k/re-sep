@@ -10,6 +10,9 @@ import (
 	"sync"
 	"time"
 
+	"re-sep-scraper/config"
+	"re-sep-scraper/utils"
+
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
 	"github.com/microcosm-cc/bluemonday"
@@ -169,27 +172,15 @@ func Single(url string) (Article, error) {
 	return article, nil
 }
 
-func createSafePrintln() func(a ...any) {
-	printLock := &sync.Mutex{}
-
-	return func(a ...any) {
-		printLock.Lock()
-		fmt.Println(a...)
-		printLock.Unlock()
-	}
-}
-
-func spawnWorkers(wCount int, wg *sync.WaitGroup, jobs <-chan string, results chan<- Article) {
-	safePrintln := createSafePrintln()
-
-	for i := 0; i < wCount; i++ {
+func spawnWorkers(wg *sync.WaitGroup, jobs <-chan string, results chan<- Article) {
+	for i := 0; i < config.WorkerCount; i++ {
 		wg.Add(1)
 		go func() {
 			for j := range jobs {
-				safePrintln("Working on:", j)
+				utils.Debugln("Working on:", j)
 				res, err := Single("https://plato.stanford.edu/" + j)
 				if err != nil {
-					safePrintln(err)
+					utils.Debugln(err)
 					continue
 				}
 
@@ -201,6 +192,7 @@ func spawnWorkers(wCount int, wg *sync.WaitGroup, jobs <-chan string, results ch
 }
 
 func All() (*sync.WaitGroup, chan Article, error) {
+	// Just scrape the TOC. No need for bfs/dfs scraping!
 	url := "https://plato.stanford.edu/contents.html"
 	collector := colly.NewCollector()
 	jobs := make(chan string, 100)
@@ -209,11 +201,21 @@ func All() (*sync.WaitGroup, chan Article, error) {
 	wg.Add(1)
 	go func() {
 		var count int
+		visited := make(map[string]bool)
 		collector.OnHTML(`a[href^="entries"]`, func(e *colly.HTMLElement) {
+			// Hard-coded arbitrary limit for development
+			// I don't wanna scrape 1800 articles to test
 			if count >= 20 {
 				return
 			}
+
 			href := e.Attr("href")
+			// Skip visited sites
+			if visited[href] {
+				utils.Debugf("Skipping visited entry: %s", href)
+				return
+			}
+
 			if href != "" {
 				jobs <- href
 				count++
@@ -229,9 +231,8 @@ func All() (*sync.WaitGroup, chan Article, error) {
 		wg.Done()
 	}()
 
-	workerCount := 5
 	results := make(chan Article, 100)
-	spawnWorkers(workerCount, wg, jobs, results)
+	spawnWorkers(wg, jobs, results)
 
 	return wg, results, nil
 }
