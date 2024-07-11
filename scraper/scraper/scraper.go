@@ -24,6 +24,8 @@ type TOCItem struct {
 	SubItems []TOCItem `json:"subItems"`
 }
 
+type HTMLText = string
+
 type Article struct {
 	EntryName string    `json:"entryName"`
 	Title     string    `json:"title"`
@@ -94,6 +96,37 @@ func addCSSTemplateTags(dom *goquery.Selection) {
 	dom.Find("h3").AddClass("{{h3}}")
 	dom.Find("h4").AddClass("{{h4}}")
 	dom.Find("p, ul, em").AddClass("{{text}}")
+}
+
+func SingleContentOnly(url string) (string, error) {
+	var result string
+	collector := colly.NewCollector()
+
+	collector.OnHTML("div[id='aueditable']", func(e *colly.HTMLElement) {
+		dom := e.DOM
+		dom.Find("#toc").Remove()
+		dom.Find("#academic-tools").Remove()
+
+		HTMLText, err := dom.Html()
+		if err != nil {
+			fmt.Printf("Error extracting content: %v\n", err)
+			return
+		}
+
+		// Trim whiltespaces
+		HTMLText = htmlTrimRegex.ReplaceAllString(strings.TrimSpace(HTMLText), "\n")
+
+		result = HTMLText
+	})
+
+	err := collector.Visit(url)
+
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
+
 }
 
 func Single(url string) (Article, error) {

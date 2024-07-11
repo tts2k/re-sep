@@ -15,9 +15,10 @@ import (
 )
 
 func doSingle(url string) error {
-	outputPath, _ := pflag.CommandLine.GetString("out")
+	doDatabase := true
+	outputPath := config.Output
 	if outputPath == "" {
-		return errors.New("flag: no output specified")
+		doDatabase = false
 	}
 	_, err := os.Stat(outputPath)
 	if os.IsExist(err) || err == nil {
@@ -28,6 +29,16 @@ func doSingle(url string) error {
 	}
 
 	// Scrape
+	// Print to stdout
+	if !doDatabase {
+		result, singleErr := scraper.SingleContentOnly(url)
+		if singleErr != nil {
+			return singleErr
+		}
+		fmt.Println(result)
+		return nil
+	}
+
 	fmt.Println("=> Scraping article")
 	article, err := scraper.Single(url)
 	if err != nil {
@@ -53,7 +64,7 @@ func doSingle(url string) error {
 }
 
 func doAll() error {
-	outputPath, _ := pflag.CommandLine.GetString("out")
+	outputPath := config.Output
 	if outputPath == "" {
 		return errors.New("flag: no output specified")
 	}
