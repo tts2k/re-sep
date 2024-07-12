@@ -22,7 +22,7 @@ func (mdb *mockDatabaseService) Health() map[string]string {
 	return nil
 }
 
-func (mdb *mockDatabaseService) GetArticle(_ string) *database.Article {
+func (mdb *mockDatabaseService) GetArticle(ctx context.Context, _ string) (*database.Article, error) {
 	var b bytes.Buffer
 	gzw := gzip.NewWriter(&b)
 	gzw.Write([]byte("<div>test<div>"))
@@ -36,7 +36,7 @@ func (mdb *mockDatabaseService) GetArticle(_ string) *database.Article {
 		HTMLText:  b.Bytes(),
 		Author:    `["Tester 1", "Tester 2"]`,
 		TOC:       `[{"id":"Item 1","content":"Item 1"},{"id":"Item 2","content":"Item 2","subItems":[{"id":"Item 2-1","content":"Item 2-1"},{"id":"Item 2-2","content":"Item 2-2"}]},{"id":"Bib","content":"Bibliography","subItems":[{"id":"PrimSour","content":"Primary Sources"},{"id":"SecoSour","content":"Secondary Sources"}]},{"id":"Oth","content":"Other Internet Resources"},{"id":"Rel","content":"Related Entries"}]`,
-	}
+	}, nil
 }
 
 func (*mockAuthClient) Auth(ctx context.Context, in *pb.Empty, opts ...grpc.CallOption) (*pb.AuthResponse, error) {
