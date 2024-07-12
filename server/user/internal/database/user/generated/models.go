@@ -5,6 +5,7 @@
 package database
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,7 +15,7 @@ type User struct {
 	ID        uuid.UUID
 	Name      string
 	Sub       string
-	Config    []byte
+	Config    sql.NullString
 	LastLogin time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time

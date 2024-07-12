@@ -4,7 +4,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/oauth2"
 )
 

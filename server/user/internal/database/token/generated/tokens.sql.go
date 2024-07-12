@@ -12,7 +12,7 @@ import (
 
 const cleanTokens = `-- name: CleanTokens :exec
 DELETE FROM Tokens
-WHERE expires < Datetime("now")
+WHERE expires < Datetime('now')
 `
 
 func (q *Queries) CleanTokens(ctx context.Context) error {
@@ -35,7 +35,7 @@ func (q *Queries) DeleteToken(ctx context.Context, state string) (Token, error) 
 
 const getTokenByState = `-- name: GetTokenByState :one
 SELECT state, userid, expires FROM Tokens
-WHERE state = ? AND expires > Datetime("now")
+WHERE state = ? AND expires > Datetime('now')
 LIMIT 1
 `
 

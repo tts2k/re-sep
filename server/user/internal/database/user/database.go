@@ -9,20 +9,23 @@ import (
 	"log"
 	"log/slog"
 	"strings"
+	"testing"
 	"time"
 
 	g "re-sep-user/internal/database/user/generated"
 	config "re-sep-user/internal/system/config"
 
 	"github.com/google/uuid"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/tursodatabase/go-libsql"
 )
 
 //go:embed schema/schema.sql
 var schema string
 
 var (
-	dbURL   = config.Config().ConstructDBPath("user.db")
+	dbPath  = config.Config().ConstructDBPath("user", "user.db")
+	dbURL   = config.Config().UserDB.URL
+	token   = config.Config().UserDB.Token
 	db      *sql.DB
 	queries *g.Queries
 )
@@ -38,11 +41,25 @@ var DefaultUserConfig = UserConfig{
 }
 
 func InitUserDB() {
-	dbCon, err := sql.Open("sqlite3", dbURL)
-	if err != nil {
-		// This will not be a connection error, but a DSN parse error or
-		// another initialization error.
-		log.Fatal(err)
+	var dbCon *sql.DB
+	var err error
+
+	if testing.Testing() {
+		dbCon, err = sql.Open("libsql", "file://"+dbPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		var connector *libsql.Connector
+		connector, err = libsql.NewEmbeddedReplicaConnector(
+			dbPath,
+			dbURL,
+			libsql.WithAuthToken(token),
+		)
+		dbCon = sql.OpenDB(connector)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	db = dbCon
@@ -63,6 +80,10 @@ func InitUserDB() {
 	}
 
 	for _, query := range queries {
+		if query == "" {
+			continue
+		}
+
 		_, err := db.Exec(query)
 		if err != nil {
 			log.Println(query)

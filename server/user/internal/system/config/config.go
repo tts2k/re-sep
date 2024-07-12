@@ -13,8 +13,15 @@ type OAuthConfig struct {
 	ClientSecret string
 }
 
+type DBConfig struct {
+	Path  string
+	URL   string
+	Token string
+}
+
 type EnvConfig struct {
-	DBPATH    string
+	UserDB    DBConfig
+	TokenDB   DBConfig
 	HTTPPort  string
 	GRPCPort  string
 	BaseURL   string
@@ -24,11 +31,16 @@ type EnvConfig struct {
 	Google    OAuthConfig
 }
 
-func (c EnvConfig) ConstructDBPath(dbName string) string {
-	var dbPath string
+func (c EnvConfig) ConstructDBPath(dbName, fileName string) string {
+	if testing.Testing() {
+		return ""
+	}
 
-	if !testing.Testing() {
-		dbPath = "file:" + path.Join(c.DBPATH, dbName) + "?cache=shared&_journal_mode=WAL"
+	var dbPath string
+	if dbName == "user" {
+		dbPath = "file:" + path.Join(c.UserDB.Path, fileName) + "?cache=shared&_journal_mode=WAL"
+	} else {
+		dbPath = "file:" + path.Join(c.UserDB.Token, fileName) + "?cache=shared&_journal_mode=WAL"
 	}
 
 	return dbPath
@@ -62,7 +74,16 @@ func mustHaveEnvTestDefault(key string, defaultValue string) string {
 
 // Put env into a struct for lsp autocompletion
 var config EnvConfig = EnvConfig{
-	DBPATH:    mustHaveEnv("DB_PATH"),
+	UserDB: DBConfig{
+		Path:  mustHaveEnv("USER_DB_PATH"),
+		URL:   mustHaveEnv("USER_DB_PATH"),
+		Token: mustHaveEnv("USER_DB_PATH"),
+	},
+	TokenDB: DBConfig{
+		Path:  mustHaveEnv("USER_DB_PATH"),
+		URL:   mustHaveEnv("USER_DB_PATH"),
+		Token: mustHaveEnv("USER_DB_PATH"),
+	},
 	HTTPPort:  mustHaveEnv("HTTP_PORT"),
 	GRPCPort:  mustHaveEnv("GRPC_PORT"),
 	BaseURL:   mustHaveEnv("BASE_URL"),

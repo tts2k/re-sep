@@ -1,6 +1,6 @@
 -- name: GetTokenByState :one
 SELECT * FROM Tokens
-WHERE state = ? AND expires > Datetime("now")
+WHERE state = ? AND expires > Datetime('now')
 LIMIT 1;
 
 -- name: InsertToken :one
@@ -24,4 +24,4 @@ RETURNING *;
 
 -- name: CleanTokens :exec
 DELETE FROM Tokens
-WHERE expires < Datetime("now");
+WHERE expires < Datetime('now');
