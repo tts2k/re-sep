@@ -1,4 +1,4 @@
-name: Content service Dockerhub push
+name: User service Dockerhub push
 
 on:
   push:
