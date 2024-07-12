@@ -38,9 +38,9 @@ func (c EnvConfig) ConstructDBPath(dbName, fileName string) string {
 
 	var dbPath string
 	if dbName == "user" {
-		dbPath = "file:" + path.Join(c.UserDB.Path, fileName) + "?cache=shared&_journal_mode=WAL"
+		dbPath = path.Join(c.UserDB.Path, fileName)
 	} else {
-		dbPath = "file:" + path.Join(c.UserDB.Token, fileName) + "?cache=shared&_journal_mode=WAL"
+		dbPath = path.Join(c.UserDB.Path, fileName)
 	}
 
 	return dbPath
@@ -76,13 +76,13 @@ func mustHaveEnvTestDefault(key string, defaultValue string) string {
 var config EnvConfig = EnvConfig{
 	UserDB: DBConfig{
 		Path:  mustHaveEnv("USER_DB_PATH"),
-		URL:   mustHaveEnv("USER_DB_PATH"),
-		Token: mustHaveEnv("USER_DB_PATH"),
+		URL:   mustHaveEnv("USER_DB_URL"),
+		Token: mustHaveEnv("USER_DB_TOKEN"),
 	},
 	TokenDB: DBConfig{
 		Path:  mustHaveEnv("USER_DB_PATH"),
-		URL:   mustHaveEnv("USER_DB_PATH"),
-		Token: mustHaveEnv("USER_DB_PATH"),
+		URL:   mustHaveEnv("USER_DB_URL"),
+		Token: mustHaveEnv("USER_DB_TOKEN"),
 	},
 	HTTPPort:  mustHaveEnv("HTTP_PORT"),
 	GRPCPort:  mustHaveEnv("GRPC_PORT"),

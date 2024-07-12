@@ -44,10 +44,10 @@ func InitTokenDB() {
 			dbURL,
 			libsql.WithAuthToken(token),
 		)
-		dbCon = sql.OpenDB(connector)
 		if err != nil {
 			log.Fatal(err)
 		}
+		dbCon = sql.OpenDB(connector)
 	}
 
 	db = dbCon
