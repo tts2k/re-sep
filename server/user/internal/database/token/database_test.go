@@ -7,10 +7,8 @@ import (
 )
 
 func TestInsertToken(t *testing.T) {
-	dbURL = "file:insertTest?mode=memory"
 	InitTokenDB()
 	defer db.Close()
-
 	t.Run("insert", func(t *testing.T) {
 		token := InsertToken(context.Background(), "test", "sub", 1*time.Second)
 		if token == nil {
@@ -30,10 +28,13 @@ func TestInsertToken(t *testing.T) {
 			t.Fatalf("Expected error on dup")
 		}
 	})
+
+	t.Cleanup(func() {
+		db.Exec("DELETE * FROM Tokens")
+	})
 }
 
 func TestGetTokenByState(t *testing.T) {
-	dbURL = "file:getTokenTest?mode=memory"
 	InitTokenDB()
 	defer db.Close()
 

@@ -1,9 +1,12 @@
 package server
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"time"
 
@@ -35,9 +38,10 @@ func (s *contentServer) GetArticle(ctx context.Context, in *pb.EntryName) (*pb.A
 	}
 	slog.Info("Getting article: " + in.EntryName)
 
-	article := s.db.GetArticle(in.EntryName)
-	if article == nil {
-		slog.Error("Get article from context failed", "s.db.GetArticle", nil)
+	// Get article
+	article, err := s.db.GetArticle(ctx, in.EntryName)
+	if article == nil || err != nil {
+		slog.Error("Get article from context failed", "s.db.GetArticle", err)
 		return nil, status.Errorf(codes.NotFound, "get article failed on entry name: %s", in.EntryName)
 	}
 
@@ -53,6 +57,7 @@ func (s *contentServer) GetArticle(ctx context.Context, in *pb.EntryName) (*pb.A
 		return nil, status.Errorf(codes.Internal, "processing modified time failed on entry name: %s, ", in.EntryName)
 	}
 
+	// Get User config
 	ucCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	userConfig, err := s.authClient.GetUserConfig(ucCtx, nil)
@@ -64,7 +69,19 @@ func (s *contentServer) GetArticle(ctx context.Context, in *pb.EntryName) (*pb.A
 		slog.Warn("Get user config success with error", "s.authClient.GetUserConfig", err)
 	}
 
-	resultHTML := utils.ApplyTemplate(article.HTMLText, userConfig)
+	// Uncompress
+	gzr, err := gzip.NewReader(bytes.NewBuffer(article.HTMLText))
+	if err != nil {
+		slog.Error("Uncompress content failed", "s.authClient.GetUserConfig", err)
+		return nil, status.Error(codes.Internal, "Internal error")
+	}
+	htmlText, err := io.ReadAll(gzr)
+	if err != nil {
+		slog.Error("Uncompress content failed", "io.ReadAll", err)
+		return nil, status.Error(codes.Internal, "Internal error")
+	}
+
+	resultHTML := utils.ApplyTemplate(string(htmlText), userConfig)
 
 	protoArticle := pb.Article{
 		Title:     article.Title,

@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS Users (
 	id UUID PRIMARY KEY,
 	name TEXT NOT NULL,
 	sub TEXT NOT NULL,
-	config BLOB,
+	config TEXT,
 	last_login DATETIME NOT NULL,
 	created_at DATETIME NOT NULL,
 	updated_at DATETIME NOT NULL,
@@ -20,6 +20,6 @@ FROM Users;
 CREATE TRIGGER IF NOT EXISTS user_config_update
 INSTEAD OF UPDATE OF config ON v_user_config
 BEGIN
-	UPDATE Users SET config = JSONB(NEW.config)
+	UPDATE Users SET config = JSON(NEW.config)
 	WHERE sub = NEW.sub;
 END;

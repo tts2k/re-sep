@@ -7,7 +7,6 @@ import (
 )
 
 func TestInsertUser(t *testing.T) {
-	dbURL = "file:insertUserTest?mode=memory"
 	InitUserDB()
 	defer db.Close()
 
@@ -18,7 +17,6 @@ func TestInsertUser(t *testing.T) {
 }
 
 func TestGetUserByUniqueID(t *testing.T) {
-	dbURL = "file:getUserTest?mode=memory"
 	InitUserDB()
 	defer db.Close()
 
@@ -31,7 +29,6 @@ func TestGetUserByUniqueID(t *testing.T) {
 }
 
 func TestUpdateUsername(t *testing.T) {
-	dbURL = "file:testUpdateUsername?mode=memory"
 	InitUserDB()
 	defer db.Close()
 
@@ -47,7 +44,6 @@ func TestUpdateUsername(t *testing.T) {
 }
 
 func TestUpdateUserConfig(t *testing.T) {
-	dbURL = "file:testUpdateConfig?mode=memory"
 	InitUserDB()
 	defer db.Close()
 
@@ -60,7 +56,6 @@ func TestUpdateUserConfig(t *testing.T) {
 }
 
 func TestGetUserConfig(t *testing.T) {
-	dbURL = "file:testGetUserConfig?mode=memory"
 	InitUserDB()
 	defer db.Close()
 

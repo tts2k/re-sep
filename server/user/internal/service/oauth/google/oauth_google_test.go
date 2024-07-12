@@ -4,7 +4,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/oauth2"
 )
 
@@ -29,10 +28,6 @@ func TestGoogleLogin(t *testing.T) {
 
 	result := res.Result()
 	cookies := result.Cookies()
-
-	for _, v := range cookies {
-		println(v.Name, ":", v.Value)
-	}
 
 	if len(cookies) != 2 {
 		t.Fatalf("Invalid cookie length. Expected %d but got %d instead", 2, len(cookies))

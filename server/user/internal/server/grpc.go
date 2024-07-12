@@ -53,7 +53,6 @@ func (*AuthServer) GetUserConfig(ctx context.Context, _ *pb.Empty) (*pb.UserConf
 	if err != nil || user == nil {
 		getConfig(&userDB.DefaultUserConfig)
 		slog.Error("Get user from context failed", "authService.PbGetUser", err)
-		println(result.Font)
 		return result, nil
 	}
 
@@ -61,7 +60,6 @@ func (*AuthServer) GetUserConfig(ctx context.Context, _ *pb.Empty) (*pb.UserConf
 	if userConfig == nil {
 		getConfig(&userDB.DefaultUserConfig)
 		slog.Error("User has no config", "userDB.GetUserConfig", err)
-		println(result.Font)
 		return result, nil
 	}
 

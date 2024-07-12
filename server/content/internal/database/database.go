@@ -10,12 +10,12 @@ import (
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/tursodatabase/go-libsql"
 )
 
 type Service interface {
 	Health() map[string]string
-	GetArticle(entryName string) *Article
+	GetArticle(context context.Context, entryName string) (*Article, error)
 }
 
 type service struct {
@@ -23,7 +23,9 @@ type service struct {
 }
 
 var (
-	dburl      = os.Getenv("DB_URL")
+	dbPath     = os.Getenv("DB_PATH")
+	dbURL      = os.Getenv("DB_URL")
+	authToken  = os.Getenv("DB_AUTH_TOKEN")
 	dbInstance *service
 )
 
@@ -33,10 +35,15 @@ func New() Service {
 		return dbInstance
 	}
 
-	db, err := sql.Open("sqlite3", dburl)
+	var db *sql.DB
+	var err error
+	// if turso
+	var connector *libsql.Connector
+	connector, err = libsql.NewEmbeddedReplicaConnector(dbPath, dbURL,
+		libsql.WithAuthToken(authToken),
+	)
+	db = sql.OpenDB(connector)
 	if err != nil {
-		// This will not be a connection error, but a DSN parse error or
-		// another initialization error.
 		log.Fatal(err)
 	}
 
@@ -46,18 +53,18 @@ func New() Service {
 	return dbInstance
 }
 
-func (s *service) GetArticle(entryName string) *Article {
+func (s *service) GetArticle(ctx context.Context, entryName string) (*Article, error) {
 	row := s.db.QueryRow(`
 		SELECT title, entry_name, issued, modified, html_text, json(author), json(toc)
 		FROM Articles WHERE entry_name = ?
 	`, entryName)
 	if row.Err() != nil {
 		slog.Error(row.Err().Error())
-		return nil
+		return nil, nil
 	}
 
 	article := Article{}
-	row.Scan(
+	err := row.Scan(
 		&article.Title,
 		&article.EntryName,
 		&article.Issued,
@@ -67,7 +74,7 @@ func (s *service) GetArticle(entryName string) *Article {
 		&article.TOC,
 	)
 
-	return &article
+	return &article, err
 }
 
 func (s *service) Health() map[string]string {
