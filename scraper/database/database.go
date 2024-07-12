@@ -60,7 +60,7 @@ func InsertArticle(article scraper.Article) error {
 		INSERT INTO articles (
 			id, title, entry_name, issued, modified, html_text, author, toc
 		) VALUES (
-			?, ?, ?, ?, ?, ?, jsonb(?), jsonb(?)
+			?, ?, ?, ?, ?, ?, json(?), json(?)
 		)
 		ON CONFLICT (entry_name) DO UPDATE SET
 			title=excluded.title,
