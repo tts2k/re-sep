@@ -23,7 +23,7 @@ func newUnstartedTestServer() *httptest.Server {
 
 		file, _ := os.ReadFile("./testdata/full_document.html")
 
-		w.Write(file)
+		_, _ = w.Write(file)
 	})
 
 	return httptest.NewUnstartedServer(mux)

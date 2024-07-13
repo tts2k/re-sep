@@ -59,8 +59,17 @@ func init() {
 
 func Login(w http.ResponseWriter, r *http.Request) {
 	// Create state cookie
-	oAuthState := authUtils.RandString(16)
-	nonce := authUtils.RandString(16)
+	oAuthState, err := authUtils.RandString(16)
+	if err != nil {
+		slog.Error("Auth state generation failed", "authUtils.RandString", err)
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+	}
+
+	nonce, err := authUtils.RandString(16)
+	if err != nil {
+		slog.Error("Nonce generation failed", "authUtils.RandString", err)
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+	}
 
 	authUtils.SetCallbackCookie(w, r, "state", oAuthState)
 	authUtils.SetCallbackCookie(w, r, "nonce", nonce)
@@ -126,7 +135,10 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	var claims struct {
 		Sub string `json:"sub"`
 	}
-	idToken.Claims(&claims)
+	err = idToken.Claims(&claims)
+	if err != nil {
+		slog.Warn("id token claim failed", "Claims", err)
+	}
 
 	user := userDB.GetUserByUniqueID(context.Background(), google.name+":"+claims.Sub)
 	if user == nil {

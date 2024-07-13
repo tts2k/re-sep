@@ -191,7 +191,7 @@ func Single(url string) (Article, error) {
 		var b bytes.Buffer
 
 		gz := gzip.NewWriter(&b)
-		gz.Write([]byte(HTMLText))
+		_, _ = gz.Write([]byte(HTMLText))
 		gz.Close()
 
 		article.HTMLText = b.Bytes()

@@ -3,22 +3,7 @@ package service
 import (
 	"net/http/httptest"
 	"testing"
-
-	"golang.org/x/oauth2"
 )
-
-func newTestOauthConf(url string) oauth2.Config {
-	return oauth2.Config{
-		ClientID:     "CLIENT_ID",
-		ClientSecret: "CLIENT_SECRET",
-		RedirectURL:  "REDIRECT_URL",
-		Scopes:       []string{"scope1", "scope2"},
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  url + "/auth",
-			TokenURL: url + "/token",
-		},
-	}
-}
 
 func TestGoogleLogin(t *testing.T) {
 	req := httptest.NewRequest("POST", "/", nil)
