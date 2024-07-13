@@ -6,11 +6,11 @@ on:
       - master
     paths:
       - "scraper/**"
-      - ".github/workflows/**"
+      - ".github/workflows/scraper-check.yaml"
   pull_request:
     paths:
       - "scraper/**"
-      - ".github/workflows/**"
+      - ".github/workflows/scraper-check.yaml"
 
 permissions:
   contents: read
@@ -26,8 +26,10 @@ jobs:
         with:
           go-version: stable
       - name: Install dependencies
+        working-directory: ./scraper
         run: go get .
       - name: Test with the Go CLI
+        working-directory: ./scraper
         run: go test ./...
 
   golangci:
@@ -41,3 +43,4 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.59
+          working-directory: ./scraper
