@@ -23,19 +23,6 @@ func (s *Server) RegisterRoutes() http.Handler {
 	return mux
 }
 
-func (s *Server) helloWorldHandler(w http.ResponseWriter, _ *http.Request) {
-
-	resp := make(map[string]string)
-	resp["message"] = "Hello World"
-
-	jsonResp, err := json.Marshal(resp)
-	if err != nil {
-		log.Fatalf("error handling JSON marshal. Err: %v", err)
-	}
-
-	_, _ = w.Write(jsonResp)
-}
-
 func (s *Server) handleOAuthLogin(w http.ResponseWriter, r *http.Request) {
 	provider := r.PathValue("provider")
 	if provider != "google" {
@@ -89,5 +76,5 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("error handling JSON marshal. Err: %v", err)
 	}
 
-	w.Write(jsonRes)
+	_, _ = w.Write(jsonRes)
 }

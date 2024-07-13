@@ -30,7 +30,7 @@ func TestInsertToken(t *testing.T) {
 	})
 
 	t.Cleanup(func() {
-		db.Exec("DELETE * FROM Tokens")
+		_, _ = db.Exec("DELETE FROM Tokens")
 	})
 }
 

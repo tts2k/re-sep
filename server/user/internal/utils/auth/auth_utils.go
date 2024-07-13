@@ -48,10 +48,13 @@ func HTTPCall(method, rawURL, accessToken string) ([]byte, error) {
 	return body, nil
 }
 
-func RandString(nByte int) string {
+func RandString(nByte int) (string, error) {
 	b := make([]byte, nByte)
-	rand.Read(b)
-	return base64.URLEncoding.EncodeToString(b)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	return base64.URLEncoding.EncodeToString(b), nil
 }
 
 func SetCallbackCookie(w http.ResponseWriter, r *http.Request, name, value string) {

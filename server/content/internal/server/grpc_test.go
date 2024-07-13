@@ -25,7 +25,7 @@ func (mdb *mockDatabaseService) Health() map[string]string {
 func (mdb *mockDatabaseService) GetArticle(ctx context.Context, _ string) (*database.Article, error) {
 	var b bytes.Buffer
 	gzw := gzip.NewWriter(&b)
-	gzw.Write([]byte("<div>test<div>"))
+	_, _ = gzw.Write([]byte("<div>test<div>"))
 	gzw.Close()
 
 	return &database.Article{

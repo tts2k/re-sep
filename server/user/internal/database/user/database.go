@@ -186,7 +186,10 @@ func GetUserConfig(ctx context.Context, sub string) *UserConfig {
 	}
 
 	var userConfig UserConfig
-	json.Unmarshal([]byte(result.Config), &userConfig)
+	err = json.Unmarshal([]byte(result.Config), &userConfig)
+	if err != nil {
+		slog.Error("Cannot parse user config", "json_error", err)
+	}
 
 	return &userConfig
 }

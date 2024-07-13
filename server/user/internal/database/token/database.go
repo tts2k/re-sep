@@ -55,7 +55,7 @@ func InitTokenDB() {
 
 	queryStrings := strings.Split(string(schema), ";\n")
 	for _, query := range queryStrings {
-		db.Exec(query)
+		_, _ = db.Exec(query)
 	}
 }
 

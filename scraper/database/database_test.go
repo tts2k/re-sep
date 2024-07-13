@@ -47,7 +47,10 @@ func TestCreateTable(t *testing.T) {
 
 	var result bool
 	row := db.QueryRow(`SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE type="table" AND name="articles")`)
-	row.Scan(&result)
+	err = row.Scan(&result)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	if !result {
 		t.Fatal("Table creation failed.")

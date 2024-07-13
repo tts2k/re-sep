@@ -10,15 +10,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"re-sep-content/internal/database"
-
 	pb "re-sep-content/internal/proto"
 )
-
-type Server struct {
-	db   database.Service
-	port int
-}
 
 const DefaultPort = "5000"
 
@@ -55,7 +48,10 @@ func Serve() error {
 	}
 	slog.Info(fmt.Sprintf("Listening on port %s", port))
 
-	grpcServer.Serve(lis)
+	err = grpcServer.Serve(lis)
+	if err != nil {
+		slog.Error("Failed to start grpcServer", "grpcServer.Serve", err)
+	}
 
 	return nil
 }
