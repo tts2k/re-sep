@@ -1,4 +1,4 @@
-name: golangci-lint
+name: Scraper check
 on:
   push:
     branches:
