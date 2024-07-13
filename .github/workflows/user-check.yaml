@@ -27,7 +27,7 @@ jobs:
           go-version: stable
       - name: Install dependencies
         working-directory: ./server/user
-        run: go get .
+        run: go get ./cmd/api
       - name: Test with the Go CLI
         working-directory: ./server/user
         run: go test ./...
