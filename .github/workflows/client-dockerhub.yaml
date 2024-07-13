@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - "client/**"
-      - ".github/workflows/**"
+      - ".github/workflows/client-dockerhub.yaml"
     branches:
       - 'main'
 
