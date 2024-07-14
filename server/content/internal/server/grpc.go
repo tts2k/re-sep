@@ -19,6 +19,16 @@ import (
 	"re-sep-content/internal/server/utils"
 )
 
+var DefaultUserConfig = pb.UserConfig{
+	Font:     "serif",
+	FontSize: 3,
+	Justify:  false,
+	Margin: &pb.Margin{
+		Left:  3,
+		Right: 3,
+	},
+}
+
 type contentServer struct {
 	pb.UnimplementedContentServer
 	db         database.Service
@@ -60,10 +70,11 @@ func (s *contentServer) GetArticle(ctx context.Context, in *pb.EntryName) (*pb.A
 	// Get User config
 	ucCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	userConfig, err := s.authClient.GetUserConfig(ucCtx, nil)
+	var userConfig *pb.UserConfig
+	userConfig, err = s.authClient.GetUserConfig(ucCtx, nil)
 	if userConfig == nil && err != nil {
-		slog.Error("Get user config failed", "s.authClient.GetUserConfig", err)
-		return nil, status.Error(codes.Internal, "Internal error")
+		slog.Warn("Get user config failed", "s.authClient.GetUserConfig", err)
+		userConfig = &DefaultUserConfig
 	}
 	if err != nil {
 		slog.Warn("Get user config success with error", "s.authClient.GetUserConfig", err)
