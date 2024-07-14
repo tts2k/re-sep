@@ -1,19 +1,8 @@
 import { browser } from "$app/environment";
-import type { Font } from "@/stylePresets";
+import type { UserConfig } from "@/proto/user_config";
 import { writable } from "svelte/store";
 
-export type UserConfig = {
-	layered: boolean;
-	font: Font;
-	fontSize: number;
-	justify: boolean;
-	margin: {
-		left: number;
-		right: number;
-	};
-};
-
-const defaultConfig: UserConfig = {
+const defaultConfig: UserConfig & { layered: boolean } = {
 	layered: false,
 	font: "serif",
 	fontSize: 3,

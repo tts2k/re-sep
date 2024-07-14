@@ -2,13 +2,9 @@ syntax = "proto3";
 
 package content;
 
-option go_package = "re-sep-content/internal/proto";
+option go_package = "re-sep/proto";
 
 import "google/protobuf/timestamp.proto";
-
-service Content {
-	rpc GetArticle(EntryName) returns (Article) {}
-}
 
 message EntryName {
 	string entryName = 1;

@@ -1,7 +1,11 @@
-import type { AuthResponse, AuthService } from "./type";
+import { userConfig } from "@/stores/userConfig";
+import type { AuthService } from "./type";
+import { get } from "svelte/store";
+import type { UserConfig } from "@/proto/user_config";
+import type { AuthResponse } from "@/proto/auth";
 
 const mockUser = {
-	id: "demo",
+	sub: "demo",
 	name: "demo",
 };
 
@@ -14,8 +18,13 @@ const auth = async (): Promise<AuthResponse> => {
 	return mockAuthResponse;
 };
 
+const updateUserConfig = async (): Promise<UserConfig> => {
+	return get(userConfig);
+};
+
 const service: AuthService = {
 	auth,
+	updateUserConfig,
 };
 
 export default service;

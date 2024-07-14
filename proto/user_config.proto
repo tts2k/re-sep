@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package config;
+
+option go_package = "re-sep/proto";
+
+message Margin {
+	int32 left = 1;
+	int32 right = 2;
+}
+
+message UserConfig {
+	string font = 1;
+	int32 fontSize = 2;
+	bool justify = 3;
+	Margin margin = 4;
+}

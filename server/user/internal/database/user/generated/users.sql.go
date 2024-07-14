@@ -96,7 +96,7 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (User, e
 const updateUserConfig = `-- name: UpdateUserConfig :one
 UPDATE v_user_config
 SET config = ?
-WHERE SUB = ?
+WHERE sub = ?
 RETURNING sub, config
 `
 

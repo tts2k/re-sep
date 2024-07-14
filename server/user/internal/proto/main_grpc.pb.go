@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v5.27.2
-// source: proto/auth.proto
+// source: main.proto
 
 package proto
 
@@ -38,7 +38,7 @@ func NewAuthClient(cc grpc.ClientConnInterface) AuthClient {
 
 func (c *authClient) Auth(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*AuthResponse, error) {
 	out := new(AuthResponse)
-	err := c.cc.Invoke(ctx, "/auth.Auth/Auth", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/main.Auth/Auth", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (c *authClient) Auth(ctx context.Context, in *Empty, opts ...grpc.CallOptio
 
 func (c *authClient) UpdateUsername(ctx context.Context, in *Username, opts ...grpc.CallOption) (*User, error) {
 	out := new(User)
-	err := c.cc.Invoke(ctx, "/auth.Auth/UpdateUsername", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/main.Auth/UpdateUsername", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (c *authClient) UpdateUsername(ctx context.Context, in *Username, opts ...g
 
 func (c *authClient) UpdateUserConfig(ctx context.Context, in *UserConfig, opts ...grpc.CallOption) (*UserConfig, error) {
 	out := new(UserConfig)
-	err := c.cc.Invoke(ctx, "/auth.Auth/UpdateUserConfig", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/main.Auth/UpdateUserConfig", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (c *authClient) UpdateUserConfig(ctx context.Context, in *UserConfig, opts 
 
 func (c *authClient) GetUserConfig(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*UserConfig, error) {
 	out := new(UserConfig)
-	err := c.cc.Invoke(ctx, "/auth.Auth/GetUserConfig", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/main.Auth/GetUserConfig", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +122,7 @@ func _Auth_Auth_Handler(srv interface{}, ctx context.Context, dec func(interface
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/auth.Auth/Auth",
+		FullMethod: "/main.Auth/Auth",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthServer).Auth(ctx, req.(*Empty))
@@ -140,7 +140,7 @@ func _Auth_UpdateUsername_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/auth.Auth/UpdateUsername",
+		FullMethod: "/main.Auth/UpdateUsername",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthServer).UpdateUsername(ctx, req.(*Username))
@@ -158,7 +158,7 @@ func _Auth_UpdateUserConfig_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/auth.Auth/UpdateUserConfig",
+		FullMethod: "/main.Auth/UpdateUserConfig",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthServer).UpdateUserConfig(ctx, req.(*UserConfig))
@@ -176,7 +176,7 @@ func _Auth_GetUserConfig_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/auth.Auth/GetUserConfig",
+		FullMethod: "/main.Auth/GetUserConfig",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthServer).GetUserConfig(ctx, req.(*Empty))
@@ -188,7 +188,7 @@ func _Auth_GetUserConfig_Handler(srv interface{}, ctx context.Context, dec func(
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Auth_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "auth.Auth",
+	ServiceName: "main.Auth",
 	HandlerType: (*AuthServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -209,5 +209,91 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/auth.proto",
+	Metadata: "main.proto",
+}
+
+// ContentClient is the client API for Content service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type ContentClient interface {
+	GetArticle(ctx context.Context, in *EntryName, opts ...grpc.CallOption) (*Article, error)
+}
+
+type contentClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewContentClient(cc grpc.ClientConnInterface) ContentClient {
+	return &contentClient{cc}
+}
+
+func (c *contentClient) GetArticle(ctx context.Context, in *EntryName, opts ...grpc.CallOption) (*Article, error) {
+	out := new(Article)
+	err := c.cc.Invoke(ctx, "/main.Content/GetArticle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ContentServer is the server API for Content service.
+// All implementations must embed UnimplementedContentServer
+// for forward compatibility
+type ContentServer interface {
+	GetArticle(context.Context, *EntryName) (*Article, error)
+	mustEmbedUnimplementedContentServer()
+}
+
+// UnimplementedContentServer must be embedded to have forward compatible implementations.
+type UnimplementedContentServer struct {
+}
+
+func (UnimplementedContentServer) GetArticle(context.Context, *EntryName) (*Article, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetArticle not implemented")
+}
+func (UnimplementedContentServer) mustEmbedUnimplementedContentServer() {}
+
+// UnsafeContentServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ContentServer will
+// result in compilation errors.
+type UnsafeContentServer interface {
+	mustEmbedUnimplementedContentServer()
+}
+
+func RegisterContentServer(s grpc.ServiceRegistrar, srv ContentServer) {
+	s.RegisterService(&Content_ServiceDesc, srv)
+}
+
+func _Content_GetArticle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EntryName)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContentServer).GetArticle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/main.Content/GetArticle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContentServer).GetArticle(ctx, req.(*EntryName))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Content_ServiceDesc is the grpc.ServiceDesc for Content service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Content_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "main.Content",
+	HandlerType: (*ContentServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetArticle",
+			Handler:    _Content_GetArticle_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "main.proto",
 }
