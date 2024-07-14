@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/format"
+	"iter"
 	"os"
 	"strings"
 	"text/template"
@@ -25,27 +26,59 @@ type Token = struct {
 var f embed.FS
 var pkgName string
 
-func printGoFields(tokens *[]Token, builder *strings.Builder) {
-	for _, token := range *tokens {
-		switch token.Kind {
+func PbRefIter(pbRef protoreflect.Message) iter.Seq2[[3]string, protoreflect.Message] {
+	fields := pbRef.Descriptor().Fields()
+
+	return func(yield func([3]string, protoreflect.Message) bool) {
+		for i := 0; i < fields.Len(); i++ {
+			fd := fields.Get(i)
+			v := pbRef.Get(fd)
+			name := string(fd.Name())
+
+			var kind string
+			var message protoreflect.Message
+			if fd.Kind().String() == "message" {
+				kind = string(fd.Message().FullName())
+				message = v.Message()
+			} else {
+				kind = string(fd.Kind().String())
+				message = nil
+			}
+
+			if !yield([3]string{name, kind, v.String()}, message) {
+				return
+			}
+		}
+	}
+}
+
+const (
+	Name  = 0
+	Kind  = 1
+	Value = 2
+)
+
+func printGoFields(pbRef protoreflect.Message, builder *strings.Builder) {
+	for token, message := range PbRefIter(pbRef) {
+		switch token[Kind] {
 		case "string":
-			fmt.Fprintf(builder, "%s: \"%s\",\n", token.Name, token.Value)
+			fmt.Fprintf(builder, "%s: \"%s\",\n", token[Name], token[Value])
 		case "int32":
 			fallthrough
 		case "bool":
-			fmt.Fprintf(builder, "%s: %s,\n", token.Name, token.Value)
+			fmt.Fprintf(builder, "%s: %s,\n", token[Name], token[Value])
 		default:
-			fmt.Fprintf(builder, "%s: &%s{\n", token.Name, strings.Replace(token.Kind, pkgName, "pb", 1))
-			printGoFields(token.Value.(*[]Token), builder)
+			fmt.Fprintf(builder, "%s: &%s{\n", token[Name], strings.Replace(token[Kind], pkgName, "pb", 1))
+			printGoFields(message, builder)
 			fmt.Fprintln(builder, "},")
 		}
 	}
 }
 
-func printGo(tokens *[]Token) {
+func printGo(pbRef protoreflect.Message) {
 	builder := &strings.Builder{}
 	fmt.Fprintln(builder, "var DefaultConfig = &pb.UserConfig{")
-	printGoFields(tokens, builder)
+	printGoFields(pbRef, builder)
 	fmt.Fprintln(builder, "}")
 
 	tmpl, err := template.ParseFS(f, "go.tmpl")
@@ -78,33 +111,6 @@ func printGo(tokens *[]Token) {
 	fmt.Println(string(res))
 }
 
-func TokenizePb(ref protoreflect.Message, tokens *[]Token) {
-	fields := ref.Descriptor().Fields()
-
-	for i := 0; i < fields.Len(); i++ {
-		fd := fields.Get(i)
-		v := ref.Get(fd)
-
-		if fd.Kind().String() == "message" {
-			newTokens := []Token{}
-			TokenizePb(v.Message(), &newTokens)
-
-			*tokens = append(*tokens, Token{
-				Name:  string(fd.Name()),
-				Kind:  string(fd.Message().FullName()),
-				Value: &newTokens,
-			})
-			continue
-		}
-
-		*tokens = append(*tokens, Token{
-			Name:  string(fd.Name()),
-			Kind:  fd.Kind().String(),
-			Value: v.String(),
-		})
-	}
-}
-
 func main() {
 	fi, err := os.Open("./default_config.json")
 	if err != nil {
@@ -120,9 +126,6 @@ func main() {
 
 	ref := defaultConfig.ProtoReflect()
 	pkgName = string(ref.Descriptor().ParentFile().Package())
-	tokens := []Token{}
 
-	TokenizePb(ref, &tokens)
-
-	printGo(&tokens)
+	printGo(ref)
 }
