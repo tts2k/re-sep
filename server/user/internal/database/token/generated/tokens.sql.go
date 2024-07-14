@@ -7,7 +7,6 @@ package database
 
 import (
 	"context"
-	"time"
 )
 
 const cleanTokens = `-- name: CleanTokens :exec
@@ -58,7 +57,7 @@ RETURNING state, userid, expires
 type InsertTokenParams struct {
 	State   string
 	Userid  string
-	Expires time.Time
+	Expires string
 }
 
 func (q *Queries) InsertToken(ctx context.Context, arg InsertTokenParams) (Token, error) {
@@ -76,7 +75,7 @@ RETURNING state, userid, expires
 `
 
 type RefreshTokenParams struct {
-	Expires time.Time
+	Expires string
 	State   string
 }
 

@@ -7,7 +7,6 @@ package database
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -17,7 +16,7 @@ DELETE FROM Users
 WHERE CAST(Julianday(Datetime('now') - Julianday(last_login)) AS Integer) >= ?
 `
 
-func (q *Queries) CleanInactiveUsers(ctx context.Context, lastLogin time.Time) error {
+func (q *Queries) CleanInactiveUsers(ctx context.Context, lastLogin string) error {
 	_, err := q.db.ExecContext(ctx, cleanInactiveUsers, lastLogin)
 	return err
 }

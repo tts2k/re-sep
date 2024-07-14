@@ -6,7 +6,6 @@ package database
 
 import (
 	"database/sql"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -16,9 +15,9 @@ type User struct {
 	Name      string
 	Sub       string
 	Config    sql.NullString
-	LastLogin time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	LastLogin string
+	CreatedAt string
+	UpdatedAt string
 }
 
 type VUserConfig struct {

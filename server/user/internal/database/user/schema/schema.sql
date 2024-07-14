@@ -3,9 +3,9 @@ CREATE TABLE IF NOT EXISTS Users (
 	name TEXT NOT NULL,
 	sub TEXT NOT NULL,
 	config TEXT,
-	last_login DATETIME NOT NULL,
-	created_at DATETIME NOT NULL,
-	updated_at DATETIME NOT NULL,
+	last_login TEXT NOT NULL,
+	created_at TEXT NOT NULL,
+	updated_at TEXT NOT NULL,
 
 	UNIQUE(sub)
 );

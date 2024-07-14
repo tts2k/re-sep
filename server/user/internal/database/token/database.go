@@ -82,7 +82,7 @@ func InsertToken(ctx context.Context, state string, userID string, duration time
 	params := g.InsertTokenParams{
 		State:   state,
 		Userid:  userID,
-		Expires: expires,
+		Expires: expires.Format(time.RFC3339),
 	}
 
 	result, err := queries.InsertToken(ctx, params)
@@ -98,7 +98,7 @@ func RefreshToken(ctx context.Context, state string, duration time.Duration) *g.
 	expires := time.Now().Add(duration)
 	params := g.RefreshTokenParams{
 		State:   state,
-		Expires: expires,
+		Expires: expires.Format(time.RFC3339),
 	}
 
 	result, err := queries.RefreshToken(ctx, params)

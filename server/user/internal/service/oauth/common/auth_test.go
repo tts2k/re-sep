@@ -60,7 +60,11 @@ func TestAuth(t *testing.T) {
 		t.Fatalf("Error getting token. Expected a token in database.")
 	}
 
-	if !token.Expires.After(time.Now().Add(10 * time.Second)) {
+	expires, err := time.Parse(time.RFC3339, token.Expires)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !expires.After(time.Now().Add(10 * time.Second)) {
 		t.Fatal("Token was not refreshed. Expected a token that last a week.")
 	}
 }

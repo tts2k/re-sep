@@ -30,8 +30,13 @@ func PbAuth(ctx context.Context) (*pb.AuthResponse, error) {
 		slog.Error("Error getting token", "tokenDB.GetTokenByState", nil)
 		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
 	}
-	if time.Now().After(token.Expires) {
-		slog.Error("Token expired", "Token.Expires", token.Expires.Format(time.RFC3339))
+	expires, err := time.Parse(time.RFC3339, token.Expires)
+	if err != nil {
+		slog.Error("Error parsing time", "time.Parse", nil)
+		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
+	}
+	if time.Now().After(expires) {
+		slog.Error("Token expired", "Token.Expires", expires)
 		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
 	}
 
