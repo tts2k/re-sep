@@ -1,3 +1,5 @@
+import type { UserConfig } from "@/stores/userConfig";
+
 export type User = {
 	id: string;
 	name: string;
@@ -13,4 +15,5 @@ export type AuthResponse = {
  */
 export interface AuthService {
 	auth(token: string): Promise<AuthResponse>;
+	updateUserConfig(token: string): Promise<UserConfig>;
 }
