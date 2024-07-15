@@ -22,6 +22,6 @@ DELETE FROM Tokens
 WHERE state = ?
 RETURNING *;
 
--- name: CleanTokens :exec
+-- name: CleanTokens :execrows
 DELETE FROM Tokens
 WHERE expires < Datetime('now');

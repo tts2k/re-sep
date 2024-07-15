@@ -129,3 +129,12 @@ func DeleteToken(ctx context.Context, state string) g.Token {
 
 	return result
 }
+
+func CleanTokens(ctx context.Context) int64 {
+	count, err := queries.CleanTokens(ctx)
+	if err != nil {
+		slog.Error("CleanTokens:", "error", err)
+	}
+
+	return count
+}

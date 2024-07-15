@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net"
+	"time"
 
 	"google.golang.org/grpc"
 
@@ -12,6 +14,7 @@ import (
 	"re-sep-user/internal/server"
 	config "re-sep-user/internal/system/config"
 	logger "re-sep-user/internal/system/logger"
+	task "re-sep-user/internal/system/task"
 
 	pb "re-sep-user/internal/proto"
 )
@@ -50,6 +53,13 @@ func main() {
 			slog.Error("Error serving HTTP", "server.ListenAndServe()", err)
 		}
 	}()
+
+	cleanTokens := func(ctx context.Context) error {
+		tokenDB.CleanTokens(ctx)
+		return nil
+	}
+
+	go task.StartTask(context.Background(), cleanTokens, 24*time.Hour, "Clean tokens")
 
 	select {}
 }

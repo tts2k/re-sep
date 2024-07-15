@@ -11,14 +11,17 @@ import (
 	"github.com/google/uuid"
 )
 
-const cleanInactiveUsers = `-- name: CleanInactiveUsers :exec
+const cleanInactiveUsers = `-- name: CleanInactiveUsers :execrows
 DELETE FROM Users
 WHERE CAST(Julianday(Datetime('now') - Julianday(last_login)) AS Integer) >= ?
 `
 
-func (q *Queries) CleanInactiveUsers(ctx context.Context, lastLogin string) error {
-	_, err := q.db.ExecContext(ctx, cleanInactiveUsers, lastLogin)
-	return err
+func (q *Queries) CleanInactiveUsers(ctx context.Context, lastLogin string) (int64, error) {
+	result, err := q.db.ExecContext(ctx, cleanInactiveUsers, lastLogin)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 const deleteUser = `-- name: DeleteUser :exec
