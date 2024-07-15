@@ -1,17 +1,7 @@
-import type { Font } from "$lib/stylePresets";
+import type { UserConfig } from "@/proto/user_config";
 import { writable } from "svelte/store";
 
-type PreviewConfig = {
-	font: Font;
-	fontSize: number;
-	justify: boolean;
-	margin: {
-		left: number;
-		right: number;
-	};
-};
-
-const defaultPreviewConfig: PreviewConfig = {
+const defaultPreviewConfig: UserConfig = {
 	font: "serif",
 	fontSize: 3,
 	justify: false,
@@ -21,4 +11,4 @@ const defaultPreviewConfig: PreviewConfig = {
 	},
 };
 
-export const previewConfig = writable<PreviewConfig>(defaultPreviewConfig);
+export const previewConfig = writable<UserConfig>(defaultPreviewConfig);

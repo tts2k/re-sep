@@ -1,12 +1,12 @@
 /* Font */
-export const AvailableFonts = ["serif", "sans-serif", "Open Dyslexic"] as const;
+export const AvailableFonts = ["serif", "sans-serif", "Open Dyslexic"];
 export type Font = (typeof AvailableFonts)[number];
 
 export const FontPreset: Record<Font, string> = {
 	serif: "font-serif",
 	"sans-serif": "font-sans",
 	"Open Dyslexic": "font-open-dyslexic",
-} as const;
+};
 
 /* biome-ignore lint: lint/suspiciouos/noConstEnum: for limited use and
  * experiment only, as const enum can break stuff

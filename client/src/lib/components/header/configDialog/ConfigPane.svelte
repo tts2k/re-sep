@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Label } from "@/components/ui/label";
 	import * as Select from "@/components/ui/select";
-	import { AvailableFonts, type Font } from "@/stylePresets";
+	import { AvailableFonts } from "@/stylePresets";
 	import { Slider } from "@/components/ui/slider";
 	import { Button } from "@/components/ui/button";
 	import { Checkbox } from "@/components/ui/checkbox";
@@ -29,7 +29,7 @@
 		$previewConfig.fontSize = value[0];
 	};
 
-	const onFontSelectChange = (selected: Selected<Font> | undefined) => {
+	const onFontSelectChange = (selected: Selected<string> | undefined) => {
 		if (!selected) {
 			return;
 		}
@@ -51,6 +51,9 @@
 
 	const createOnMarginChange = (direction: "left" | "right") => {
 		return (value: number[]) => {
+			if (!$previewConfig.margin) {
+				return
+			}
 			$previewConfig.margin[direction] = value[0];
 		};
 	};
@@ -113,7 +116,7 @@
 				min={1}
 				max={5}
 				step={1}
-				value={[$previewConfig.margin.left]}
+				value={[$previewConfig.margin?.left || 0]}
 				onValueChange={createOnMarginChange("left")}
 			/>
 		</div>
@@ -125,7 +128,7 @@
 				min={1}
 				max={5}
 				step={1}
-				value={[$previewConfig.margin.right]}
+				value={[$previewConfig.margin?.right || 0]}
 				onValueChange={createOnMarginChange("right")}
 			/>
 		</div>
