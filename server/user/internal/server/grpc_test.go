@@ -36,11 +36,6 @@ func initTestDB(t *testing.T) {
 	}
 }
 
-func closeTestDB() {
-	tokenDB.CloseTokenDB()
-	userDB.CloseUserDB()
-}
-
 func TestGetUserConfig(t *testing.T) {
 	type TestCase = struct {
 		err    error

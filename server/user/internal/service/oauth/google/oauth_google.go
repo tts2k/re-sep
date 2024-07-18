@@ -8,8 +8,7 @@ import (
 	"path"
 	"time"
 
-	tokenDB "re-sep-user/internal/database/token"
-	userDB "re-sep-user/internal/database/user"
+	"re-sep-user/internal/store"
 
 	common "re-sep-user/internal/service/oauth/common"
 	config "re-sep-user/internal/system/config"
@@ -19,6 +18,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
+var systemConfig = config.Config()
+
 type googleOIDC struct {
 	provider    *oidc.Provider
 	verifier    *oidc.IDTokenVerifier
@@ -26,16 +27,13 @@ type googleOIDC struct {
 	name        string
 }
 
-var google googleOIDC
-var systemConfig config.EnvConfig = config.Config()
-
-type OAuthStrategy interface {
-	Login(w http.ResponseWriter, r *http.Request)
-	Callback(w http.ResponseWriter, r *http.Request)
+type GoogleOAuth struct {
+	google    googleOIDC
+	authStore *store.AuthStore
 }
 
-func init() {
-	google = googleOIDC{name: "google"}
+func NewGoogleOAuth(authStore *store.AuthStore) *GoogleOAuth {
+	google := googleOIDC{name: "google"}
 
 	oidcProvider, err := oidc.NewProvider(context.Background(), "https://accounts.google.com")
 	if err != nil {
@@ -55,9 +53,11 @@ func init() {
 		Scopes:       []string{oidc.ScopeOpenID},
 		Endpoint:     google.provider.Endpoint(),
 	}
+
+	return &GoogleOAuth{google: google}
 }
 
-func Login(w http.ResponseWriter, r *http.Request) {
+func (g *GoogleOAuth) Login(w http.ResponseWriter, r *http.Request) {
 	// Create state cookie
 	oAuthState, err := authUtils.RandString(16)
 	if err != nil {
@@ -74,11 +74,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	authUtils.SetCallbackCookie(w, r, "state", oAuthState)
 	authUtils.SetCallbackCookie(w, r, "nonce", nonce)
 
-	oAuthURL := google.oAuthConfig.AuthCodeURL(oAuthState, oidc.Nonce(nonce))
+	oAuthURL := g.google.oAuthConfig.AuthCodeURL(oAuthState, oidc.Nonce(nonce))
 	http.Redirect(w, r, oAuthURL, http.StatusTemporaryRedirect)
 }
 
-func Callback(w http.ResponseWriter, r *http.Request) {
+func (g *GoogleOAuth) Callback(w http.ResponseWriter, r *http.Request) {
 	oAuthState, err := r.Cookie("state")
 	if err != nil {
 		slog.Error("Cannot find state cookie", "error", err)
@@ -100,7 +100,7 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Exchange token
-	exchange, err := google.oAuthConfig.Exchange(context.Background(), r.FormValue("code"))
+	exchange, err := g.google.oAuthConfig.Exchange(context.Background(), r.FormValue("code"))
 	if err != nil {
 		slog.Error("Could not exchange token", "error", err)
 		http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
@@ -113,7 +113,7 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
 		return
 	}
-	idToken, err := google.verifier.Verify(context.Background(), rawIDToken)
+	idToken, err := g.google.verifier.Verify(context.Background(), rawIDToken)
 	if err != nil {
 		slog.Error("Cannot verify id token", "error", err)
 		http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
@@ -140,12 +140,12 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 		slog.Warn("id token claim failed", "Claims", err)
 	}
 
-	user := userDB.GetUserByUniqueID(context.Background(), google.name+":"+claims.Sub)
-	if user == nil {
+	user, err := g.authStore.GetUserByUniqueID(context.Background(), g.google.name+":"+claims.Sub)
+	if err != nil || user == nil {
 		slog.Warn("User not found. Creating new user", "error", err)
 
-		user = userDB.InsertUser(context.Background(), google.name+":"+claims.Sub, common.DefaultUsername)
-		if user == nil {
+		user, err = g.authStore.InsertUser(context.Background(), g.google.name+":"+claims.Sub, common.DefaultUsername)
+		if err != nil {
 			slog.Error("User creation failed", "error", err)
 			http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
 			return
@@ -153,8 +153,8 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create 10 seconds token
-	token := tokenDB.InsertToken(context.Background(), state, user.Sub, 10*time.Second)
-	if token == nil {
+	_, err = g.authStore.InsertToken(context.Background(), state, user.Sub, 10*time.Second)
+	if err != nil {
 		slog.Error("Token insertion failed", "error", err)
 		http.Redirect(w, r, systemConfig.ClientURL, http.StatusTemporaryRedirect)
 		return

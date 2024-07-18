@@ -7,26 +7,50 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	userDB "re-sep-user/internal/database/user"
 	pb "re-sep-user/internal/proto"
+
 	authService "re-sep-user/internal/service/oauth/common"
+
+	"re-sep-user/internal/store"
 )
 
+var DefaultUserConfig = pb.UserConfig{
+	Font:     "serif",
+	FontSize: 3,
+	Justify:  false,
+	Margin: &pb.Margin{
+		Left:  3,
+		Right: 3,
+	},
+}
+
 type AuthServer struct {
+	authStore *store.AuthStore
 	pb.UnimplementedAuthServer
 }
 
-func (*AuthServer) Auth(ctx context.Context, _ *pb.Empty) (*pb.AuthResponse, error) {
-	return authService.PbAuth(ctx)
+func NewAuthServer(authStore *store.AuthStore) *AuthServer {
+	return &AuthServer{
+		authStore: authStore,
+	}
 }
 
-func (*AuthServer) UpdateUsername(ctx context.Context, username *pb.Username) (*pb.User, error) {
-	user, err := authService.PbGetUser(ctx)
+func (as *AuthServer) Auth(ctx context.Context, _ *pb.Empty) (*pb.AuthResponse, error) {
+	return authService.PbAuth(ctx, as.authStore)
+}
+
+func (as *AuthServer) UpdateUsername(ctx context.Context, username *pb.Username) (*pb.User, error) {
+	user, err := authService.PbGetUser(ctx, as.authStore)
 	if err != nil {
+		slog.Error("Get user from context failed", "authService.PbGetUser", err)
 		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
 	}
 
-	dbUser := userDB.UpdateUsername(ctx, user.Sub, user.Name)
+	dbUser, err := as.authStore.UpdateUsername(ctx, user.Sub, user.Name)
+	if err != nil {
+		slog.Error("Update username failed", "authStore.UpdateUsername", err)
+		return nil, status.Error(codes.Internal, "Interal error")
+	}
 
 	return &pb.User{
 		Name: dbUser.Name,
@@ -34,57 +58,31 @@ func (*AuthServer) UpdateUsername(ctx context.Context, username *pb.Username) (*
 	}, nil
 }
 
-func (*AuthServer) GetUserConfig(ctx context.Context, _ *pb.Empty) (*pb.UserConfig, error) {
-	var result *pb.UserConfig
-
-	getConfig := func(uc *userDB.UserConfig) {
-		result = &pb.UserConfig{
-			FontSize: uc.FontSize,
-			Justify:  uc.Justify,
-			Font:     uc.Font,
-			Margin: &pb.Margin{
-				Left:  uc.Margin.Left,
-				Right: uc.Margin.Right,
-			},
-		}
-	}
-
-	user, err := authService.PbGetUser(ctx)
+func (as *AuthServer) GetUserConfig(ctx context.Context, _ *pb.Empty) (*pb.UserConfig, error) {
+	user, err := authService.PbGetUser(ctx, as.authStore)
 	if err != nil || user == nil {
-		getConfig(&userDB.DefaultUserConfig)
 		slog.Error("Get user from context failed", "authService.PbGetUser", err)
-		return result, nil
+		return &DefaultUserConfig, nil
 	}
 
-	userConfig := userDB.GetUserConfig(ctx, user.Sub)
-	if userConfig == nil {
-		getConfig(&userDB.DefaultUserConfig)
-		slog.Error("User has no config", "userDB.GetUserConfig", err)
-		return result, nil
+	userConfig, err := as.authStore.GetUserConfig(ctx, user.Sub)
+	if err != nil {
+		slog.Error("Get user config failed", "userDB.GetUserConfig", err)
+		return &DefaultUserConfig, nil
 	}
 
-	getConfig(userConfig)
-	return result, nil
+	return userConfig, nil
 }
 
-func (*AuthServer) UpdateUserConfig(ctx context.Context, pbUC *pb.UserConfig) (*pb.UserConfig, error) {
-	user, err := authService.PbGetUser(ctx)
+func (as *AuthServer) UpdateUserConfig(ctx context.Context, uc *pb.UserConfig) (*pb.UserConfig, error) {
+	user, err := authService.PbGetUser(ctx, as.authStore)
 
 	if err != nil || user == nil {
 		slog.Error("Get user from context failed", "authService.PbGetUser", err)
 		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
 	}
 
-	uc := userDB.UserConfig{
-		FontSize: pbUC.FontSize,
-		Justify:  pbUC.Justify,
-		Font:     pbUC.Font,
-		Margin: userDB.Margin{
-			Left:  pbUC.Margin.Left,
-			Right: pbUC.Margin.Right,
-		},
-	}
-	result := userDB.UpdateUserConfig(ctx, user.Sub, &uc)
+	result, err := as.authStore.UpdateUserConfig(ctx, user.Sub, uc)
 	if result == nil {
 		slog.Error("Update user config failed", "userDB.UpdateUserConfig", err)
 		return nil, status.Error(codes.Internal, "Internal error")
