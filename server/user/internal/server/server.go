@@ -14,11 +14,11 @@ import (
 )
 
 type Server struct {
-	authStore *store.AuthStore
+	authStore store.AuthStore
 	port      int
 }
 
-func NewServer(authStore *store.AuthStore) *http.Server {
+func NewServer(authStore store.AuthStore) *http.Server {
 	config := config.Config()
 	port, _ := strconv.Atoi(config.HTTPPort)
 	NewServer := &Server{

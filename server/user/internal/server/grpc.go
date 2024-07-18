@@ -25,11 +25,11 @@ var DefaultUserConfig = pb.UserConfig{
 }
 
 type AuthServer struct {
-	authStore *store.AuthStore
+	authStore store.AuthStore
 	pb.UnimplementedAuthServer
 }
 
-func NewAuthServer(authStore *store.AuthStore) *AuthServer {
+func NewAuthServer(authStore store.AuthStore) *AuthServer {
 	return &AuthServer{
 		authStore: authStore,
 	}

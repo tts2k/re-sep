@@ -29,10 +29,10 @@ type googleOIDC struct {
 
 type GoogleOAuth struct {
 	google    googleOIDC
-	authStore *store.AuthStore
+	authStore store.AuthStore
 }
 
-func NewGoogleOAuth(authStore *store.AuthStore) *GoogleOAuth {
+func NewGoogleOAuth(authStore store.AuthStore) *GoogleOAuth {
 	google := googleOIDC{name: "google"}
 
 	oidcProvider, err := oidc.NewProvider(context.Background(), "https://accounts.google.com")
@@ -54,7 +54,10 @@ func NewGoogleOAuth(authStore *store.AuthStore) *GoogleOAuth {
 		Endpoint:     google.provider.Endpoint(),
 	}
 
-	return &GoogleOAuth{google: google}
+	return &GoogleOAuth{
+		google:    google,
+		authStore: authStore,
+	}
 }
 
 func (g *GoogleOAuth) Login(w http.ResponseWriter, r *http.Request) {

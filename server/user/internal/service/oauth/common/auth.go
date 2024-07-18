@@ -22,7 +22,7 @@ type OAuthStrategy interface {
 
 var waitGroup *sync.WaitGroup = &sync.WaitGroup{}
 
-func PbAuth(ctx context.Context, authStore *store.AuthStore) (*pb.AuthResponse, error) {
+func PbAuth(ctx context.Context, authStore store.AuthStore) (*pb.AuthResponse, error) {
 	claims, err := authUtils.ExtractToken(ctx)
 	if err != nil {
 		slog.Error("Error extracting token", "authUtils.ExtractToken", err)
@@ -30,23 +30,19 @@ func PbAuth(ctx context.Context, authStore *store.AuthStore) (*pb.AuthResponse, 
 	}
 
 	// Get token
-	token := authStore.GetTokenByState(context.Background(), claims.Subject)
-	if token == nil {
+	token, err := authStore.GetTokenByState(context.Background(), claims.Subject)
+	if err != nil {
 		slog.Error("Error getting token", "tokenDB.GetTokenByState", nil)
 		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
 	}
-	expires, err := time.Parse(time.RFC3339, token.Expires)
-	if err != nil {
-		slog.Error("Error parsing time", "time.Parse", nil)
-		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
-	}
+	expires := token.Expires.AsTime()
 	if time.Now().After(expires) {
 		slog.Error("Token expired", "Token.Expires", expires)
 		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
 	}
 
 	// Get user
-	user, err := authStore.GetUserByUniqueID(ctx, token.Userid)
+	user, err := authStore.GetUserByUniqueID(ctx, token.UserId)
 	if err != nil {
 		slog.Error("Error getting user", "userDB.GetUserByUniqueID", nil)
 		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
@@ -73,7 +69,7 @@ func PbAuth(ctx context.Context, authStore *store.AuthStore) (*pb.AuthResponse, 
 	}, nil
 }
 
-func PbGetUser(ctx context.Context, authStore *store.AuthStore) (*pb.User, error) {
+func PbGetUser(ctx context.Context, authStore store.AuthStore) (*pb.User, error) {
 	claims, err := authUtils.ExtractToken(ctx)
 	if err != nil {
 		slog.Error("Error extracting token", "authUtils.ExtractToken", err)
@@ -81,14 +77,14 @@ func PbGetUser(ctx context.Context, authStore *store.AuthStore) (*pb.User, error
 	}
 
 	// Get token
-	token := authStore.GetTokenByState(ctx, claims.Subject)
+	token, err := authStore.GetTokenByState(ctx, claims.Subject)
 	if token == nil {
 		slog.Error("Error getting token", "tokenDB.GetUserByUniqueID", nil)
 		return nil, err
 	}
 
 	// Get user
-	user, err := authStore.GetUserByUniqueID(ctx, token.Userid)
+	user, err := authStore.GetUserByUniqueID(ctx, token.UserId)
 	if err != nil {
 		slog.Error("Error getting user", "userDB.GetUserByUniqueID", err)
 		return nil, err
