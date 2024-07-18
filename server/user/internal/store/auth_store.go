@@ -70,24 +70,44 @@ func (s *AuthStore) RefreshToken(ctx context.Context, state string, duration tim
 	}, nil
 }
 
-func (s *AuthStore) GetTokenByState(ctx context.Context, state string) *token.Token {
+func (s *AuthStore) GetTokenByState(ctx context.Context, state string) (*pb.Token, error) {
 	result, err := s.tokenDB.Queries.GetTokenByState(ctx, state)
 	if err != nil {
 		slog.Error("GetTokenByState:", "error", err)
-		return nil
+		return nil, err
 	}
 
-	return &result
+	expires, err := time.Parse(time.RFC3339, result.Expires)
+	if err != nil {
+		slog.Error("GetTokenByState:", "error", err)
+		return nil, err
+	}
+
+	return &pb.Token{
+		State:   result.State,
+		UserId:  result.Userid,
+		Expires: timestamppb.New(expires),
+	}, nil
 }
 
-func (s *AuthStore) DeleteToken(ctx context.Context, state string) (*token.Token, error) {
+func (s *AuthStore) DeleteToken(ctx context.Context, state string) (*pb.Token, error) {
 	result, err := s.tokenDB.Queries.DeleteToken(ctx, state)
 	if err != nil {
 		slog.Error("DeleteToken:", "error", err)
-		return &result, nil
+		return nil, err
 	}
 
-	return &result, nil
+	expires, err := time.Parse(time.RFC3339, result.Expires)
+	if err != nil {
+		slog.Error("GetTokenByState:", "error", err)
+		return nil, err
+	}
+
+	return &pb.Token{
+		State:   result.State,
+		UserId:  result.Userid,
+		Expires: timestamppb.New(expires),
+	}, nil
 }
 
 func (s *AuthStore) CleanTokens(ctx context.Context) (int64, error) {
