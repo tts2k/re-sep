@@ -9,7 +9,9 @@ func TestGoogleLogin(t *testing.T) {
 	req := httptest.NewRequest("POST", "/", nil)
 	res := httptest.NewRecorder()
 
-	Login(res, req)
+	gAuth := NewGoogleOAuth(nil)
+
+	gAuth.Login(res, req)
 
 	result := res.Result()
 	cookies := result.Cookies()

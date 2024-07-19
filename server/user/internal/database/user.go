@@ -36,6 +36,22 @@ func NewUserDB() *UserDB {
 	}
 }
 
+func NewUserDBMemory() *UserDB {
+	dbCon, err := sql.Open("libsql", "file::memory:?cache=shared&mode=rwc&_journal_mode=WAL&busy_timeout=10000")
+	dbCon.SetMaxOpenConns(1)
+	if err != nil {
+		log.Fatal(err)
+
+	}
+
+	queries := g.New(dbCon)
+
+	return &UserDB{
+		conn:    dbCon,
+		Queries: queries,
+	}
+}
+
 func (db *UserDB) Migrate() {
 	splitted := strings.Split(string(userSchema), ";\n")
 	var queries []string

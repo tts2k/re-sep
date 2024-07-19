@@ -36,6 +36,22 @@ func NewTokenDB() *TokenDB {
 	}
 }
 
+func NewTokenDBMemory() *TokenDB {
+	dbCon, err := sql.Open("libsql", "file::memory:?cache=shared&mode=rwc&_journal_mode=WAL&busy_timeout=10000")
+	dbCon.SetMaxOpenConns(1)
+	if err != nil {
+		log.Fatal(err)
+
+	}
+
+	queries := g.New(dbCon)
+
+	return &TokenDB{
+		conn:    dbCon,
+		Queries: queries,
+	}
+}
+
 func (db *TokenDB) Migrate() {
 	splitted := strings.Split(string(tokenSchema), ";\n")
 	var queries []string

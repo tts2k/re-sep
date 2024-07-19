@@ -28,8 +28,8 @@ type googleOIDC struct {
 }
 
 type GoogleOAuth struct {
-	google    googleOIDC
 	authStore store.AuthStore
+	google    googleOIDC
 }
 
 func NewGoogleOAuth(authStore store.AuthStore) *GoogleOAuth {

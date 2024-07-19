@@ -20,7 +20,7 @@ type AuthStore interface {
 	GetTokenByState(ctx context.Context, state string) (*pb.Token, error)
 	DeleteToken(ctx context.Context, state string) (*pb.Token, error)
 	CleanTokens(ctx context.Context) (int64, error)
-	InsertUser(ctx context.Context, sub string, neame string) (*pb.User, error)
+	InsertUser(ctx context.Context, sub string, name string) (*pb.User, error)
 	InsertToken(ctx context.Context, state string, userID string, duration time.Duration) (string, error)
 	GetUserByUniqueID(ctx context.Context, id string) (*pb.User, error)
 	UpdateUsername(ctx context.Context, sub string, newName string) (*pb.User, error)
@@ -212,6 +212,10 @@ func (s *authStore) GetUserConfig(ctx context.Context, sub string) (*pb.UserConf
 	if err != nil {
 		slog.Error("Cannot get user config", "database_error", err)
 		return nil, err
+	}
+	if result.Config == "" {
+		slog.Warn("User has no config", "warn", err)
+		return nil, nil
 	}
 
 	var userConfig pb.UserConfig
