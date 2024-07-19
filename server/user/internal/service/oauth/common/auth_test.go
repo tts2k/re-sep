@@ -2,35 +2,34 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
 
-	tokenDB "re-sep-user/internal/database/token"
-	userDB "re-sep-user/internal/database/user"
+	"re-sep-user/internal/store"
 	config "re-sep-user/internal/system/config"
 	testUtils "re-sep-user/internal/utils/test"
 
+	"go.uber.org/mock/gomock"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
+	pb "re-sep-user/internal/proto"
 )
 
-func initTestDB(t *testing.T) {
-	tokenDB.InitTokenDB()
-	userDB.InitUserDB()
-
-	user := userDB.InsertUser(context.Background(), "test", "tester")
-	if user == nil {
-		t.Fatal("Cannot create user")
-	}
-	token := tokenDB.InsertToken(context.Background(), "token", user.Sub, 10*time.Second)
-	if token == nil {
-		t.Fatal("Cannot create token")
-	}
-}
-
-func TestAuth(t *testing.T) {
+func TestPbAuth(t *testing.T) {
 	systemConfig := config.Config()
-	initTestDB(t)
+	mockCtrl := gomock.NewController(t)
+	type TestCase = struct {
+		ctx   context.Context
+		err   error
+		store func() store.AuthStore
+		res   *pb.AuthResponse
+		name  string
+	}
 
 	jwtToken, cl, err := testUtils.CreateJWTTestToken(systemConfig.JWTSecret)
 	if err != nil {
@@ -38,33 +37,108 @@ func TestAuth(t *testing.T) {
 	}
 
 	md := metadata.Pairs("x-authorization", fmt.Sprintf("Bearer %s", jwtToken))
-	ctx := metadata.NewIncomingContext(context.Background(), md)
+	ctxWithAuth := metadata.NewIncomingContext(context.Background(), md)
 
-	res, err := PbAuth(ctx)
-	if err != nil {
-		t.Fatal(err)
+	testCases := []TestCase{
+		{
+			name:  "No auth token",
+			ctx:   context.Background(),
+			store: nil,
+			res:   nil,
+			err:   status.Error(codes.Unauthenticated, "Unauthenticated"),
+		},
+		{
+			name: "No token in db",
+			ctx:  ctxWithAuth,
+			store: func() store.AuthStore {
+				m := store.NewMockAuthStore(mockCtrl)
+				m.
+					EXPECT().
+					GetTokenByState(gomock.Eq(ctxWithAuth), gomock.Eq(cl.Subject)).
+					Return(nil, errors.New(""))
+
+				return m
+			},
+			res: nil,
+			err: status.Error(codes.Unauthenticated, "Unauthenticated"),
+		},
+		{
+			name: "Token expired",
+			ctx:  ctxWithAuth,
+			store: func() store.AuthStore {
+				m := store.NewMockAuthStore(mockCtrl)
+				m.
+					EXPECT().
+					GetTokenByState(gomock.Eq(ctxWithAuth), gomock.Eq(cl.Subject)).
+					Return(&pb.Token{
+						Expires: timestamppb.New(time.Now().AddDate(0, 0, -1)),
+					}, nil)
+
+				return m
+			},
+			res: nil,
+			err: status.Error(codes.Unauthenticated, "Unauthenticated"),
+		},
+		{
+			name: "Success",
+			ctx:  ctxWithAuth,
+			store: func() store.AuthStore {
+				m := store.NewMockAuthStore(mockCtrl)
+				m.
+					EXPECT().
+					GetTokenByState(gomock.Eq(ctxWithAuth), gomock.Eq(cl.Subject)).
+					Return(&pb.Token{
+						State:   cl.Subject,
+						UserId:  "userId",
+						Expires: timestamppb.New(time.Now().AddDate(0, 0, 1)),
+					}, nil)
+
+				m.
+					EXPECT().
+					GetUserByUniqueID(ctxWithAuth, gomock.Eq("userId")).
+					Return(&pb.User{
+						Sub:  "user",
+						Name: "User",
+					}, nil)
+
+				return m
+			},
+			res: &pb.AuthResponse{
+				Token: cl.Subject,
+				User: &pb.User{
+					Sub:  "user",
+					Name: "User",
+				},
+			},
+			err: nil,
+		},
 	}
 
-	waitGroup.Wait()
+	for _, v := range testCases {
+		t.Run(v.name, func(t *testing.T) {
+			var authStore store.AuthStore
+			if v.store != nil {
+				authStore = v.store()
+			}
 
-	if res.Token != cl.Subject {
-		t.Fatalf("Mismatched token. Expected %s but got %s instead.", cl.Subject, res.Token)
-	}
+			res, err := PbAuth(v.ctx, authStore)
+			if !errors.Is(err, v.err) {
+				t.Fatalf("Mismatched error.\nExpected: %v\nGot: %v\n", v.err, err)
+			}
 
-	if res.User.Sub != "test" {
-		t.Fatalf("Mismatched user. Expected user with sub %s but got %s instead.", "test", res.User.Sub)
-	}
+			if res == nil && v.res == nil {
+				return
+			} else if res == nil && v.res != nil {
+				t.Fatalf("Mismatched res. Expected %s but got %v instead.", cl.Subject, nil)
+			}
 
-	token := tokenDB.GetTokenByState(context.Background(), "token")
-	if token == nil {
-		t.Fatalf("Error getting token. Expected a token in database.")
-	}
+			if res.Token != v.res.Token {
+				t.Fatalf("Mismatched token. Expected %s but got %s instead.", cl.Subject, res.Token)
+			}
 
-	expires, err := time.Parse(time.RFC3339, token.Expires)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !expires.After(time.Now().Add(10 * time.Second)) {
-		t.Fatal("Token was not refreshed. Expected a token that last a week.")
+			if res.User.Sub != v.res.User.Sub {
+				t.Fatalf("Mismatched user. Expected user with sub %s but got %s instead.", "test", res.User.Sub)
+			}
+		})
 	}
 }
