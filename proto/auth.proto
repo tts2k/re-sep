@@ -2,7 +2,9 @@ syntax = "proto3";
 
 package auth;
 
-option go_package = "re-sep-content/internal/proto";
+option go_package = "re-sep/proto";
+
+import "user_config.proto";
 
 message Empty {}
 
@@ -13,8 +15,8 @@ message Username {
 service Auth {
 	rpc Auth(Empty) returns (AuthResponse) {}
 	rpc UpdateUsername(Username) returns (User) {}
-	rpc UpdateUserConfig(UserConfig) returns (UserConfig) {}
-	rpc GetUserConfig(Empty) returns (UserConfig) {}
+	rpc UpdateUserConfig(config.UserConfig) returns (config.UserConfig) {}
+	rpc GetUserConfig(Empty) returns (config.UserConfig) {}
 }
 
 message User {
@@ -27,14 +29,3 @@ message AuthResponse {
 	User user = 2;
 }
 
-message Margin {
-	int32 left = 1;
-	int32 right = 2;
-}
-
-message UserConfig {
-	string font = 1;
-	int32 fontSize = 2;
-	bool justify = 3;
-	Margin margin = 4;
-}
