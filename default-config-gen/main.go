@@ -5,9 +5,16 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"go/ast"
 	"go/format"
+	"go/parser"
+	"go/printer"
+	"go/token"
 	"iter"
+	"log"
 	"os"
+	"reflect"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -51,12 +58,6 @@ func PbRefIter(pbRef protoreflect.Message) iter.Seq2[[3]string, protoreflect.Mes
 		}
 	}
 }
-
-const (
-	Name  = 0
-	Kind  = 1
-	Value = 2
-)
 
 func printGoFields(pbRef protoreflect.Message, builder *strings.Builder) {
 	for token, message := range PbRefIter(pbRef) {
@@ -111,6 +112,151 @@ func printGo(pbRef protoreflect.Message) {
 	fmt.Println(string(res))
 }
 
+const (
+	Name  = 0
+	Kind  = 1
+	Value = 2
+)
+
+func printGoAst(pbRef protoreflect.Message) {
+	importSpec := &ast.ImportSpec{
+		Name: ast.NewIdent("pb"),
+		Path: &ast.BasicLit{
+			Kind:  token.STRING,
+			Value: strconv.Quote("path_to_pb"),
+		},
+	}
+
+	defConfVal := &ast.ValueSpec{
+		Names: []*ast.Ident{ast.NewIdent("DefaultUserConfig")},
+		Values: []ast.Expr{
+			&ast.CompositeLit{
+				Lbrace: 8,
+				Type: &ast.SelectorExpr{
+					X:   ast.NewIdent("pb"),
+					Sel: ast.NewIdent("UserConfig"),
+				},
+			},
+		},
+	}
+
+	astF := ast.File{
+		Name:    ast.NewIdent("something"),
+		Imports: []*ast.ImportSpec{importSpec},
+		Decls: []ast.Decl{
+			&ast.GenDecl{
+				Tok:    token.IMPORT,
+				Lparen: token.NoPos,
+				Rparen: token.NoPos,
+				Specs:  []ast.Spec{importSpec},
+			},
+			&ast.GenDecl{
+				Tok:   token.VAR,
+				Specs: []ast.Spec{defConfVal},
+			},
+		},
+	}
+
+	fset := token.NewFileSet()
+
+	printGoFieldsAst(pbRef, &defConfVal.Values[0].(*ast.CompositeLit).Elts)
+
+	pConfig := printer.Config{
+		Mode:     printer.TabIndent,
+		Tabwidth: 4,
+	}
+	err := pConfig.Fprint(os.Stdout, fset, &astF)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func printGoFieldsAst(pbRef protoreflect.Message, elts *[]ast.Expr) {
+	for field, message := range PbRefIter(pbRef) {
+		switch field[Kind] {
+		case "string":
+			*elts = append(*elts, &ast.KeyValueExpr{
+				Key: ast.NewIdent(field[Name]),
+				Value: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: strconv.Quote(field[Value]),
+				},
+			})
+		case "int32":
+			*elts = append(*elts, &ast.KeyValueExpr{
+				Key: ast.NewIdent(field[Name]),
+				Value: &ast.BasicLit{
+					Kind:  token.INT,
+					Value: field[Value],
+				},
+			})
+		case "bool":
+			*elts = append(*elts, &ast.KeyValueExpr{
+				Key:   ast.NewIdent(field[Name]),
+				Value: ast.NewIdent(field[Value]),
+			})
+		default:
+			expr := &ast.UnaryExpr{
+				Op: token.AND,
+				X: &ast.CompositeLit{
+					Type: &ast.SelectorExpr{
+						X:   ast.NewIdent("pb"),
+						Sel: ast.NewIdent(strings.Split(field[Kind], ".")[1]),
+					},
+				},
+			}
+			printGoFieldsAst(message, &expr.X.(*ast.CompositeLit).Elts)
+			*elts = append(*elts, &ast.KeyValueExpr{
+				Key:   ast.NewIdent(field[Name]),
+				Value: expr,
+			})
+		}
+	}
+}
+
+// For playing around with the ast
+func buildGoAst() {
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(
+		fset, "../server/user/internal/database/user/database.go",
+		nil,
+		0,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ast.Inspect(file, func(n ast.Node) bool {
+		switch x := n.(type) {
+		case *ast.GenDecl:
+			if x.Tok != token.VAR {
+				return true
+			}
+			for _, spec := range x.Specs {
+				switch s := spec.(type) {
+				case *ast.ValueSpec:
+					if s.Names[0].Name == "DefaultUserConfig" {
+						fmt.Println("---")
+						fmt.Println(s.Names)
+						for _, expr := range s.Values[0].(*ast.CompositeLit).Elts {
+							e := expr.(*ast.KeyValueExpr)
+							switch val := e.Value.(type) {
+							case *ast.UnaryExpr:
+								fmt.Println(val.Op)
+							default:
+								fmt.Println(reflect.TypeOf(e.Value))
+								// fmt.Println(e.Value)
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return true
+	})
+}
+
 func main() {
 	fi, err := os.Open("./default_config.json")
 	if err != nil {
@@ -127,5 +273,6 @@ func main() {
 	ref := defaultConfig.ProtoReflect()
 	pkgName = string(ref.Descriptor().ParentFile().Package())
 
-	printGo(ref)
+	// buildGoAst()
+	printGoAst(ref)
 }
