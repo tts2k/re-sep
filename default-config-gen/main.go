@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bytes"
+	"embed"
 	"encoding/json"
 	"fmt"
+	"go/format"
 	"iter"
 	"os"
+	"strings"
+	"text/template"
 
-	"github.com/spf13/pflag"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
 	pb "re-sep-config-gen/proto"
@@ -17,6 +21,10 @@ type Token = struct {
 	Name  string
 	Kind  string
 }
+
+//go:embed go.tmpl
+var f embed.FS
+var pkgName string
 
 func PbRefIter(pbRef protoreflect.Message) iter.Seq2[[3]string, protoreflect.Message] {
 	fields := pbRef.Descriptor().Fields()
@@ -44,29 +52,66 @@ func PbRefIter(pbRef protoreflect.Message) iter.Seq2[[3]string, protoreflect.Mes
 	}
 }
 
-func initFlags(pf *PrinterFactory) error {
-	pflag.Usage = func() {
-		fmt.Fprintln(os.Stderr,
-			"Default config gen of re-sep\n\n"+
-				"Usage:\n"+
-				"  re-sep-cli [flags] <url>\n\n"+
-				"Flags:",
-		)
-		pflag.PrintDefaults()
+const (
+	Name  = 0
+	Kind  = 1
+	Value = 2
+)
+
+func printGoFields(pbRef protoreflect.Message, builder *strings.Builder) {
+	for token, message := range PbRefIter(pbRef) {
+		switch token[Kind] {
+		case "string":
+			fmt.Fprintf(builder, "%s: \"%s\",\n", token[Name], token[Value])
+		case "int32":
+			fallthrough
+		case "bool":
+			fmt.Fprintf(builder, "%s: %s,\n", token[Name], token[Value])
+		default:
+			fmt.Fprintf(builder, "%s: &%s{\n", token[Name], strings.Replace(token[Kind], pkgName, "pb", 1))
+			printGoFields(message, builder)
+			fmt.Fprintln(builder, "},")
+		}
+	}
+}
+
+func printGo(pbRef protoreflect.Message) {
+	builder := &strings.Builder{}
+	fmt.Fprintln(builder, "var DefaultConfig = &pb.UserConfig{")
+	printGoFields(pbRef, builder)
+	fmt.Fprintln(builder, "}")
+
+	tmpl, err := template.ParseFS(f, "go.tmpl")
+	if err != nil {
+		panic(err)
 	}
 
-	pflag.BoolP("help", "h", false, "Print this help message")
-	pflag.StringVarP(&pf.Type, "type", "t", "go", "File output type")
-	pflag.Parse()
+	type GoTemplate = struct {
+		Package       string
+		ProtoPackage  string
+		DefaultConfig string
+	}
 
-	return nil
+	buf := bytes.NewBufferString("")
+	// Use hardcoded values for now
+	err = tmpl.Execute(buf, GoTemplate{
+		Package:       "def",
+		ProtoPackage:  "protoPackage",
+		DefaultConfig: builder.String(),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	res, err := format.Source(buf.Bytes())
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(res))
 }
 
 func main() {
-	pf := PrinterFactory{}
-
-	err := initFlags(&pf)
-
 	fi, err := os.Open("./default_config.json")
 	if err != nil {
 		panic(err)
@@ -80,23 +125,7 @@ func main() {
 	fi.Close()
 
 	ref := defaultConfig.ProtoReflect()
+	pkgName = string(ref.Descriptor().ParentFile().Package())
 
-	pkgName := string(ref.Descriptor().ParentFile().Package())
-	printer, err := pf.CreatePrinter()
-	if err != nil {
-		panic(err)
-	}
-
-	cfgWriter := NewConfigWriter(printer)
-	err = cfgWriter.
-		Writer(os.Stdout).
-		ProtoReflect(ref).
-		Config("pb_pkgname", pkgName).
-		Config("go_pkgname", "def").
-		Config("go_pb_pkgname", "protoPackage").
-		Write()
-
-	if err != nil {
-		panic(err)
-	}
+	printGo(ref)
 }
