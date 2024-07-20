@@ -31,7 +31,7 @@ func TestPbAuth(t *testing.T) {
 		name  string
 	}
 
-	jwtToken, cl, err := testUtils.CreateJWTTestToken(systemConfig.JWTSecret)
+	jwtToken, cl, err := testUtils.CreateJWTTestToken(systemConfig.JWTSecret, "token")
 	if err != nil {
 		t.Fatal(err)
 	}
