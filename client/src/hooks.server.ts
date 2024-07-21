@@ -2,11 +2,15 @@ import { building } from "$app/environment";
 import { logger } from "@/server/logger";
 import { redirect, type Handle } from "@sveltejs/kit";
 import { promiseResult } from "@/server/utils";
-import authService from "$lib/server/authService";
+import authService from "@/server/authService";
 
 export const handle: Handle = async ({ event, resolve }) => {
 	logger.info(`path: ${event.url.pathname}`);
 	if (building) {
+		return await resolve(event);
+	}
+
+	if (event.url.pathname !== "/") {
 		return await resolve(event);
 	}
 
@@ -29,10 +33,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 		logger.error(`Error during auth: ${auth.error}`);
 		throw redirect(302, "/?error=unauthorized");
 	}
-
 	event.locals.user = auth.value.user;
 
-	if (!event.locals.user?.id) {
+	if (!event.locals.user?.sub) {
 		logger.error("No user found");
 		throw redirect(302, "/?error=unauthorized");
 	}

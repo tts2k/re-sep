@@ -1,8 +1,6 @@
-import { userConfig } from "@/stores/userConfig";
 import { authClient, createMetadata } from "../grpc";
 import type { AuthService } from "./type";
 import type { UserConfig } from "@/proto/user_config";
-import { get } from "svelte/store";
 import type { AuthResponse } from "@/proto/auth";
 
 const auth = async (token: string): Promise<AuthResponse> => {
@@ -37,19 +35,14 @@ const auth = async (token: string): Promise<AuthResponse> => {
 	});
 };
 
-const updateUserConfig = async (token: string): Promise<UserConfig> => {
+const updateUserConfig = async (
+	token: string,
+	uc: UserConfig,
+): Promise<UserConfig> => {
 	const metadata = await createMetadata(token);
-	const uc = get(userConfig);
-
-	const pbUc: UserConfig = {
-		fontSize: uc.fontSize,
-		font: uc.font,
-		justify: uc.justify,
-		margin: uc.margin,
-	};
 
 	return new Promise<UserConfig>((resolve, reject) => {
-		authClient.updateUserConfig(pbUc, metadata, (error, response) => {
+		authClient.updateUserConfig(uc, metadata, (error, response) => {
 			if (error !== null) {
 				reject(error);
 				return;

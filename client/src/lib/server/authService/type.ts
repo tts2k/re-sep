@@ -6,5 +6,5 @@ import type { UserConfig } from "@/proto/user_config";
  */
 export interface AuthService {
 	auth(token: string): Promise<AuthResponse>;
-	updateUserConfig(token: string): Promise<UserConfig>;
+	updateUserConfig(token: string, uc: UserConfig): Promise<UserConfig>;
 }

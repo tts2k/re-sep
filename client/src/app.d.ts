@@ -1,7 +1,7 @@
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 
-import type { User } from "@/server/authService/type";
+import type { User } from "@/proto/auth";
 import "unplugin-icons/types/svelte";
 
 declare global {
