@@ -10,6 +10,7 @@
 	import { getContext, onMount } from "svelte";
 	import type { Selected } from "bits-ui";
 	import type { ConfigDialogContext } from "../ConfigDialog.svelte";
+	import { toast } from "svelte-sonner";
 
 	const configDialog = getContext<ConfigDialogContext>("config-dialog");
 
@@ -37,7 +38,7 @@
 		$previewConfig.font = selected.value;
 	};
 
-	const saveConfig = () => {
+	const saveConfig = async () => {
 		$userConfig = {
 			layered: true,
 			justify: $previewConfig.justify,
@@ -45,6 +46,22 @@
 			font: $previewConfig.font,
 			margin: $previewConfig.margin,
 		};
+
+		const res = await fetch("/api/user", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				layered: undefined,
+				...$userConfig
+			})
+		})
+
+		if (res.status !== 200) {
+			console.error(res)
+			toast.error("Update config failed")
+		}
 
 		configDialog.closeDialog();
 	};
