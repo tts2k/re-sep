@@ -52,7 +52,7 @@
 	const createOnMarginChange = (direction: "left" | "right") => {
 		return (value: number[]) => {
 			if (!$previewConfig.margin) {
-				return
+				return;
 			}
 			$previewConfig.margin[direction] = value[0];
 		};

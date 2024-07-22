@@ -1,7 +1,7 @@
 import type { AuthResponse } from "@/proto/auth";
 import { describe, mock, test, expect } from "bun:test";
 import { handle } from "./hooks.server";
-import { type Cookies, type RequestEvent } from "@sveltejs/kit";
+import type { Cookies, RequestEvent } from "@sveltejs/kit";
 
 class MockCookies implements Cookies {
 	cookies: Record<string, any> = {};
@@ -19,8 +19,8 @@ class MockCookies implements Cookies {
 		};
 	}
 
-	get(_: string, _2: any): any {
-		return;
+	get(key: string): any {
+		return this.cookies[key]?.value;
 	}
 
 	getAll(_2: any): any {
@@ -45,16 +45,17 @@ describe("Hook handle test", () => {
 
 	const testCases: TestCase[] = [
 		{
-			name: "path name isn't root",
+			name: "path name is an api route",
 			requestEvent: {
-				url: new URL("user", "http://example.com"),
+				url: new URL("api/user", "http://example.com"),
 			} as RequestEvent,
 			expect: {
-				url: new URL("user", "http://example.com"),
+				url: new URL("api/user", "http://example.com"),
 			} as RequestEvent,
 		},
+
 		{
-			name: "path name is root but no token",
+			name: "path name is root but no token and cookie",
 			requestEvent: {
 				url: new URL("", "http://example.com"),
 				locals: {
@@ -63,14 +64,74 @@ describe("Hook handle test", () => {
 						name: "user",
 					},
 				},
+				cookies: new MockCookies() as Cookies,
 			} as RequestEvent,
 			expect: {
 				url: new URL("", "http://example.com"),
 				locals: {
 					user: undefined,
 				},
+				cookies: new MockCookies() as Cookies,
 			} as RequestEvent,
 		},
+
+		{
+			name: "path name is root with cookie but no token",
+			requestEvent: {
+				url: new URL("", "http://example.com"),
+				locals: {
+					user: {
+						sub: "user",
+						name: "user",
+					},
+				},
+				cookies: new MockCookies({
+					token: {
+						value: "token",
+						opts: {
+							httpOnly: true,
+							maxAge: 10,
+							path: "/",
+							sameSite: "lax",
+							secure: true,
+						},
+					},
+				}) as Cookies,
+			} as RequestEvent,
+			expect: {
+				url: new URL("", "http://example.com"),
+				locals: {
+					user: {
+						sub: "user",
+						name: "user"
+					}
+				},
+				cookies: new MockCookies({
+					token: {
+						value: "token",
+						opts: {
+							httpOnly: true,
+							maxAge: 604800,
+							path: "/",
+							sameSite: "lax",
+							secure: true,
+						},
+					},
+				}) as Cookies,
+			} as RequestEvent,
+			mockAuthService: {
+				auth: async (token: string): Promise<AuthResponse> => {
+					return {
+						token: token,
+						user: {
+							sub: "user",
+							name: "user",
+						},
+					};
+				},
+			},
+		},
+
 		{
 			name: "auth but user not found",
 			requestEvent: {
@@ -114,6 +175,7 @@ describe("Hook handle test", () => {
 				location: "/?error=unauthorized",
 			},
 		},
+
 		{
 			name: "success run with auth",
 			requestEvent: {
