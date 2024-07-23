@@ -109,6 +109,11 @@ describe("test POST", () => {
 				{ message: "Error updating user config" },
 				{ status: 403, statusText: "Bad request" }
 			).clone(),
+			mockAuthService: {
+				updateUserConfig: async (_: string): Promise<UserConfig> => {
+					throw new Error("error")
+				},
+			},
 		},
 		{
 			name: "authorized, success",

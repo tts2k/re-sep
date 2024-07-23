@@ -5,10 +5,14 @@ import { promiseResult } from "@/server/utils";
 
 export const prerender = false;
 
-export const load: PageServerLoad = async ({ locals }) => {
-	const article = await promiseResult(articleService.getArticle("blame"));
+export const load: PageServerLoad = async ({ cookies }) => {
+	const token = cookies.get("token");
+	const article = await promiseResult(
+		articleService.getArticle("blame", token),
+	);
 	if (article.isErr()) {
 		throw error(500, article.error);
 	}
+
 	return article.value;
 };

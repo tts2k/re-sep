@@ -9,7 +9,7 @@ export const POST: RequestHandler = async ({ cookies, locals, request }) => {
 
 	// unauthorized
 	if (!user?.sub || !token) {
-		logger.error("Unauthorized POST call to request handler");
+		logger.error("Unauthorized POST call to user api");
 		return json(
 			{ message: "unauthorized" },
 			{ status: 401, statusText: "unauthorized" },
