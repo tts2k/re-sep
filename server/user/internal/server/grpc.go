@@ -56,6 +56,12 @@ func (as *AuthServer) UpdateUsername(ctx context.Context, username *pb.Username)
 		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
 	}
 
+	err = as.validator.Validate(user)
+	if err != nil {
+		slog.Error("Validation failed", "validator.Validate", err, "message", user)
+		return nil, status.Error(codes.InvalidArgument, "Message validation failed")
+	}
+
 	dbUser, err := as.authStore.UpdateUsername(ctx, user.Sub, user.Name)
 	if err != nil {
 		slog.Error("Update username failed", "authStore.UpdateUsername", err)
@@ -92,16 +98,16 @@ func (as *AuthServer) UpdateUserConfig(ctx context.Context, uc *pb.UserConfig) (
 		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
 	}
 
+	err = as.validator.Validate(uc)
+	if err != nil {
+		slog.Error("Validation failed", "validator.Validate", err, "message", uc)
+		return nil, status.Error(codes.InvalidArgument, "Message validation failed")
+	}
+
 	result, err := as.authStore.UpdateUserConfig(ctx, user.Sub, uc)
 	if result == nil {
 		slog.Error("Update user config failed", "userDB.UpdateUserConfig", err)
 		return nil, status.Error(codes.Internal, "Internal error")
-	}
-
-	err = as.validator.Validate(result)
-	if err != nil {
-		slog.Error("Validation failed", "validator.Validate", err, "message", result)
-		return nil, status.Error(codes.InvalidArgument, "Message validation failed")
 	}
 
 	return result, nil
