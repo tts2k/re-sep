@@ -1,6 +1,7 @@
 package server
 
 import (
+	"log"
 	"log/slog"
 
 	"golang.org/x/net/context"
@@ -12,6 +13,8 @@ import (
 	authService "re-sep-user/internal/service/oauth/common"
 
 	"re-sep-user/internal/store"
+
+	"github.com/bufbuild/protovalidate-go"
 )
 
 var DefaultUserConfig = pb.UserConfig{
@@ -25,13 +28,20 @@ var DefaultUserConfig = pb.UserConfig{
 }
 
 type AuthServer struct {
-	authStore store.AuthStore
 	pb.UnimplementedAuthServer
+	authStore store.AuthStore
+	validator *protovalidate.Validator
 }
 
 func NewAuthServer(authStore store.AuthStore) *AuthServer {
+	validator, err := protovalidate.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return &AuthServer{
 		authStore: authStore,
+		validator: validator,
 	}
 }
 
@@ -88,14 +98,11 @@ func (as *AuthServer) UpdateUserConfig(ctx context.Context, uc *pb.UserConfig) (
 		return nil, status.Error(codes.Internal, "Internal error")
 	}
 
-	return &pb.UserConfig{
-			FontSize: result.FontSize,
-			Justify:  result.Justify,
-			Font:     result.Font,
-			Margin: &pb.Margin{
-				Left:  result.Margin.Left,
-				Right: result.Margin.Right,
-			},
-		},
-		nil
+	err = as.validator.Validate(result)
+	if err != nil {
+		slog.Error("Validation failed", "validator.Validate", err, "message", result)
+		return nil, status.Error(codes.InvalidArgument, "Message validation failed")
+	}
+
+	return result, nil
 }

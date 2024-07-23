@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 	"testing"
 	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+
+	proto "google.golang.org/protobuf/proto"
 
 	"re-sep-user/internal/database"
 	"re-sep-user/internal/store"
@@ -118,7 +119,7 @@ func TestGetUserConfig(t *testing.T) {
 				}
 			}
 
-			if !reflect.DeepEqual(pbUc.ProtoReflect().Interface(), (*v.expect).ProtoReflect().Interface()) {
+			if !proto.Equal(pbUc, v.expect) {
 				t.Logf("%v", pbUc.ProtoReflect().Interface())
 				t.Logf("%v", (*v.expect).ProtoReflect().Interface())
 				t.Fatal("Mismatched result config")
@@ -164,6 +165,34 @@ func TestUpdateUserConfig(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Authenticated, invalid input",
+			user: "test",
+			input: &pb.UserConfig{
+				FontSize: 1,
+				Justify:  true,
+				Font:     "sins-seraf",
+				Margin: &pb.Margin{
+					Left:  1,
+					Right: 1,
+				},
+			},
+			err: status.Error(codes.InvalidArgument, "Message validation failed"),
+		},
+		{
+			name: "Authenticated, invalid numeric input",
+			user: "test",
+			input: &pb.UserConfig{
+				FontSize: 5,
+				Justify:  true,
+				Font:     "sins-seraf",
+				Margin: &pb.Margin{
+					Left:  -1,
+					Right: 1,
+				},
+			},
+			err: status.Error(codes.InvalidArgument, "Message validation failed"),
+		},
 	}
 
 	for _, v := range testCases {
@@ -195,7 +224,9 @@ func TestUpdateUserConfig(t *testing.T) {
 				}
 			}
 
-			if !reflect.DeepEqual(pbUc, v.expect) {
+			if !proto.Equal(pbUc, v.expect) {
+				t.Logf("%v\n", pbUc)
+				t.Logf("%v\n", v.expect)
 				t.Fatal("Mismatched result config")
 			}
 		})

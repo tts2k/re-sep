@@ -6,6 +6,7 @@
 
 /* eslint-disable */
 import _m0 from "protobufjs/minimal";
+import { Timestamp } from "./google/protobuf/timestamp";
 
 export const protobufPackage = "auth";
 
@@ -14,6 +15,12 @@ export interface Empty {
 
 export interface Username {
   name: string;
+}
+
+export interface Token {
+  state: string;
+  userId: string;
+  expires: Date | undefined;
 }
 
 export interface User {
@@ -122,6 +129,95 @@ export const Username = {
   fromPartial<I extends Exact<DeepPartial<Username>, I>>(object: I): Username {
     const message = createBaseUsername();
     message.name = object.name ?? "";
+    return message;
+  },
+};
+
+function createBaseToken(): Token {
+  return { state: "", userId: "", expires: undefined };
+}
+
+export const Token = {
+  encode(message: Token, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.state !== "") {
+      writer.uint32(10).string(message.state);
+    }
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
+    }
+    if (message.expires !== undefined) {
+      Timestamp.encode(toTimestamp(message.expires), writer.uint32(26).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Token {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseToken();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.state = reader.string();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        case 3:
+          if (tag !== 26) {
+            break;
+          }
+
+          message.expires = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Token {
+    return {
+      state: isSet(object.state) ? globalThis.String(object.state) : "",
+      userId: isSet(object.userId) ? globalThis.String(object.userId) : "",
+      expires: isSet(object.expires) ? fromJsonTimestamp(object.expires) : undefined,
+    };
+  },
+
+  toJSON(message: Token): unknown {
+    const obj: any = {};
+    if (message.state !== "") {
+      obj.state = message.state;
+    }
+    if (message.userId !== "") {
+      obj.userId = message.userId;
+    }
+    if (message.expires !== undefined) {
+      obj.expires = message.expires.toISOString();
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Token>, I>>(base?: I): Token {
+    return Token.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Token>, I>>(object: I): Token {
+    const message = createBaseToken();
+    message.state = object.state ?? "";
+    message.userId = object.userId ?? "";
+    message.expires = object.expires ?? undefined;
     return message;
   },
 };
@@ -285,6 +381,28 @@ export type DeepPartial<T> = T extends Builtin ? T
 type KeysOfUnion<T> = T extends T ? keyof T : never;
 export type Exact<P, I extends P> = P extends Builtin ? P
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+
+function toTimestamp(date: Date): Timestamp {
+  const seconds = Math.trunc(date.getTime() / 1_000);
+  const nanos = (date.getTime() % 1_000) * 1_000_000;
+  return { seconds, nanos };
+}
+
+function fromTimestamp(t: Timestamp): Date {
+  let millis = (t.seconds || 0) * 1_000;
+  millis += (t.nanos || 0) / 1_000_000;
+  return new globalThis.Date(millis);
+}
+
+function fromJsonTimestamp(o: any): Date {
+  if (o instanceof globalThis.Date) {
+    return o;
+  } else if (typeof o === "string") {
+    return new globalThis.Date(o);
+  } else {
+    return fromTimestamp(Timestamp.fromJSON(o));
+  }
+}
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;
