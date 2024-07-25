@@ -11,11 +11,11 @@ const getPinoConfig = () => {
 				},
 			},
 		};
-	} else {
-		return {
-			level: "info",
-		};
 	}
+
+	return {
+		level: "info",
+	};
 };
 
 export const logger = pino(getPinoConfig());
