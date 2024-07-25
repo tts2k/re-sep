@@ -1,8 +1,8 @@
 import { Metadata, credentials } from "@grpc/grpc-js";
 import { env } from "$env/dynamic/private";
-import { ContentClient } from "@/proto/content";
+import { ContentClient } from "@/proto/main";
 import { building } from "$app/environment";
-import { AuthClient } from "@/proto/auth";
+import { AuthClient } from "@/proto/main";
 import { SignJWT, type JWTPayload } from "jose";
 import { logger } from "./logger";
 

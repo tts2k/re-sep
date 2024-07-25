@@ -9,14 +9,17 @@ import (
 	"context"
 )
 
-const cleanTokens = `-- name: CleanTokens :exec
+const cleanTokens = `-- name: CleanTokens :execrows
 DELETE FROM Tokens
 WHERE expires < Datetime('now')
 `
 
-func (q *Queries) CleanTokens(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, cleanTokens)
-	return err
+func (q *Queries) CleanTokens(ctx context.Context) (int64, error) {
+	result, err := q.db.ExecContext(ctx, cleanTokens)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 const deleteToken = `-- name: DeleteToken :one

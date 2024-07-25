@@ -3,21 +3,23 @@ package service
 import (
 	"context"
 	"log/slog"
-	"sync"
+	"net/http"
 	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	tokenDB "re-sep-user/internal/database/token"
-	userDB "re-sep-user/internal/database/user"
 	pb "re-sep-user/internal/proto"
+	"re-sep-user/internal/store"
 	authUtils "re-sep-user/internal/utils/auth"
 )
 
-var waitGroup *sync.WaitGroup = &sync.WaitGroup{}
+type OAuthStrategy interface {
+	Login(w http.ResponseWriter, r *http.Request)
+	Callback(w http.ResponseWriter, r *http.Request)
+}
 
-func PbAuth(ctx context.Context) (*pb.AuthResponse, error) {
+func PbAuth(ctx context.Context, authStore store.AuthStore) (*pb.AuthResponse, error) {
 	claims, err := authUtils.ExtractToken(ctx)
 	if err != nil {
 		slog.Error("Error extracting token", "authUtils.ExtractToken", err)
@@ -25,37 +27,32 @@ func PbAuth(ctx context.Context) (*pb.AuthResponse, error) {
 	}
 
 	// Get token
-	token := tokenDB.GetTokenByState(context.Background(), claims.Subject)
-	if token == nil {
-		slog.Error("Error getting token", "tokenDB.GetTokenByState", nil)
-		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
-	}
-	expires, err := time.Parse(time.RFC3339, token.Expires)
+	token, err := authStore.GetTokenByState(ctx, claims.Subject)
 	if err != nil {
-		slog.Error("Error parsing time", "time.Parse", nil)
+		slog.Error("Error getting token", "tokenDB.GetTokenByState", err)
 		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
 	}
+
+	expires := token.Expires.AsTime()
 	if time.Now().After(expires) {
 		slog.Error("Token expired", "Token.Expires", expires)
 		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
 	}
 
 	// Get user
-	user := userDB.GetUserByUniqueID(ctx, token.Userid)
-	if user == nil {
-		slog.Error("Error getting user", "userDB.GetUserByUniqueID", nil)
+	user, err := authStore.GetUserByUniqueID(ctx, token.UserId)
+	if err != nil {
+		slog.Error("Error getting user", "authStore.GetUserByUniqueID", nil)
 		return nil, status.Error(codes.Unauthenticated, "Unauthenticated")
 	}
 
 	// Update token expiration
-	waitGroup.Add(1)
 	go func() {
-		defer waitGroup.Done()
 		ctx := context.Background()
 
-		token := tokenDB.RefreshToken(ctx, claims.Subject, 7*24*time.Hour)
-		if token == nil {
-			slog.Error("Error refreshing token", "tokenDB.RefreshToken", nil)
+		_, err := authStore.RefreshToken(ctx, claims.Subject, 7*24*time.Hour)
+		if err != nil {
+			slog.Error("Error refreshing token", "authStore.RefreshToken", err)
 		}
 	}()
 
@@ -68,7 +65,7 @@ func PbAuth(ctx context.Context) (*pb.AuthResponse, error) {
 	}, nil
 }
 
-func PbGetUser(ctx context.Context) (*pb.User, error) {
+func PbGetUser(ctx context.Context, authStore store.AuthStore) (*pb.User, error) {
 	claims, err := authUtils.ExtractToken(ctx)
 	if err != nil {
 		slog.Error("Error extracting token", "authUtils.ExtractToken", err)
@@ -76,16 +73,16 @@ func PbGetUser(ctx context.Context) (*pb.User, error) {
 	}
 
 	// Get token
-	token := tokenDB.GetTokenByState(ctx, claims.Subject)
+	token, err := authStore.GetTokenByState(ctx, claims.Subject)
 	if token == nil {
 		slog.Error("Error getting token", "tokenDB.GetUserByUniqueID", nil)
 		return nil, err
 	}
 
 	// Get user
-	user := userDB.GetUserByUniqueID(ctx, token.Userid)
-	if user == nil {
-		slog.Error("Error getting user", "userDB.GetUserByUniqueID", nil)
+	user, err := authStore.GetUserByUniqueID(ctx, token.UserId)
+	if err != nil {
+		slog.Error("Error getting user", "userDB.GetUserByUniqueID", err)
 		return nil, err
 	}
 

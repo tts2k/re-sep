@@ -1,33 +1,33 @@
 <script lang="ts">
-import type { PageServerData } from "./$types";
-import { ScrollArea } from "$lib/components/ui/scroll-area";
-import { toc } from "$lib/actions/toc";
-import { layerConfig } from "$lib/actions/layerConfig";
-import { currentTocItem } from "$lib/components/sidebar/stores/tocStore";
-import { metadata } from "@/stores/articleMetadata";
-import { userConfig } from "@/stores/userConfig";
-import { FontPreset, MarginPresets } from "@/stylePresets";
-import { page } from "$app/stores";
-import { toast } from "svelte-sonner";
+	import type { PageServerData } from "./$types";
+	import { ScrollArea } from "$lib/components/ui/scroll-area";
+	import { toc } from "$lib/actions/toc";
+	import { layerConfig } from "$lib/actions/layerConfig";
+	import { currentTocItem } from "$lib/components/sidebar/stores/tocStore";
+	import { metadata } from "@/stores/articleMetadata";
+	import { userConfig } from "@/stores/userConfig";
+	import { FontPreset, MarginPresets } from "@/stylePresets";
+	import { page } from "$app/stores";
+	import { toast } from "svelte-sonner";
 
-export let data: PageServerData;
+	export let data: PageServerData;
 
-const error = $page.url.searchParams.get("error");
+	const error = $page.url.searchParams.get("error");
 
-$: if (error) {
-	toast.error(error);
-}
+	$: if (error) {
+		toast.error(error);
+	}
 
-$metadata = {
-	title: data.title,
-	authors: data.author,
-	toc: data.toc,
-};
+	$metadata = {
+		title: data.title,
+		authors: data.author,
+		toc: data.toc,
+	};
 
-$: font = $userConfig.font ? FontPreset[$userConfig.font] : "font-serif";
-$: justified = $userConfig.justify ? "text-justify" : "";
-$: marginLeft = MarginPresets.left[$userConfig.margin.left - 1];
-$: marginRight = MarginPresets.right[$userConfig.margin.right - 1];
+	$: font = $userConfig.font ? FontPreset[$userConfig.font] : "font-serif";
+	$: justified = $userConfig.justify ? "text-justify" : "";
+	$: marginLeft = MarginPresets.left[($userConfig.margin?.left || 1) - 1];
+	$: marginRight = MarginPresets.right[($userConfig.margin?.right || 1) - 1];
 </script>
 
 <svelte:head>

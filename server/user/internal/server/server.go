@@ -9,18 +9,21 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/rs/cors"
 
+	"re-sep-user/internal/store"
 	config "re-sep-user/internal/system/config"
 )
 
 type Server struct {
-	port int
+	authStore store.AuthStore
+	port      int
 }
 
-func NewServer() *http.Server {
+func NewServer(authStore store.AuthStore) *http.Server {
 	config := config.Config()
 	port, _ := strconv.Atoi(config.HTTPPort)
 	NewServer := &Server{
-		port: port,
+		port:      port,
+		authStore: authStore,
 	}
 
 	// Register route handlers

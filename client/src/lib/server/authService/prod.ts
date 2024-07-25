@@ -1,5 +1,7 @@
 import { authClient, createMetadata } from "../grpc";
-import type { AuthService, AuthResponse } from "./type";
+import type { AuthService } from "./type";
+import type { UserConfig } from "@/proto/user_config";
+import type { AuthResponse } from "@/proto/auth";
 
 const auth = async (token: string): Promise<AuthResponse> => {
 	const metadata = await createMetadata(token);
@@ -23,7 +25,7 @@ const auth = async (token: string): Promise<AuthResponse> => {
 			const authResponse: AuthResponse = {
 				token: response.token,
 				user: {
-					id: response.user.sub,
+					sub: response.user.sub,
 					name: response.user.name,
 				},
 			};
@@ -33,8 +35,39 @@ const auth = async (token: string): Promise<AuthResponse> => {
 	});
 };
 
+const updateUserConfig = async (
+	token: string,
+	uc: UserConfig,
+): Promise<UserConfig> => {
+	const metadata = await createMetadata(token);
+
+	return new Promise<UserConfig>((resolve, reject) => {
+		authClient.updateUserConfig(uc, metadata, (error, response) => {
+			if (error !== null) {
+				reject(error);
+				return;
+			}
+
+			if (!response || !response.margin) {
+				reject(new Error("Error getting user config data"));
+				return;
+			}
+
+			const uc: UserConfig = {
+				fontSize: response.fontSize,
+				justify: response.justify,
+				font: response.font as UserConfig["font"],
+				margin: response.margin,
+			};
+
+			resolve(uc);
+		});
+	});
+};
+
 const service: AuthService = {
 	auth,
+	updateUserConfig,
 };
 
 export default service;

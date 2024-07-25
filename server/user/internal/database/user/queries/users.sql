@@ -23,7 +23,7 @@ RETURNING *;
 -- name: UpdateUserConfig :one
 UPDATE v_user_config
 SET config = ?
-WHERE SUB = ?
+WHERE sub = ?
 RETURNING *;
 
 -- name: DeleteUser :exec

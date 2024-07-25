@@ -2,7 +2,7 @@
 	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
 	"files": {
 		"ignoreUnknown": true,
-		"ignore": ["./src/lib/proto/**/*.*"]
+		"ignore": ["./src/lib/proto/**/*.*", "./src/**/*.test.*"]
 	},
 	"vcs": {
 		"enabled": true,

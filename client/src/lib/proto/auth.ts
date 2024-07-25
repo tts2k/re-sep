@@ -5,19 +5,8 @@
 // source: auth.proto
 
 /* eslint-disable */
-import {
-  type CallOptions,
-  ChannelCredentials,
-  Client,
-  type ClientOptions,
-  type ClientUnaryCall,
-  type handleUnaryCall,
-  makeGenericClientConstructor,
-  Metadata,
-  type ServiceError,
-  type UntypedServiceImplementation,
-} from "@grpc/grpc-js";
 import _m0 from "protobufjs/minimal";
+import { Timestamp } from "./google/protobuf/timestamp";
 
 export const protobufPackage = "auth";
 
@@ -28,6 +17,12 @@ export interface Username {
   name: string;
 }
 
+export interface Token {
+  state: string;
+  userId: string;
+  expires: Date | undefined;
+}
+
 export interface User {
   sub: string;
   name: string;
@@ -36,18 +31,6 @@ export interface User {
 export interface AuthResponse {
   token: string;
   user: User | undefined;
-}
-
-export interface Margin {
-  left: number;
-  right: number;
-}
-
-export interface UserConfig {
-  font: string;
-  fontSize: number;
-  justify: boolean;
-  margin: Margin | undefined;
 }
 
 function createBaseEmpty(): Empty {
@@ -146,6 +129,95 @@ export const Username = {
   fromPartial<I extends Exact<DeepPartial<Username>, I>>(object: I): Username {
     const message = createBaseUsername();
     message.name = object.name ?? "";
+    return message;
+  },
+};
+
+function createBaseToken(): Token {
+  return { state: "", userId: "", expires: undefined };
+}
+
+export const Token = {
+  encode(message: Token, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.state !== "") {
+      writer.uint32(10).string(message.state);
+    }
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
+    }
+    if (message.expires !== undefined) {
+      Timestamp.encode(toTimestamp(message.expires), writer.uint32(26).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Token {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseToken();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.state = reader.string();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        case 3:
+          if (tag !== 26) {
+            break;
+          }
+
+          message.expires = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Token {
+    return {
+      state: isSet(object.state) ? globalThis.String(object.state) : "",
+      userId: isSet(object.userId) ? globalThis.String(object.userId) : "",
+      expires: isSet(object.expires) ? fromJsonTimestamp(object.expires) : undefined,
+    };
+  },
+
+  toJSON(message: Token): unknown {
+    const obj: any = {};
+    if (message.state !== "") {
+      obj.state = message.state;
+    }
+    if (message.userId !== "") {
+      obj.userId = message.userId;
+    }
+    if (message.expires !== undefined) {
+      obj.expires = message.expires.toISOString();
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Token>, I>>(base?: I): Token {
+    return Token.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Token>, I>>(object: I): Token {
+    const message = createBaseToken();
+    message.state = object.state ?? "";
+    message.userId = object.userId ?? "";
+    message.expires = object.expires ?? undefined;
     return message;
   },
 };
@@ -298,293 +370,6 @@ export const AuthResponse = {
   },
 };
 
-function createBaseMargin(): Margin {
-  return { left: 0, right: 0 };
-}
-
-export const Margin = {
-  encode(message: Margin, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.left !== 0) {
-      writer.uint32(8).int32(message.left);
-    }
-    if (message.right !== 0) {
-      writer.uint32(16).int32(message.right);
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): Margin {
-    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseMargin();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 8) {
-            break;
-          }
-
-          message.left = reader.int32();
-          continue;
-        case 2:
-          if (tag !== 16) {
-            break;
-          }
-
-          message.right = reader.int32();
-          continue;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): Margin {
-    return {
-      left: isSet(object.left) ? globalThis.Number(object.left) : 0,
-      right: isSet(object.right) ? globalThis.Number(object.right) : 0,
-    };
-  },
-
-  toJSON(message: Margin): unknown {
-    const obj: any = {};
-    if (message.left !== 0) {
-      obj.left = Math.round(message.left);
-    }
-    if (message.right !== 0) {
-      obj.right = Math.round(message.right);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<Margin>, I>>(base?: I): Margin {
-    return Margin.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<Margin>, I>>(object: I): Margin {
-    const message = createBaseMargin();
-    message.left = object.left ?? 0;
-    message.right = object.right ?? 0;
-    return message;
-  },
-};
-
-function createBaseUserConfig(): UserConfig {
-  return { font: "", fontSize: 0, justify: false, margin: undefined };
-}
-
-export const UserConfig = {
-  encode(message: UserConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.font !== "") {
-      writer.uint32(10).string(message.font);
-    }
-    if (message.fontSize !== 0) {
-      writer.uint32(16).int32(message.fontSize);
-    }
-    if (message.justify !== false) {
-      writer.uint32(24).bool(message.justify);
-    }
-    if (message.margin !== undefined) {
-      Margin.encode(message.margin, writer.uint32(34).fork()).ldelim();
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): UserConfig {
-    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseUserConfig();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 10) {
-            break;
-          }
-
-          message.font = reader.string();
-          continue;
-        case 2:
-          if (tag !== 16) {
-            break;
-          }
-
-          message.fontSize = reader.int32();
-          continue;
-        case 3:
-          if (tag !== 24) {
-            break;
-          }
-
-          message.justify = reader.bool();
-          continue;
-        case 4:
-          if (tag !== 34) {
-            break;
-          }
-
-          message.margin = Margin.decode(reader, reader.uint32());
-          continue;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): UserConfig {
-    return {
-      font: isSet(object.font) ? globalThis.String(object.font) : "",
-      fontSize: isSet(object.fontSize) ? globalThis.Number(object.fontSize) : 0,
-      justify: isSet(object.justify) ? globalThis.Boolean(object.justify) : false,
-      margin: isSet(object.margin) ? Margin.fromJSON(object.margin) : undefined,
-    };
-  },
-
-  toJSON(message: UserConfig): unknown {
-    const obj: any = {};
-    if (message.font !== "") {
-      obj.font = message.font;
-    }
-    if (message.fontSize !== 0) {
-      obj.fontSize = Math.round(message.fontSize);
-    }
-    if (message.justify !== false) {
-      obj.justify = message.justify;
-    }
-    if (message.margin !== undefined) {
-      obj.margin = Margin.toJSON(message.margin);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UserConfig>, I>>(base?: I): UserConfig {
-    return UserConfig.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UserConfig>, I>>(object: I): UserConfig {
-    const message = createBaseUserConfig();
-    message.font = object.font ?? "";
-    message.fontSize = object.fontSize ?? 0;
-    message.justify = object.justify ?? false;
-    message.margin = (object.margin !== undefined && object.margin !== null)
-      ? Margin.fromPartial(object.margin)
-      : undefined;
-    return message;
-  },
-};
-
-export type AuthService = typeof AuthService;
-export const AuthService = {
-  auth: {
-    path: "/auth.Auth/Auth",
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => Empty.decode(value),
-    responseSerialize: (value: AuthResponse) => Buffer.from(AuthResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => AuthResponse.decode(value),
-  },
-  updateUsername: {
-    path: "/auth.Auth/UpdateUsername",
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: Username) => Buffer.from(Username.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => Username.decode(value),
-    responseSerialize: (value: User) => Buffer.from(User.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => User.decode(value),
-  },
-  updateUserConfig: {
-    path: "/auth.Auth/UpdateUserConfig",
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: UserConfig) => Buffer.from(UserConfig.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => UserConfig.decode(value),
-    responseSerialize: (value: UserConfig) => Buffer.from(UserConfig.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => UserConfig.decode(value),
-  },
-  getUserConfig: {
-    path: "/auth.Auth/GetUserConfig",
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => Empty.decode(value),
-    responseSerialize: (value: UserConfig) => Buffer.from(UserConfig.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => UserConfig.decode(value),
-  },
-} as const;
-
-export interface AuthServer extends UntypedServiceImplementation {
-  auth: handleUnaryCall<Empty, AuthResponse>;
-  updateUsername: handleUnaryCall<Username, User>;
-  updateUserConfig: handleUnaryCall<UserConfig, UserConfig>;
-  getUserConfig: handleUnaryCall<Empty, UserConfig>;
-}
-
-export interface AuthClient extends Client {
-  auth(request: Empty, callback: (error: ServiceError | null, response: AuthResponse) => void): ClientUnaryCall;
-  auth(
-    request: Empty,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: AuthResponse) => void,
-  ): ClientUnaryCall;
-  auth(
-    request: Empty,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: AuthResponse) => void,
-  ): ClientUnaryCall;
-  updateUsername(request: Username, callback: (error: ServiceError | null, response: User) => void): ClientUnaryCall;
-  updateUsername(
-    request: Username,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: User) => void,
-  ): ClientUnaryCall;
-  updateUsername(
-    request: Username,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: User) => void,
-  ): ClientUnaryCall;
-  updateUserConfig(
-    request: UserConfig,
-    callback: (error: ServiceError | null, response: UserConfig) => void,
-  ): ClientUnaryCall;
-  updateUserConfig(
-    request: UserConfig,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UserConfig) => void,
-  ): ClientUnaryCall;
-  updateUserConfig(
-    request: UserConfig,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UserConfig) => void,
-  ): ClientUnaryCall;
-  getUserConfig(request: Empty, callback: (error: ServiceError | null, response: UserConfig) => void): ClientUnaryCall;
-  getUserConfig(
-    request: Empty,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UserConfig) => void,
-  ): ClientUnaryCall;
-  getUserConfig(
-    request: Empty,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UserConfig) => void,
-  ): ClientUnaryCall;
-}
-
-export const AuthClient = makeGenericClientConstructor(AuthService, "auth.Auth") as unknown as {
-  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): AuthClient;
-  service: typeof AuthService;
-  serviceName: string;
-};
-
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
@@ -596,6 +381,28 @@ export type DeepPartial<T> = T extends Builtin ? T
 type KeysOfUnion<T> = T extends T ? keyof T : never;
 export type Exact<P, I extends P> = P extends Builtin ? P
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+
+function toTimestamp(date: Date): Timestamp {
+  const seconds = Math.trunc(date.getTime() / 1_000);
+  const nanos = (date.getTime() % 1_000) * 1_000_000;
+  return { seconds, nanos };
+}
+
+function fromTimestamp(t: Timestamp): Date {
+  let millis = (t.seconds || 0) * 1_000;
+  millis += (t.nanos || 0) / 1_000_000;
+  return new globalThis.Date(millis);
+}
+
+function fromJsonTimestamp(o: any): Date {
+  if (o instanceof globalThis.Date) {
+    return o;
+  } else if (typeof o === "string") {
+    return new globalThis.Date(o);
+  } else {
+    return fromTimestamp(Timestamp.fromJSON(o));
+  }
+}
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;

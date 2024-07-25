@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package main;
+
+option go_package = "re-sep/proto";
+
+import "auth.proto";
+import "content.proto";
+import "user_config.proto";
+
+service Auth {
+	rpc Auth(auth.Empty) returns (auth.AuthResponse) {}
+	rpc UpdateUsername(auth.Username) returns (auth.User) {}
+	rpc UpdateUserConfig(config.UserConfig) returns (config.UserConfig) {}
+	rpc GetUserConfig(auth.Empty) returns (config.UserConfig) {}
+}
+
+service Content {
+	rpc GetArticle(content.EntryName) returns (content.Article) {}
+}
+
+

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 	"testing"
 	"time"
 
@@ -12,8 +11,10 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	tokenDB "re-sep-user/internal/database/token"
-	userDB "re-sep-user/internal/database/user"
+	proto "google.golang.org/protobuf/proto"
+
+	"re-sep-user/internal/database"
+	"re-sep-user/internal/store"
 	config "re-sep-user/internal/system/config"
 	utils "re-sep-user/internal/utils/test"
 
@@ -22,30 +23,20 @@ import (
 
 var systemConfig config.EnvConfig = config.Config()
 
-func initTestDB(t *testing.T) {
-	tokenDB.InitTokenDB()
-	userDB.InitUserDB()
+func createAuthStore() store.AuthStore {
+	userDB := database.NewUserDBMemory()
+	tokenDB := database.NewTokenDBMemory()
+	userDB.Migrate()
+	tokenDB.Migrate()
 
-	user := userDB.InsertUser(context.Background(), "test", "tester")
-	if user == nil {
-		t.Fatal("Cannot create user")
-	}
-	token := tokenDB.InsertToken(context.Background(), "token", user.Sub, 10*time.Second)
-	if token == nil {
-		t.Fatal("Cannot create token")
-	}
-}
-
-func closeTestDB() {
-	tokenDB.CloseTokenDB()
-	userDB.CloseUserDB()
+	return store.NewAuthStore(userDB, tokenDB)
 }
 
 func TestGetUserConfig(t *testing.T) {
 	type TestCase = struct {
 		err    error
-		setup  func(ctx context.Context, t *testing.T)
-		expect *userDB.UserConfig
+		setup  func(ctx context.Context, authStore store.AuthStore)
+		expect *pb.UserConfig
 		name   string
 		user   string
 	}
@@ -54,36 +45,38 @@ func TestGetUserConfig(t *testing.T) {
 		{
 			name:   "No user",
 			user:   "",
-			expect: &userDB.DefaultUserConfig,
+			expect: &DefaultUserConfig,
 			err:    status.Error(codes.Unauthenticated, "Unauthenticated"),
 		},
 		{
 			name:   "With user but no config",
 			user:   "test",
-			expect: &userDB.DefaultUserConfig,
+			expect: &DefaultUserConfig,
 			err:    nil,
 		},
 		{
 			name: "With user and config",
 			user: "test",
-			setup: func(ctx context.Context, t *testing.T) {
-				uc := userDB.UserConfig{
+			setup: func(ctx context.Context, authStore store.AuthStore) {
+				uc := pb.UserConfig{
 					FontSize: 1,
 					Font:     "sans-serif",
 					Justify:  true,
-					Margin: userDB.Margin{
+					Margin: &pb.Margin{
 						Left:  1,
 						Right: 2,
 					},
 				}
 
-				userDB.UpdateUserConfig(ctx, "test", &uc)
+				_, _ = authStore.InsertUser(ctx, "userId", "user")
+				_, _ = authStore.InsertToken(ctx, "token", "userId", 1*time.Hour)
+				_, _ = authStore.UpdateUserConfig(ctx, "userId", &uc)
 			},
-			expect: &userDB.UserConfig{
+			expect: &pb.UserConfig{
 				FontSize: 1,
 				Font:     "sans-serif",
 				Justify:  true,
-				Margin: userDB.Margin{
+				Margin: &pb.Margin{
 					Left:  1,
 					Right: 2,
 				},
@@ -94,12 +87,11 @@ func TestGetUserConfig(t *testing.T) {
 
 	for _, v := range testCases {
 		t.Run(v.name, func(t *testing.T) {
-			initTestDB(t)
-			defer closeTestDB()
+			authStore := createAuthStore()
 
 			var md metadata.MD
 			if v.user != "" {
-				jwtToken, _, err := utils.CreateJWTTestToken(systemConfig.JWTSecret)
+				jwtToken, _, err := utils.CreateJWTTestToken(systemConfig.JWTSecret, "token")
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -110,10 +102,10 @@ func TestGetUserConfig(t *testing.T) {
 
 			// Setup test data
 			if v.setup != nil {
-				v.setup(ctx, t)
+				v.setup(ctx, authStore)
 			}
 
-			authServer := AuthServer{}
+			authServer := NewAuthServer(authStore)
 			pbUc, err := authServer.GetUserConfig(ctx, nil)
 			if v.err == nil && err != nil {
 				t.Fatal(err)
@@ -127,19 +119,9 @@ func TestGetUserConfig(t *testing.T) {
 				}
 			}
 
-			userConfig := userDB.UserConfig{
-				FontSize: pbUc.FontSize,
-				Justify:  pbUc.Justify,
-				Font:     pbUc.Font,
-				Margin: userDB.Margin{
-					Left:  pbUc.Margin.Left,
-					Right: pbUc.Margin.Right,
-				},
-			}
-
-			t.Logf("%v", userConfig)
-
-			if !reflect.DeepEqual(userConfig, *v.expect) {
+			if !proto.Equal(pbUc, v.expect) {
+				t.Logf("%v", pbUc.ProtoReflect().Interface())
+				t.Logf("%v", (*v.expect).ProtoReflect().Interface())
 				t.Fatal("Mismatched result config")
 			}
 		})
@@ -183,15 +165,43 @@ func TestUpdateUserConfig(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Authenticated, invalid input",
+			user: "test",
+			input: &pb.UserConfig{
+				FontSize: 1,
+				Justify:  true,
+				Font:     "sins-seraf",
+				Margin: &pb.Margin{
+					Left:  1,
+					Right: 1,
+				},
+			},
+			err: status.Error(codes.InvalidArgument, "Message validation failed"),
+		},
+		{
+			name: "Authenticated, invalid numeric input",
+			user: "test",
+			input: &pb.UserConfig{
+				FontSize: 5,
+				Justify:  true,
+				Font:     "sins-seraf",
+				Margin: &pb.Margin{
+					Left:  -1,
+					Right: 1,
+				},
+			},
+			err: status.Error(codes.InvalidArgument, "Message validation failed"),
+		},
 	}
 
 	for _, v := range testCases {
 		t.Run(v.name, func(t *testing.T) {
-			initTestDB(t)
+			authStore := createAuthStore()
 
 			var md metadata.MD
 			if v.user != "" {
-				jwtToken, _, err := utils.CreateJWTTestToken(systemConfig.JWTSecret)
+				jwtToken, _, err := utils.CreateJWTTestToken(systemConfig.JWTSecret, "token")
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -200,7 +210,7 @@ func TestUpdateUserConfig(t *testing.T) {
 			}
 			ctx := metadata.NewIncomingContext(context.Background(), md)
 
-			authServer := AuthServer{}
+			authServer := NewAuthServer(authStore)
 			pbUc, err := authServer.UpdateUserConfig(ctx, v.input)
 			if v.err == nil && err != nil {
 				t.Fatal(err)
@@ -214,7 +224,9 @@ func TestUpdateUserConfig(t *testing.T) {
 				}
 			}
 
-			if !reflect.DeepEqual(pbUc, v.expect) {
+			if !proto.Equal(pbUc, v.expect) {
+				t.Logf("%v\n", pbUc)
+				t.Logf("%v\n", v.expect)
 				t.Fatal("Mismatched result config")
 			}
 		})

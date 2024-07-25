@@ -9,7 +9,7 @@ import (
 )
 
 func TestExtractToken(t *testing.T) {
-	jwtToken, cl, err := testUtils.CreateJWTTestToken(systemConfig.JWTSecret)
+	jwtToken, cl, err := testUtils.CreateJWTTestToken(systemConfig.JWTSecret, "token")
 	if err != nil {
 		t.Fatal(err)
 	}

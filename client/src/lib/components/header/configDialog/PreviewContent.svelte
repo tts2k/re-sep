@@ -20,9 +20,9 @@
 	$: fontSizePreset = FontSizePresets[$previewConfig.fontSize - 1];
 	$: fontFamily = FontPreset[$previewConfig.font];
 	$: justified = $previewConfig.justify ? "text-justify" : "";
-	$: marginLeft = PreviewMarginPresets.left[$previewConfig.margin.left - 1];
+	$: marginLeft = PreviewMarginPresets.left[($previewConfig.margin?.left || 1) - 1];
 	$: marginRight =
-		PreviewMarginPresets.right[$previewConfig.margin.right - 1];
+		PreviewMarginPresets.right[($previewConfig.margin?.right || 1) - 1];
 
 	$: scaleStyle = `transform: scale(${scale / 100});`;
 

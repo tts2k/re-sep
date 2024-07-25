@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package config;
+
+option go_package = "re-sep/proto";
+
+import "buf/validate/validate.proto";
+
+message Margin {
+	int32 left = 1 [(buf.validate.field).int32 = {
+		gte: 0,
+		lte: 4
+	}];
+	int32 right = 2 [(buf.validate.field).int32 = {
+		gte: 0,
+		lte: 4
+	}];
+}
+
+message UserConfig {
+	string font = 1 [(buf.validate.field).string = {
+		in: [
+			"serif",
+			"sans-serif",
+			"Open-dyslexic"
+		]
+	}];
+	int32 fontSize = 2 [(buf.validate.field).int32 = {
+		gte: 0,
+		lte: 4
+	}];
+	bool justify = 3;
+	Margin margin = 4;
+}

@@ -1,9 +1,9 @@
 import type { Action } from "svelte/action";
-import type { UserConfig } from "@/stores/userConfig";
+import type { UserConfigLayer } from "@/stores/userConfig";
 import type { Writable } from "svelte/store";
 import { FontSizePresets, FontSizeTag as Tag } from "@/stylePresets";
 
-let currentConfig: UserConfig;
+let currentConfig: UserConfigLayer;
 let rootElement: HTMLElement;
 
 /*
@@ -62,7 +62,7 @@ const replaceClass = (query: string, oldClass: string, newClass: string) => {
 	}
 };
 
-const userConfigSubscribe = (value: UserConfig) => {
+const userConfigSubscribe = (value: UserConfigLayer) => {
 	if (!currentConfig) {
 		currentConfig = value;
 		return;
@@ -89,9 +89,9 @@ const userConfigSubscribe = (value: UserConfig) => {
 // Config changes will be layered on exisiting config for better UX and server
 // resources
 // Normally they would be pre-applied from server side
-export const layerConfig: Action<HTMLElement, Writable<UserConfig>> = (
+export const layerConfig: Action<HTMLElement, Writable<UserConfigLayer>> = (
 	element: HTMLElement,
-	userConfig: Writable<UserConfig>,
+	userConfig: Writable<UserConfigLayer>,
 ) => {
 	rootElement = element;
 	userConfig.subscribe(userConfigSubscribe);

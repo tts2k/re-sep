@@ -7,10 +7,11 @@ require (
 	github.com/tursodatabase/go-libsql v0.0.0-20240429120401-651096bbee0b
 	github.com/valyala/fasttemplate v1.2.2
 	google.golang.org/grpc v1.63.2
-	google.golang.org/protobuf v1.33.0
+	google.golang.org/protobuf v1.34.2
 )
 
 require (
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240717164558-a6c49f84cc0f.2 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/libsql/sqlite-antlr4-parser v0.0.0-20240327125255-dbf53b6cbf06 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

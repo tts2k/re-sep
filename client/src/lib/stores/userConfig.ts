@@ -1,19 +1,10 @@
 import { browser } from "$app/environment";
-import type { Font } from "@/stylePresets";
+import type { UserConfig } from "@/proto/user_config";
 import { writable } from "svelte/store";
 
-export type UserConfig = {
-	layered: boolean;
-	font: Font;
-	fontSize: number;
-	justify: boolean;
-	margin: {
-		left: number;
-		right: number;
-	};
-};
+export type UserConfigLayer = UserConfig & { layered?: boolean };
 
-const defaultConfig: UserConfig = {
+const defaultConfig: UserConfigLayer = {
 	layered: false,
 	font: "serif",
 	fontSize: 3,
@@ -24,8 +15,8 @@ const defaultConfig: UserConfig = {
 	},
 };
 
-let stored: UserConfig = defaultConfig;
-export const userConfig = writable<UserConfig>(stored);
+let stored: UserConfigLayer = defaultConfig;
+export const userConfig = writable<UserConfigLayer>(stored);
 
 if (browser) {
 	const localConfig = localStorage.getItem("userConfig");

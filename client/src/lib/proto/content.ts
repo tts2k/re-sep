@@ -5,18 +5,6 @@
 // source: content.proto
 
 /* eslint-disable */
-import {
-  type CallOptions,
-  ChannelCredentials,
-  Client,
-  type ClientOptions,
-  type ClientUnaryCall,
-  type handleUnaryCall,
-  makeGenericClientConstructor,
-  Metadata,
-  type ServiceError,
-  type UntypedServiceImplementation,
-} from "@grpc/grpc-js";
 import _m0 from "protobufjs/minimal";
 import { Timestamp } from "./google/protobuf/timestamp";
 
@@ -335,44 +323,6 @@ export const Article = {
     message.toc = object.toc?.map((e) => TOCItem.fromPartial(e)) || [];
     return message;
   },
-};
-
-export type ContentService = typeof ContentService;
-export const ContentService = {
-  getArticle: {
-    path: "/content.Content/GetArticle",
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: EntryName) => Buffer.from(EntryName.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => EntryName.decode(value),
-    responseSerialize: (value: Article) => Buffer.from(Article.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => Article.decode(value),
-  },
-} as const;
-
-export interface ContentServer extends UntypedServiceImplementation {
-  getArticle: handleUnaryCall<EntryName, Article>;
-}
-
-export interface ContentClient extends Client {
-  getArticle(request: EntryName, callback: (error: ServiceError | null, response: Article) => void): ClientUnaryCall;
-  getArticle(
-    request: EntryName,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: Article) => void,
-  ): ClientUnaryCall;
-  getArticle(
-    request: EntryName,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: Article) => void,
-  ): ClientUnaryCall;
-}
-
-export const ContentClient = makeGenericClientConstructor(ContentService, "content.Content") as unknown as {
-  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): ContentClient;
-  service: typeof ContentService;
-  serviceName: string;
 };
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;

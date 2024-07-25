@@ -7,7 +7,7 @@ import (
 	"github.com/go-jose/go-jose/v4/jwt"
 )
 
-func CreateJWTTestToken(k string) (string, *jwt.Claims, error) {
+func CreateJWTTestToken(k string, sub string) (string, *jwt.Claims, error) {
 	key := []byte(k)
 
 	sig, err := jose.NewSigner(
@@ -19,7 +19,7 @@ func CreateJWTTestToken(k string) (string, *jwt.Claims, error) {
 	}
 
 	cl := jwt.Claims{
-		Subject:  "token",
+		Subject:  sub,
 		IssuedAt: jwt.NewNumericDate(time.Now()),
 		Expiry:   jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
 	}
