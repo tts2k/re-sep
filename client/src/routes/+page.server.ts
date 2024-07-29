@@ -20,7 +20,5 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		throw error(500, article.error);
 	}
 
-	console.log(article.value.toc[3].subItems);
-
 	return article.value;
 };
