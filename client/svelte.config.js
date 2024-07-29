@@ -17,7 +17,6 @@ const config = {
 };
 
 if (process.env.PLATFORM_SELF) {
-	console.log("Using adapter node");
 	config.kit.adapter = adapterNode();
 } else {
 	config.kit.adapter = adapterAuto();
