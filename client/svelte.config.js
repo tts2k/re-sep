@@ -1,5 +1,6 @@
-import adapterAuto from "@sveltejs/adapter-auto";
 import adapterNode from "@sveltejs/adapter-node";
+import adapterVercel from "@sveltejs/adapter-vercel";
+import adapterAuto from "@sveltejs/adapter-auto";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -15,10 +16,11 @@ const config = {
 	},
 };
 
-if (process.env.DEMO === "true") {
-	config.kit.adapter = adapterAuto();
-} else {
+if (process.env.PLATFORM_SELF) {
+	console.log("Using adapter node");
 	config.kit.adapter = adapterNode();
+} else {
+	config.kit.adapter = adapterAuto();
 }
 
 export default config;
