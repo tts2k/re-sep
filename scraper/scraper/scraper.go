@@ -173,24 +173,34 @@ func Single(url string) (Article, error) {
 		dom.Find("#toc").Remove()
 		dom.Find("#academic-tools").Remove()
 
-		addCSSTemplateTags(dom)
-
 		HTMLText, err := dom.Html()
 		if err != nil {
 			fmt.Printf("Error extracting content: %v\n", err)
 			return
 		}
 
-		// Trim whiltespaces
-		HTMLText = htmlTrimRegex.ReplaceAllString(strings.TrimSpace(HTMLText), "\n")
-
 		// Sanitize
 		HTMLText = sanitizer.Sanitize(HTMLText)
+
+		newDoc, err := goquery.NewDocumentFromReader(strings.NewReader(HTMLText))
+		if err != nil {
+			fmt.Printf("Error parsing sanitized content: %v\n", err)
+			return
+		}
+
+		addCSSTemplateTags(newDoc.Selection)
+
+		HTMLText, err = newDoc.Html()
+		if err != nil {
+			fmt.Printf("Error parsing sanitized content: %v\n", err)
+			return
+		}
 
 		// Compress
 		var b bytes.Buffer
 
 		gz := gzip.NewWriter(&b)
+		println(HTMLText)
 		_, _ = gz.Write([]byte(HTMLText))
 		gz.Close()
 
