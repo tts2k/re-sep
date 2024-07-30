@@ -2,6 +2,7 @@ import type { PageServerLoad } from "./$types";
 import articleService from "$lib/server/articleService";
 import { promiseResult } from "@/server/utils";
 import { error } from "@sveltejs/kit";
+import { NotFoundError } from "@/server/error";
 
 export const prerender = false;
 
@@ -13,11 +14,14 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	);
 
 	if (article.isErr()) {
+		console.log(article.error);
 		if (article.error instanceof NotFoundError) {
-			throw error(404, "Not found");
+			return error(404, { message: "Not found" });
 		}
 
-		throw error(500, article.error);
+		return error(500, {
+			message: article.error.message,
+		});
 	}
 
 	return article.value;

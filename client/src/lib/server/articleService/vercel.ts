@@ -3,14 +3,15 @@ import { contentClient } from "../turso";
 import type { Article, TOCItem } from "@/proto/content";
 import zlib from "node:zlib";
 import { promisify } from "node:util";
+import { NotFoundError } from "../error";
+import mustache from "mustache";
+import { defaultConfig } from "@/defaultConfig";
+import { getFontSizeMap } from "@/stylePresets";
 
 const doGunzip = promisify(zlib.gunzip);
 
-export const getArticle = async (entryName: string): Promise<Article> => {
-	const result = await contentClient.execute({
-		sql: "SELECT * FROM articles where entry_name = ?",
-		args: [entryName],
-	});
+export const getArticle = async (_: string): Promise<Article> => {
+	const result = await contentClient.execute("Select * from articles;");
 
 	if (result.rows.length === 0) {
 		throw new NotFoundError("Article not found");
@@ -19,6 +20,9 @@ export const getArticle = async (entryName: string): Promise<Article> => {
 	const [row] = result.rows;
 
 	const htmlTextBuffer = await doGunzip(row.html_text as ArrayBuffer);
+	const htmlText = htmlTextBuffer.toString();
+	const fszMap = getFontSizeMap(defaultConfig.fontSize);
+	const rendered = mustache.render(htmlText, fszMap);
 
 	return {
 		title: row.title as string,
@@ -26,7 +30,7 @@ export const getArticle = async (entryName: string): Promise<Article> => {
 		issued: new Date(row.issued as string),
 		modified: new Date(row.modified as string),
 		authors: JSON.parse(row.author as string) as string[],
-		htmlText: htmlTextBuffer.toString(),
+		htmlText: rendered,
 		toc: JSON.parse(row.toc as string) as TOCItem[],
 	};
 };
