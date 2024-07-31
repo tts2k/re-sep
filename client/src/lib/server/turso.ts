@@ -8,6 +8,7 @@ import { getFontSizeMap } from "@/stylePresets";
 import { defaultConfig } from "@/defaultConfig";
 import mustache from "mustache";
 import type { UserConfig } from "@/proto/user_config";
+import type { User } from "@/proto/auth";
 
 const contentClient = createClient({
 	url: env.CONTENT_DATABASE_URL || "",
@@ -21,15 +22,18 @@ const userClient = createClient({
 
 const doGunzip = promisify(zlib.gunzip);
 
-export const getArticle = async (entryName: string): Promise<Article> => {
+export const getArticle = async (
+	entryName: string,
+	email: string,
+): Promise<Article> => {
 	const articlePromise = contentClient.execute({
 		sql: "SELECT * FROM articles WHERE entry_name = ?",
 		args: [entryName],
 	});
 
 	const userPromise = userClient.execute({
-		sql: "SELECT config FROM users LIMIT 1",
-		args: [],
+		sql: "SELECT config FROM config WHERE email = ?",
+		args: [email],
 	});
 
 	const [articleRes, userConfigRes] = await Promise.all([
@@ -67,4 +71,46 @@ export const getArticle = async (entryName: string): Promise<Article> => {
 	};
 };
 
-export { contentClient };
+export const getUser = async (id: string): Promise<User> => {
+	const result = await userClient.execute({
+		sql: "SELECT name, sub FROM User WHERE sub = ?",
+		args: [id],
+	});
+
+	if (result.rows.length === 0) {
+		throw new NotFoundError("Article not found");
+	}
+
+	const [row] = result.rows;
+
+	return {
+		sub: row.sub as string,
+		name: row.name as string,
+	};
+};
+
+export const insertUser = async (
+	id: string,
+	name: string,
+	sub: string,
+): Promise<User> => {
+	const result = await userClient.execute({
+		sql: `INSERT INTO Users (
+			id, name, sub, last_login, created_at, updated_at
+			) VALUES (
+			?, ?, ?, Datetime('now'), Datetime('now'), Datetime('now')
+		)`,
+		args: [id, name, sub],
+	});
+
+	if (result.rows.length === 0) {
+		throw new NotFoundError("Article not found");
+	}
+
+	const [row] = result.rows;
+
+	return {
+		sub: row.sub as string,
+		name: row.name as string,
+	};
+};

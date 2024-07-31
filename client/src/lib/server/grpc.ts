@@ -3,8 +3,8 @@ import { env } from "$env/dynamic/private";
 import { ContentClient } from "@/proto/main";
 import { building } from "$app/environment";
 import { AuthClient } from "@/proto/main";
-import { SignJWT, type JWTPayload } from "jose";
 import { logger } from "./logger";
+import { createJWTToken } from "./utils";
 
 const AUTH_URL = env.AUTH_URL;
 const CONTENT_URL = env.CONTENT_URL;
@@ -14,6 +14,10 @@ const JWT_SECRET = env.JWT_SECRET;
 let contentClient: ContentClient;
 let authClient: AuthClient;
 
+if (!JWT_SECRET) {
+	throw new Error("No JWT secret");
+}
+
 /**
  * Create a GRPC Metadata object with the correct authorization headers
  * Short lived token only for getting the data
@@ -21,16 +25,7 @@ let authClient: AuthClient;
 export const createMetadata = async (id: string): Promise<Metadata> => {
 	const metadata = new Metadata();
 
-	const tokenPayload: JWTPayload = { sub: id };
-
-	const secret = new TextEncoder().encode(JWT_SECRET);
-
-	// Generate and sign the token
-	const oAuthToken = await new SignJWT(tokenPayload)
-		.setProtectedHeader({ alg: "HS256", typ: "JWT" })
-		.setIssuedAt()
-		.setExpirationTime("1h")
-		.sign(secret);
+	const oAuthToken = await createJWTToken(id, JWT_SECRET);
 
 	metadata.set("x-authorization", `bearer ${oAuthToken}`);
 	return metadata;

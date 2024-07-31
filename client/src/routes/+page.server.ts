@@ -6,11 +6,11 @@ import { NotFoundError } from "@/server/error";
 
 export const prerender = false;
 
-export const load: PageServerLoad = async ({ cookies }) => {
-	const token = cookies.get("token");
+export const load: PageServerLoad = async ({ locals }) => {
+	const session = await locals.auth();
 
 	const article = await promiseResult(
-		articleService.getArticle("action", token),
+		articleService.getArticle("action", session?.user?.email),
 	);
 
 	if (article.isErr()) {
