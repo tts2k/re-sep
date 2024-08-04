@@ -1,10 +1,6 @@
 import type { Action } from "svelte/action";
 import type { Writable } from "svelte/store";
-import {
-	FontSizePresets,
-	FontSizeTag as Tag,
-	getFontSizeArray,
-} from "@/stylePresets";
+import { FontSizeTag as Tag, getFontSizeArray } from "@/stylePresets";
 import type { UserConfigLayer } from "@/defaultConfig";
 
 let currentConfig: UserConfigLayer;
