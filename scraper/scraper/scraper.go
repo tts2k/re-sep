@@ -95,7 +95,7 @@ func addCSSTemplateTags(dom *goquery.Selection) {
 	dom.Find("h2").AddClass("{{h2}}")
 	dom.Find("h3").AddClass("{{h3}}")
 	dom.Find("h4").AddClass("{{h4}}")
-	dom.Find("p, ul, em").AddClass("{{text}}")
+	dom.Find("p, ul, em, blockquote").AddClass("{{text}}")
 }
 
 func SingleContentOnly(url string) (string, error) {
@@ -200,7 +200,6 @@ func Single(url string) (Article, error) {
 		var b bytes.Buffer
 
 		gz := gzip.NewWriter(&b)
-		println(HTMLText)
 		_, _ = gz.Write([]byte(HTMLText))
 		gz.Close()
 
