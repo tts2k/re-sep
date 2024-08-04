@@ -11,6 +11,7 @@
 	import type { Selected } from "bits-ui";
 	import type { ConfigDialogContext } from "../ConfigDialog.svelte";
 	import { toast } from "svelte-sonner";
+	import { page } from "$app/stores";
 
 	const configDialog = getContext<ConfigDialogContext>("config-dialog");
 
@@ -47,20 +48,22 @@
 			margin: $previewConfig.margin,
 		};
 
-		const res = await fetch("/api/user", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				layered: undefined,
-				...$userConfig
-			})
-		})
+		if ($page.data.session?.user) {
+			const res = await fetch("/api/user", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					layered: undefined,
+					...$userConfig,
+				}),
+			});
 
-		if (res.status !== 200) {
-			console.error(res)
-			toast.error("Update config failed")
+			if (res.status !== 200) {
+				console.error(res);
+				toast.error("Update server side config failed");
+			}
 		}
 
 		configDialog.closeDialog();

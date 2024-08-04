@@ -3,7 +3,6 @@
 	import { Button } from "$lib/components/ui/button";
 	import PersonIcon from "~icons/radix-icons/person";
 	import GoogleIcon from "~icons/logos/google-icon";
-	//import MastodonIcon from "~icons/logos/mastodon-icon";
 	import { signIn, signOut } from "@auth/sveltekit/client";
 	import { page } from "$app/stores";
 	import { toast } from "svelte-sonner";

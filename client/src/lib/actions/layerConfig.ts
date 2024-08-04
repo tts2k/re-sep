@@ -64,7 +64,7 @@ const replaceClass = (query: string, oldClass: string, newClass: string) => {
 
 const userConfigSubscribe = (value: UserConfigLayer) => {
 	if (!currentConfig) {
-		currentConfig = value;
+		currentConfig = JSON.parse(JSON.stringify(value));
 		return;
 	}
 
@@ -84,6 +84,8 @@ const userConfigSubscribe = (value: UserConfigLayer) => {
 	replaceClass("h3", oldFontSize[Tag.H3], newFontSize[Tag.H3]);
 	replaceClass("h4", oldFontSize[Tag.H4], newFontSize[Tag.H4]);
 	replaceClass("p, ul, em", oldFontSize[Tag.TEXT], newFontSize[Tag.TEXT]);
+
+	currentConfig = JSON.parse(JSON.stringify(value));
 };
 
 // Config changes will be layered on exisiting config for better UX and server

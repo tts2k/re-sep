@@ -1,7 +1,7 @@
 import { createClient, type Client } from "@libsql/client";
 import { env } from "$env/dynamic/private";
 import { MutationFailed, NotFoundError } from "./error";
-import { promisify } from "util";
+import { promisify } from "node:util";
 import zlib from "node:zlib";
 import type { Article, TOCItem } from "@/proto/content";
 import { getFontSizeMap } from "@/stylePresets";
@@ -60,7 +60,7 @@ export const getArticle = async (
 
 	const htmlTextBuffer = await doGunzip(articleRow.html_text as ArrayBuffer);
 	const htmlText = htmlTextBuffer.toString();
-	const fszMap = getFontSizeMap(defaultConfig.fontSize);
+	const fszMap = getFontSizeMap(defaultConfig.fontSize - 1);
 
 	return {
 		title: articleRow.title as string,
