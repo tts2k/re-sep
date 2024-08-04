@@ -6,12 +6,6 @@
 	import { sidebarStatus } from "@/components/sidebar/stores/sidebarStore";
 	import { fade } from "svelte/transition";
 	import { Toaster } from "svelte-sonner";
-	import type { LayoutServerData } from "./$types";
-	// import { user } from "@/stores/user";
-
-	export let data: LayoutServerData;
-
-	console.log(data.session);
 </script>
 
 <ModeWatcher />

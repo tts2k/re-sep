@@ -1,47 +1,15 @@
-import type { User } from "@/proto/auth";
 import type { UserConfig } from "@/proto/user_config";
 import { test, describe, expect } from "bun:test";
 import { POST } from "./+server";
-import { json, type Cookies, type RequestEvent } from "@sveltejs/kit";
+import { json, type RequestEvent } from "@sveltejs/kit";
 import { mock } from "bun:test";
-
-class MockCookies implements Cookies {
-	cookies: Record<string, any> = {};
-
-	constructor(cookies?: Record<string, any>) {
-		if (cookies) {
-			this.cookies = cookies;
-		}
-	}
-
-	set(key: string, value: string, opts: any) {
-		this.cookies[key] = {
-			value,
-			opts,
-		};
-	}
-
-	get(key: string): any {
-		return this.cookies[key]?.value;
-	}
-
-	getAll(_2: any): any {
-		return;
-	}
-
-	serialize(_: string, _2: string, _3: any): string {
-		return "";
-	}
-
-	delete(_: string, _2: any): void {}
-}
+import type { Session } from "@auth/sveltekit";
 
 describe("test POST", () => {
 	type TestCase = {
 		name: string,
-		user?: User,
 		request: Request,
-		cookies: Cookies,
+		session: Session,
 		res: Response,
 		mockAuthService?: any;
 	};
@@ -71,40 +39,24 @@ describe("test POST", () => {
 
 	const testCases: TestCase[] = [
 		{
-			name: "no user",
+			name: "no session",
 			request: request.clone(),
-			cookies: new MockCookies(),
-			res: unauthorizedResponse.clone()
-		},
-		{
-			name: "no cookie",
-			request: request.clone(),
-			user: {
-				sub: "sub",
-				name: "user"
+			session: {
+				user: undefined,
+				expires: ""
 			},
-			cookies: new MockCookies(),
 			res: unauthorizedResponse.clone()
 		},
 		{
 			name: "authorized, grpc error",
 			request: request.clone(),
-			user: {
-				sub: "sub",
-				name: "user"
-			},
-			cookies: new MockCookies({
-				token: {
-					value: "token",
-					opts: {
-						httpOnly: true,
-						maxAge: 604800,
-						path: "/",
-						sameSite: "lax",
-						secure: true,
-					},
+			session: {
+				user: {
+					name: "user",
+					id: "user"
 				},
-			}) as Cookies,
+				expires: ""
+			},
 			res: json(
 				{ message: "Error updating user config" },
 				{ status: 403, statusText: "Bad request" }
@@ -118,22 +70,13 @@ describe("test POST", () => {
 		{
 			name: "authorized, success",
 			request: request.clone(),
-			user: {
-				sub: "sub",
-				name: "user"
-			},
-			cookies: new MockCookies({
-				token: {
-					value: "token",
-					opts: {
-						httpOnly: true,
-						maxAge: 604800,
-						path: "/",
-						sameSite: "lax",
-						secure: true,
-					},
+			session: {
+				user: {
+					name: "user",
+					id: "user"
 				},
-			}) as Cookies,
+				expires: ""
+			},
 			res: json({ message: "success" }).clone(),
 			mockAuthService: {
 				updateUserConfig: async (_: string): Promise<UserConfig> => {
@@ -154,10 +97,10 @@ describe("test POST", () => {
 			}
 
 			const locals = {
-				user: t.user
-			}
+				async auth() { return t.session },
+			} as App.Locals
 
-			const res = await POST({ cookies: t.cookies, locals, request: t.request } as RequestEvent)
+			const res = await POST({ locals, request: t.request } as RequestEvent)
 			expect(res.status).toEqual(t.res.status)
 			expect(res.statusText).toEqual(t.res.statusText)
 

@@ -1,6 +1,10 @@
 import type { Action } from "svelte/action";
 import type { Writable } from "svelte/store";
-import { FontSizePresets, FontSizeTag as Tag } from "@/stylePresets";
+import {
+	FontSizePresets,
+	FontSizeTag as Tag,
+	getFontSizeArray,
+} from "@/stylePresets";
 import type { UserConfigLayer } from "@/defaultConfig";
 
 let currentConfig: UserConfigLayer;
@@ -76,8 +80,8 @@ const userConfigSubscribe = (value: UserConfigLayer) => {
 		return;
 	}
 
-	const oldFontSize = FontSizePresets[currentConfig.fontSize - 1];
-	const newFontSize = FontSizePresets[value.fontSize - 1];
+	const oldFontSize = getFontSizeArray(currentConfig.fontSize - 1);
+	const newFontSize = getFontSizeArray(value.fontSize - 1);
 
 	replaceClass("h1", oldFontSize[Tag.H1], newFontSize[Tag.H1]);
 	replaceClass("h2", oldFontSize[Tag.H2], newFontSize[Tag.H2]);

@@ -4,12 +4,17 @@
 	import PersonIcon from "~icons/radix-icons/person";
 	import GoogleIcon from "~icons/logos/google-icon";
 	//import MastodonIcon from "~icons/logos/mastodon-icon";
-	import { user } from "@/stores/user";
-	import { signIn } from "@auth/sveltekit/client";
+	import { signIn, signOut } from "@auth/sveltekit/client";
+	import { page } from "$app/stores";
+	import { toast } from "svelte-sonner";
 
 	export let open: boolean;
 	export let onOpenChange: (value: boolean) => void;
 	export let loading = false;
+
+	const signOutWrapper = () => {
+		toast.promise(signOut());
+	};
 
 	$: triggerOpacity = open ? "opacity-100" : "opacity-0";
 </script>
@@ -25,11 +30,11 @@
 			</Button>
 		</div>
 	</HoverCard.Trigger>
-	{#if $user.loggedIn}
+	{#if $page.data.session}
 		<HoverCard.Content class="flex flex-col gap-4">
-			<div>Logged in as {$user.name}</div>
+			<div>Logged in as {$page.data.session.user?.name}</div>
 			<div>
-				<Button on:click={() => {}} {loading}>Log out</Button>
+				<Button on:click={signOutWrapper} {loading}>Log out</Button>
 			</div>
 		</HoverCard.Content>
 	{:else}

@@ -21,11 +21,11 @@ export const enum FontSizeTag {
 }
 
 export const FontSizePresets = [
-	["text-9xl", "text-6xl", "text-5xl", "text-4xl", "text-3xl"],
-	["text-8xl", "text-5xl", "text-4xl", "text-3xl", "text-2xl"],
-	["text-7xl", "text-4xl", "text-3xl", "text-2xl", "text-xl"],
-	["text-6xl", "text-3xl", "text-2xl", "text-xl", "text-lg"],
-	["text-5xl", "text-2xl", "text-xl", "text-lg", "text-base"],
+	["text-3xl", "text-4xl", "text-5xl", "text-6xl", "text-9xl"],
+	["text-2xl", "text-3xl", "text-5xl", "text-4xl", "text-8xl"],
+	["text-xl", "text-2xl", "text-3xl", "text-4xl", "text-7xl"],
+	["text-lg", "text-xl", "text-2xl", "text-3xl", "text-6xl"],
+	["text-base", "text-lg", "text-xl", "text-2xl", "text-5xl"],
 ];
 
 /* Margin */
@@ -34,14 +34,22 @@ export const MarginPresets = {
 	right: ["mr-0", "mr-5p", "mr-10p", "mr-20p", "mr-30p", "ml-40p"],
 } as const;
 
-export const getFontSizeMap = (size: number) => {
-	const m: Record<string, string> = {};
+export const getFontSizeMap = (index: number) => {
+	return {
+		h1: FontSizePresets[FontSizeTag.H1][index],
+		h2: FontSizePresets[FontSizeTag.H2][index],
+		h3: FontSizePresets[FontSizeTag.H3][index],
+		h4: FontSizePresets[FontSizeTag.H4][index],
+		text: FontSizePresets[FontSizeTag.TEXT][index],
+	};
+};
 
-	m.h1 = FontSizePresets[FontSizeTag.H1][size];
-	m.h2 = FontSizePresets[FontSizeTag.H2][size];
-	m.h3 = FontSizePresets[FontSizeTag.H3][size];
-	m.h4 = FontSizePresets[FontSizeTag.H4][size];
-	m.text = FontSizePresets[FontSizeTag.TEXT][size];
-
-	return m;
+export const getFontSizeArray = (index: number): string[] => {
+	return [
+		FontSizePresets[FontSizeTag.H1][index],
+		FontSizePresets[FontSizeTag.H2][index],
+		FontSizePresets[FontSizeTag.H3][index],
+		FontSizePresets[FontSizeTag.H4][index],
+		FontSizePresets[FontSizeTag.TEXT][index],
+	];
 };
