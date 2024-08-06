@@ -5,5 +5,6 @@ import Google from "@auth/sveltekit/providers/google";
 // import Mastodon from "@auth/sveltekit/providers/mastodon";
 
 export const { handle, signIn, signOut } = SvelteKitAuth({
+	trustHost: true,
 	providers: [Google],
 });
