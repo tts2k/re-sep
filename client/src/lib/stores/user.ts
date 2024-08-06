@@ -1,4 +1,3 @@
-import { env } from "$env/dynamic/public";
 import { writable } from "svelte/store";
 
 type User = {
