@@ -1,5 +1,6 @@
+import type { Article } from "@/proto/content";
 import { contentClient, createMetadata } from "../grpc";
-import type { Article, ArticleService } from "./type";
+import type { ArticleService } from "./type";
 
 const getArticle = async (entryName: string, token?: string) => {
 	let promiseExecutor: ConstructorParameters<typeof Promise<Article>>[0];
@@ -15,17 +16,7 @@ const getArticle = async (entryName: string, token?: string) => {
 						reject(error);
 					}
 
-					const article: Article = {
-						title: response.title,
-						entryName: response.entryName,
-						issued: response.issued?.toLocaleString() || "",
-						modified: response.modified?.toLocaleString() || "",
-						author: response.authors,
-						toc: response.toc,
-						htmlText: response.htmlText,
-					};
-
-					resolve(article);
+					resolve(response);
 				},
 			);
 		};
@@ -36,17 +27,7 @@ const getArticle = async (entryName: string, token?: string) => {
 					reject(error);
 				}
 
-				const article: Article = {
-					title: response.title,
-					entryName: response.entryName,
-					issued: response.issued?.toLocaleString() || "",
-					modified: response.modified?.toLocaleString() || "",
-					author: response.authors,
-					toc: response.toc,
-					htmlText: response.htmlText,
-				};
-
-				resolve(article);
+				resolve(response);
 			});
 		};
 	}

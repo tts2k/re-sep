@@ -1,10 +1,10 @@
-import type { TocItem } from "@/server/articleService/type";
+import type { TOCItem } from "@/proto/content";
 import { writable } from "svelte/store";
 
 export type ArticleMetadata = {
 	title: string;
 	authors: string[];
-	toc: TocItem[];
+	toc: TOCItem[];
 };
 
 const initialMetadata: ArticleMetadata = {

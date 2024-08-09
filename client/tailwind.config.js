@@ -70,6 +70,11 @@ const config = {
 				"30p": "30%",
 				"40p": "40%",
 			},
+			safelist: [
+				{
+					pattern: /text-.+/,
+				},
+			],
 		},
 	},
 };

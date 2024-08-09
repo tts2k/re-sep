@@ -3,27 +3,19 @@
 	import { Button } from "$lib/components/ui/button";
 	import PersonIcon from "~icons/radix-icons/person";
 	import GoogleIcon from "~icons/logos/google-icon";
+	import { signIn, signOut } from "@auth/sveltekit/client";
+	import { page } from "$app/stores";
 	import { toast } from "svelte-sonner";
-	import { user, login, logout } from "@/stores/user";
+
 	export let open: boolean;
 	export let onOpenChange: (value: boolean) => void;
 	export let loading = false;
 
-	$: triggerOpacity = open ? "opacity-100" : "opacity-0";
-
-	const onLogin = async (provider: string) => {
-		try {
-			loading = true;
-			await login(provider);
-			loading = false;
-		} catch (err) {
-			console.error(err);
-			toast.error("Error: Server is not running");
-			loading = false;
-		}
+	const signOutWrapper = () => {
+		toast.promise(signOut());
 	};
 
-	const onLogout = () => logout();
+	$: triggerOpacity = open ? "opacity-100" : "opacity-0";
 </script>
 
 <HoverCard.Root bind:open bind:onOpenChange openDelay={300}>
@@ -37,21 +29,19 @@
 			</Button>
 		</div>
 	</HoverCard.Trigger>
-	{#if $user.loggedIn}
+	{#if $page.data.session}
 		<HoverCard.Content class="flex flex-col gap-4">
-			<div>Logged in as {$user.name}</div>
+			<div>Logged in as {$page.data.session.user?.name}</div>
 			<div>
-				<Button on:click={onLogout} {loading}>Log out</Button>
+				<Button on:click={signOutWrapper} {loading}>Log out</Button>
 			</div>
 		</HoverCard.Content>
 	{:else}
 		<HoverCard.Content class="flex flex-col gap-4">
 			<div>Not logged in</div>
-			<div>
-				<Button on:click={() => onLogin("google")} {loading}>
-					<GoogleIcon font-size="24" /> &nbsp; Login with Google
-				</Button>
-			</div>
+			<Button on:click={() => signIn("google")} {loading}>
+				<GoogleIcon font-size="24" /> &nbsp; Login with Google
+			</Button>
 		</HoverCard.Content>
 	{/if}
 </HoverCard.Root>

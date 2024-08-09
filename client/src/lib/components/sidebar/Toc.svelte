@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { TocItem } from "@/server/articleService/type";
+	import type { TOCItem } from "@/proto/content";
 
-	export let items: TocItem[];
+	export let items: TOCItem[];
 	export let indent = 0;
 	export let parentPrefix = "";
 </script>
@@ -13,7 +13,7 @@
 				{parentPrefix}{index + 1}. {item.label}
 			</a>
 		</li>
-		{#if item.subItems.length > 0}
+		{#if item.subItems && item.subItems.length > 0}
 			<svelte:self
 				items={item.subItems}
 				parentPrefix={parentPrefix + (index + 1) + "."}

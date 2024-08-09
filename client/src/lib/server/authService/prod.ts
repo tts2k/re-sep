@@ -36,10 +36,10 @@ const auth = async (token: string): Promise<AuthResponse> => {
 };
 
 const updateUserConfig = async (
-	token: string,
 	uc: UserConfig,
+	userId: string,
 ): Promise<UserConfig> => {
-	const metadata = await createMetadata(token);
+	const metadata = await createMetadata(userId);
 
 	return new Promise<UserConfig>((resolve, reject) => {
 		authClient.updateUserConfig(uc, metadata, (error, response) => {
@@ -66,7 +66,6 @@ const updateUserConfig = async (
 };
 
 const service: AuthService = {
-	auth,
 	updateUserConfig,
 };
 

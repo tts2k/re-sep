@@ -1,7 +1,7 @@
 import type { Action } from "svelte/action";
-import type { UserConfigLayer } from "@/stores/userConfig";
 import type { Writable } from "svelte/store";
-import { FontSizePresets, FontSizeTag as Tag } from "@/stylePresets";
+import { FontSizeTag as Tag, getFontSizeArray } from "@/stylePresets";
+import type { UserConfigLayer } from "@/defaultConfig";
 
 let currentConfig: UserConfigLayer;
 let rootElement: HTMLElement;
@@ -64,7 +64,7 @@ const replaceClass = (query: string, oldClass: string, newClass: string) => {
 
 const userConfigSubscribe = (value: UserConfigLayer) => {
 	if (!currentConfig) {
-		currentConfig = value;
+		currentConfig = JSON.parse(JSON.stringify(value));
 		return;
 	}
 
@@ -76,14 +76,16 @@ const userConfigSubscribe = (value: UserConfigLayer) => {
 		return;
 	}
 
-	const oldFontSize = FontSizePresets[currentConfig.fontSize - 1];
-	const newFontSize = FontSizePresets[value.fontSize - 1];
+	const oldFontSize = getFontSizeArray(currentConfig.fontSize - 1);
+	const newFontSize = getFontSizeArray(value.fontSize - 1);
 
 	replaceClass("h1", oldFontSize[Tag.H1], newFontSize[Tag.H1]);
 	replaceClass("h2", oldFontSize[Tag.H2], newFontSize[Tag.H2]);
 	replaceClass("h3", oldFontSize[Tag.H3], newFontSize[Tag.H3]);
 	replaceClass("h4", oldFontSize[Tag.H4], newFontSize[Tag.H4]);
 	replaceClass("p, ul, em", oldFontSize[Tag.TEXT], newFontSize[Tag.TEXT]);
+
+	currentConfig = JSON.parse(JSON.stringify(value));
 };
 
 // Config changes will be layered on exisiting config for better UX and server

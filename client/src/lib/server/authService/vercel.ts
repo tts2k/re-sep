@@ -1,10 +1,12 @@
-import { userConfig } from "@/stores/userConfig";
 import type { AuthService } from "./type";
-import { get } from "svelte/store";
 import type { UserConfig } from "@/proto/user_config";
+import * as turso from "../turso";
 
-const updateUserConfig = async (): Promise<UserConfig> => {
-	return get(userConfig);
+const updateUserConfig = async (
+	uc: UserConfig,
+	userId: string,
+): Promise<UserConfig> => {
+	return await turso.updateUserConfig(uc, userId);
 };
 
 const service: AuthService = {

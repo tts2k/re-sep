@@ -5,6 +5,7 @@ package auth;
 option go_package = "re-sep/proto";
 
 import "google/protobuf/timestamp.proto";
+import "buf/validate/validate.proto";
 
 message Empty {}
 
@@ -20,7 +21,9 @@ message Token {
 
 message User {
 	string sub = 1;
-	string name = 2;
+	string name = 2 [(buf.validate.field).string = {
+		len: 4
+	}];
 }
 
 message AuthResponse {

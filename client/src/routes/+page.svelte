@@ -20,7 +20,7 @@
 
 	$metadata = {
 		title: data.title,
-		authors: data.author,
+		authors: data.authors,
 		toc: data.toc,
 	};
 

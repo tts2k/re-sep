@@ -1,3 +1,4 @@
+import { SignJWT, type JWTPayload } from "jose";
 import { Err, Ok, type Result } from "ts-results-es";
 
 export const promiseResult = async <T>(
@@ -17,4 +18,19 @@ export const promiseResult = async <T>(
 	}
 
 	return result;
+};
+
+export const createJWTToken = async (id: string, secret: string) => {
+	const tokenPayload: JWTPayload = { sub: id };
+
+	const secretEnc = new TextEncoder().encode(secret);
+
+	// Generate and sign the token
+	const oAuthToken = await new SignJWT(tokenPayload)
+		.setProtectedHeader({ alg: "HS256", typ: "JWT" })
+		.setIssuedAt()
+		.setExpirationTime("1h")
+		.sign(secretEnc);
+
+	return oAuthToken;
 };

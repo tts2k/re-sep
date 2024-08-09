@@ -1,7 +1,8 @@
+import type { Article, TOCItem } from "@/proto/content";
 import mockHtml from "../assets/blame.html?raw";
-import type { TocItem, Article, ArticleService } from "./type";
+import type { ArticleService } from "./type";
 
-const toc: TocItem[] = [
+const toc: TOCItem[] = [
 	{
 		label: "What is Blame?",
 		id: "WhaBla",
@@ -128,11 +129,11 @@ const toc: TocItem[] = [
 const mockArticle: Article = {
 	title: "Blame",
 	entryName: "blame",
-	author: ["Tognazzini, Neal", "Coates, D. Justin"],
+	authors: ["Tognazzini, Neal", "Coates, D. Justin"],
 	toc: toc,
 	htmlText: mockHtml,
-	issued: new Date().toISOString(),
-	modified: new Date().toISOString(),
+	issued: new Date(),
+	modified: new Date(),
 };
 
 export const getArticle = async () => {

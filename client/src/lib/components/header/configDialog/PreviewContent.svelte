@@ -9,7 +9,7 @@
 <script lang="ts">
 	import {
 		FontPreset,
-		FontSizePresets,
+		getFontSizeArray,
 		FontSizeTag as Tag,
 	} from "$lib/stylePresets";
 	import { previewConfig } from "../store/previewConfig";
@@ -17,10 +17,11 @@
 	export let scale: number;
 	export let showBorder: boolean;
 
-	$: fontSizePreset = FontSizePresets[$previewConfig.fontSize - 1];
+	$: fontSizePreset = getFontSizeArray($previewConfig.fontSize - 1);
 	$: fontFamily = FontPreset[$previewConfig.font];
 	$: justified = $previewConfig.justify ? "text-justify" : "";
-	$: marginLeft = PreviewMarginPresets.left[($previewConfig.margin?.left || 1) - 1];
+	$: marginLeft =
+		PreviewMarginPresets.left[($previewConfig.margin?.left || 1) - 1];
 	$: marginRight =
 		PreviewMarginPresets.right[($previewConfig.margin?.right || 1) - 1];
 
