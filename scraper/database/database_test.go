@@ -39,12 +39,6 @@ func TestCreateTable(t *testing.T) {
 		t.Fatalf("Table creation failed: %v", err)
 	}
 
-	db, err := connectDB()
-	if err != nil {
-		t.Fatalf("DB connection failed, %v", err)
-	}
-	defer db.Close()
-
 	var result bool
 	row := db.QueryRow(`SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE type="table" AND name="articles")`)
 	err = row.Scan(&result)
@@ -55,6 +49,8 @@ func TestCreateTable(t *testing.T) {
 	if !result {
 		t.Fatal("Table creation failed.")
 	}
+	db.Close()
+	db = nil
 }
 
 func TestInsertArticle(t *testing.T) {
@@ -99,7 +95,7 @@ func TestInsertArticle(t *testing.T) {
 	}
 
 	// Raw query check
-	db, err := connectDB()
+	err = connectDB()
 	if err != nil {
 		t.Fatalf("DB connection failed, %v", err)
 	}

@@ -63,8 +63,26 @@ func doSingle(url string) error {
 	return nil
 }
 
+func spawnDBWorker(wg *sync.WaitGroup, jobs <-chan scraper.Article) {
+	for i := 0; i < config.DBWorkerCount; i++ {
+		wg.Add(1)
+		go func() {
+			for j := range jobs {
+				fmt.Println("Inserting: ", j.Title)
+				err := database.InsertArticle(j)
+				if err != nil {
+					fmt.Println(err)
+				}
+			}
+			wg.Done()
+		}()
+	}
+}
+
 func doAll() error {
 	outputPath := config.Output
+	dbOperation := "Creating"
+
 	if outputPath == "" {
 		return errors.New("flag: no output specified")
 	}
@@ -74,6 +92,7 @@ func doAll() error {
 		if !ans {
 			return errors.New("Aborted")
 		}
+		dbOperation = "Updating"
 	}
 
 	wg, results, err := scraper.All()
@@ -82,27 +101,20 @@ func doAll() error {
 	}
 
 	database.InitDB(outputPath)
-	fmt.Println("=> Creating database")
+	fmt.Printf("=> %s database\n", dbOperation)
 	err = database.CreateTable()
 	if err != nil {
 		return err
 	}
 
+	// Spawn worker for database
 	dbWg := &sync.WaitGroup{}
-	dbWg.Add(1)
-	go func() {
-		for result := range results {
-			fmt.Println("Inserting: ", result.Title)
-			err := database.InsertArticle(result)
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
-		dbWg.Done()
-	}()
+	spawnDBWorker(dbWg, results)
 
+	// Wait for scraping to be done then close the channel
 	wg.Wait()
 	close(results)
+	// Wait for DB operation to be done
 	dbWg.Wait()
 
 	return nil
@@ -126,6 +138,8 @@ func initFlags() error {
 	pflag.BoolVar(&config.Yes, "yes", false, "Assume yes")
 	pflag.BoolVarP(&config.Verbose, "verbose", "v", false, "Verbose output")
 	pflag.IntVarP(&config.WorkerCount, "worker", "w", 4, "Number of scraping workers")
+	pflag.IntVarP(&config.DBWorkerCount, "db_worker", "d", 1, "Number of database insertion worker count")
+	pflag.IntVarP(&config.Limit, "limit", "l", -1, "Limit the amount of article scraped (negative means scrape all)")
 	pflag.Int64Var(&config.Sleep, "sleep", -1, "Adjust worker sleep time after each job")
 
 	pflag.CommandLine.SortFlags = false
@@ -136,6 +150,15 @@ func initFlags() error {
 	// Check conflict
 	if config.All && config.Single {
 		return fmt.Errorf("cannot have all and single at the same time")
+	}
+
+	// Info printing for special flags
+	if config.Sleep > 0 {
+		utils.Debugf("Sleep is set to %d\n", config.Sleep)
+	}
+
+	if config.Limit > 0 {
+		utils.Debugf("Limit is set to %d\n", config.Limit)
 	}
 
 	return nil

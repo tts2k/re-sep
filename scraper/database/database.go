@@ -12,21 +12,31 @@ import (
 )
 
 var dbPath string
+var db *sql.DB
 
 func InitDB(path string) {
 	dbPath = path
 }
 
-func connectDB() (*sql.DB, error) {
-	return sql.Open("sqlite3", dbPath)
-}
+func connectDB() error {
+	if db != nil {
+		return nil
+	}
 
-func CreateTable() error {
-	db, err := connectDB()
+	dbConn, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+
+	db = dbConn
+	return nil
+}
+
+func CreateTable() error {
+	err := connectDB()
+	if err != nil {
+		return err
+	}
 
 	_, err = db.Exec(
 		`CREATE TABLE IF NOT EXISTS articles (
@@ -50,11 +60,10 @@ func CreateTable() error {
 }
 
 func InsertArticle(article scraper.Article) error {
-	db, err := connectDB()
+	err := connectDB()
 	if err != nil {
 		return err
 	}
-	defer db.Close()
 
 	stmt, err := db.Prepare(`
 		INSERT INTO articles (
@@ -68,7 +77,7 @@ func InsertArticle(article scraper.Article) error {
 			modified=excluded.modified,
 			html_text=excluded.html_text,
 			author=excluded.author,
-			author=excluded.toc
+			toc=excluded.toc
 	`)
 	if err != nil {
 		return err

@@ -55,6 +55,12 @@ func parseTOCRecur(root *goquery.Selection) []TOCItem {
 			subTagName := goquery.NodeName(subSel)
 			if subTagName == "a" {
 				href, _ := subSel.Attr("href")
+				href = strings.TrimSpace(href)
+
+				// Skip empty href
+				if href == "" {
+					return
+				}
 
 				// Skip Academic Tools
 				if href == "#Aca" {
@@ -246,9 +252,8 @@ func All() (*sync.WaitGroup, chan Article, error) {
 		var count int
 		visited := make(map[string]bool)
 		collector.OnHTML(`a[href^="entries"]`, func(e *colly.HTMLElement) {
-			// Hard-coded arbitrary limit for development
-			// I don't wanna scrape 1800 articles to test
-			if count >= 20 {
+			// Limit the amouont of article scraped
+			if config.Limit > 0 && len(visited) >= config.Limit {
 				return
 			}
 
