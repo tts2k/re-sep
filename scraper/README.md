@@ -8,15 +8,16 @@ Usage:
   re-sep-cli [flags] <url>
 
 Flags:
-  -h, --help         Print this help message
-  -a, --all          Scrape all available articles
-  -s, --single       Scrape a single article
-  -o, --out string   Specify output path
-      --yes          Assume yes
-  -v, --verbose      Verbose output
-  -w, --worker int   Number of scraping workers (default 4)
-      --sleep int    Adjust worker sleep time after each job (default -1)
-
+  -h, --help            Print this help message
+  -a, --all             Scrape all available articles
+  -s, --single          Scrape a single article
+  -o, --out string      Specify output path
+      --yes             Assume yes
+  -v, --verbose         Verbose output
+  -w, --worker int      Number of scraping workers (default 4)
+  -d, --db_worker int   Number of database insertion worker count (default 1)
+  -l, --limit int       Limit the amount of article scraped (negative means scrape all) (default -1)
+      --sleep int       Adjust worker sleep time after each job (default -1)
 ```
 
 #### Push a single article into a new sqlite database
