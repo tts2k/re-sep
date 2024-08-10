@@ -3,11 +3,12 @@ import { env } from "$env/dynamic/private";
 import { MutationFailed, NotFoundError } from "./error";
 import { promisify } from "node:util";
 import zlib from "node:zlib";
-import type { Article, TOCItem } from "@/proto/content";
+import type { TOCItem } from "@/proto/content";
 import { getFontSizeMap } from "@/stylePresets";
 import { defaultConfig } from "@/defaultConfig";
 import mustache from "mustache";
 import type { UserConfig } from "@/proto/user_config";
+import type { ArticleResponse } from "@/proto/main";
 
 let contentClient: Client;
 let configClient: Client;
@@ -28,7 +29,7 @@ const doGunzip = promisify(zlib.gunzip);
 export const getArticle = async (
 	entryName: string,
 	email: string,
-): Promise<Article> => {
+): Promise<ArticleResponse> => {
 	let articleRes: ResultSet;
 
 	if (entryName !== "") {
@@ -56,7 +57,6 @@ export const getArticle = async (
 		if (ucRes.rows.length === 0) {
 			userConfig = defaultConfig;
 		} else {
-			console.log(ucRes.rows[0]);
 			userConfig = JSON.parse(
 				ucRes.rows[0].config as string,
 			) as UserConfig;
@@ -72,13 +72,16 @@ export const getArticle = async (
 	const fszMap = getFontSizeMap(defaultConfig.fontSize - 1);
 
 	return {
-		title: articleRow.title as string,
-		entryName: articleRow.entry_name as string,
-		issued: new Date(articleRow.issued as string),
-		modified: new Date(articleRow.modified as string),
-		authors: JSON.parse(articleRow.author as string) as string[],
-		htmlText: mustache.render(htmlText, fszMap),
-		toc: JSON.parse(articleRow.toc as string) as TOCItem[],
+		article: {
+			title: articleRow.title as string,
+			entryName: articleRow.entry_name as string,
+			issued: new Date(articleRow.issued as string),
+			modified: new Date(articleRow.modified as string),
+			authors: JSON.parse(articleRow.author as string) as string[],
+			htmlText: mustache.render(htmlText, fszMap),
+			toc: JSON.parse(articleRow.toc as string) as TOCItem[],
+		},
+		userConfig,
 	};
 };
 
@@ -87,10 +90,9 @@ export const updateUserConfig = async (
 	email: string,
 ): Promise<UserConfig> => {
 	const config = await configClient.execute({
-		sql: `SELECT email FROM config WHERE email = ?`,
+		sql: "SELECT email FROM config WHERE email = ?",
 		args: [email],
 	});
-	console.log(config);
 
 	let ucRes: ResultSet;
 	if (config.rows.length === 0) {

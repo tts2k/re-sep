@@ -4,13 +4,15 @@
 	import { layerConfig } from "$lib/actions/layerConfig";
 	import { currentTocItem } from "$lib/components/sidebar/stores/tocStore";
 	import { metadata } from "@/stores/articleMetadata";
-	import { userConfig } from "@/stores/userConfig";
 	import { FontPreset, MarginPresets } from "@/stylePresets";
 	import { page } from "$app/stores";
 	import { toast } from "svelte-sonner";
+	import { userConfig } from "@/stores/userConfig";
 	import type { Article } from "@/proto/content";
+	import type { UserConfig } from "@/proto/user_config";
 
 	export let article: Article;
+	export let uc: UserConfig;
 
 	const error = $page.url.searchParams.get("error");
 
@@ -24,6 +26,13 @@
 		entryName: article.entryName,
 		toc: article.toc,
 	};
+
+	$userConfig = {
+		layered: false,
+		...uc,
+	};
+
+	$: console.log($userConfig);
 
 	$: font = $userConfig.font ? FontPreset[$userConfig.font] : "font-serif";
 	$: justified = $userConfig.justify ? "text-justify" : "";

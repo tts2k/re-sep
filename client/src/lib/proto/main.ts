@@ -17,11 +17,95 @@ import {
   type ServiceError,
   type UntypedServiceImplementation,
 } from "@grpc/grpc-js";
+import _m0 from "protobufjs/minimal";
 import { AuthResponse, Empty, User, Username } from "./auth";
 import { Article, EntryName } from "./content";
 import { UserConfig } from "./user_config";
 
 export const protobufPackage = "main";
+
+export interface ArticleResponse {
+  article: Article | undefined;
+  userConfig: UserConfig | undefined;
+}
+
+function createBaseArticleResponse(): ArticleResponse {
+  return { article: undefined, userConfig: undefined };
+}
+
+export const ArticleResponse = {
+  encode(message: ArticleResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.article !== undefined) {
+      Article.encode(message.article, writer.uint32(10).fork()).ldelim();
+    }
+    if (message.userConfig !== undefined) {
+      UserConfig.encode(message.userConfig, writer.uint32(18).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ArticleResponse {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseArticleResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.article = Article.decode(reader, reader.uint32());
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userConfig = UserConfig.decode(reader, reader.uint32());
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ArticleResponse {
+    return {
+      article: isSet(object.article) ? Article.fromJSON(object.article) : undefined,
+      userConfig: isSet(object.userConfig) ? UserConfig.fromJSON(object.userConfig) : undefined,
+    };
+  },
+
+  toJSON(message: ArticleResponse): unknown {
+    const obj: any = {};
+    if (message.article !== undefined) {
+      obj.article = Article.toJSON(message.article);
+    }
+    if (message.userConfig !== undefined) {
+      obj.userConfig = UserConfig.toJSON(message.userConfig);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ArticleResponse>, I>>(base?: I): ArticleResponse {
+    return ArticleResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ArticleResponse>, I>>(object: I): ArticleResponse {
+    const message = createBaseArticleResponse();
+    message.article = (object.article !== undefined && object.article !== null)
+      ? Article.fromPartial(object.article)
+      : undefined;
+    message.userConfig = (object.userConfig !== undefined && object.userConfig !== null)
+      ? UserConfig.fromPartial(object.userConfig)
+      : undefined;
+    return message;
+  },
+};
 
 export type AuthService = typeof AuthService;
 export const AuthService = {
@@ -138,27 +222,30 @@ export const ContentService = {
     responseStream: false,
     requestSerialize: (value: EntryName) => Buffer.from(EntryName.encode(value).finish()),
     requestDeserialize: (value: Buffer) => EntryName.decode(value),
-    responseSerialize: (value: Article) => Buffer.from(Article.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => Article.decode(value),
+    responseSerialize: (value: ArticleResponse) => Buffer.from(ArticleResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => ArticleResponse.decode(value),
   },
 } as const;
 
 export interface ContentServer extends UntypedServiceImplementation {
-  getArticle: handleUnaryCall<EntryName, Article>;
+  getArticle: handleUnaryCall<EntryName, ArticleResponse>;
 }
 
 export interface ContentClient extends Client {
-  getArticle(request: EntryName, callback: (error: ServiceError | null, response: Article) => void): ClientUnaryCall;
+  getArticle(
+    request: EntryName,
+    callback: (error: ServiceError | null, response: ArticleResponse) => void,
+  ): ClientUnaryCall;
   getArticle(
     request: EntryName,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: Article) => void,
+    callback: (error: ServiceError | null, response: ArticleResponse) => void,
   ): ClientUnaryCall;
   getArticle(
     request: EntryName,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: Article) => void,
+    callback: (error: ServiceError | null, response: ArticleResponse) => void,
   ): ClientUnaryCall;
 }
 
@@ -167,3 +254,19 @@ export const ContentClient = makeGenericClientConstructor(ContentService, "main.
   service: typeof ContentService;
   serviceName: string;
 };
+
+type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
+
+export type DeepPartial<T> = T extends Builtin ? T
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
+  : Partial<T>;
+
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+export type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+
+function isSet(value: any): boolean {
+  return value !== null && value !== undefined;
+}

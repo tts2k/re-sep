@@ -1,9 +1,11 @@
-import type { Article } from "@/proto/content";
+import type { ArticleResponse } from "@/proto/main";
 import { contentClient, createMetadata } from "../grpc";
 import type { ArticleService } from "./type";
 
 const getArticle = async (entryName: string, token?: string) => {
-	let promiseExecutor: ConstructorParameters<typeof Promise<Article>>[0];
+	let promiseExecutor: ConstructorParameters<
+		typeof Promise<ArticleResponse>
+	>[0];
 
 	if (token) {
 		const metadata = await createMetadata(token);
@@ -32,7 +34,7 @@ const getArticle = async (entryName: string, token?: string) => {
 		};
 	}
 
-	return new Promise<Article>(promiseExecutor);
+	return new Promise<ArticleResponse>(promiseExecutor);
 };
 
 const service: ArticleService = {

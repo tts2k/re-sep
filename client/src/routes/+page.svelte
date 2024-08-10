@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-	<title>{data.title}</title>
+	<title>{data.article?.title}</title>
 </svelte:head>
 
-<Reader article={data} />
+<Reader article={data.article} uc={data.userConfig} />

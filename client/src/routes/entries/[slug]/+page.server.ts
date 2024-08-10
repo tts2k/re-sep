@@ -3,10 +3,20 @@ import articleService from "$lib/server/articleService";
 import { promiseResult } from "@/server/utils";
 import { error } from "@sveltejs/kit";
 import { NotFoundError } from "@/server/error";
+import type { Article } from "@/proto/content";
+import type { UserConfig } from "@/proto/user_config";
 
 export const prerender = false;
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+type LoadResponse = {
+	article: Article;
+	userConfig: UserConfig;
+};
+
+export const load: PageServerLoad = async ({
+	locals,
+	params,
+}): Promise<LoadResponse> => {
 	const session = await locals.auth();
 
 	const article = await promiseResult(
@@ -14,7 +24,6 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	);
 
 	if (article.isErr()) {
-		console.log(article.error);
 		if (article.error instanceof NotFoundError) {
 			return error(404, { message: "Not found" });
 		}
@@ -24,5 +33,20 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		});
 	}
 
-	return article.value;
+	if (!article.value.article) {
+		return error(500, {
+			message: "",
+		});
+	}
+
+	if (!article.value.userConfig) {
+		return error(500, {
+			message: "",
+		});
+	}
+
+	return {
+		article: article.value.article,
+		userConfig: article.value.userConfig,
+	};
 };

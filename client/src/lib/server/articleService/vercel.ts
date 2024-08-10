@@ -1,11 +1,11 @@
 import type { ArticleService } from "./type";
-import type { Article } from "@/proto/content";
 import * as turso from "../turso";
+import type { ArticleResponse } from "@/proto/main";
 
 export const getArticle = async (
 	entryName: string,
 	email: string,
-): Promise<Article> => {
+): Promise<ArticleResponse> => {
 	return await turso.getArticle(entryName, email);
 };
 

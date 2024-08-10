@@ -1,5 +1,6 @@
-import type { Article, TOCItem } from "@/proto/content";
 import mockHtml from "../assets/blame.html?raw";
+import type { Article, TOCItem } from "@/proto/content";
+import { defaultConfig } from "@/defaultConfig";
 import type { ArticleService } from "./type";
 
 const toc: TOCItem[] = [
@@ -137,7 +138,10 @@ const mockArticle: Article = {
 };
 
 export const getArticle = async () => {
-	return mockArticle;
+	return {
+		article: mockArticle,
+		userConfig: defaultConfig,
+	};
 };
 
 const service: ArticleService = {
