@@ -22,7 +22,7 @@ export const enum FontSizeTag {
 
 export const FontSizePresets = [
 	["text-3xl", "text-4xl", "text-5xl", "text-6xl", "text-9xl"],
-	["text-2xl", "text-3xl", "text-5xl", "text-4xl", "text-8xl"],
+	["text-2xl", "text-3xl", "text-4xl", "text-5xl", "text-8xl"],
 	["text-xl", "text-2xl", "text-3xl", "text-4xl", "text-7xl"],
 	["text-lg", "text-xl", "text-2xl", "text-3xl", "text-6xl"],
 	["text-base", "text-lg", "text-xl", "text-2xl", "text-5xl"],
