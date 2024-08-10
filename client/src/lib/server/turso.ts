@@ -49,13 +49,14 @@ export const getArticle = async (
 	let userConfig: UserConfig;
 	if (email) {
 		const ucRes = await configClient.execute({
-			sql: "SELECT json(config) FROM config WHERE email = ?",
+			sql: "SELECT json(config) as config FROM config WHERE email = ?",
 			args: [email],
 		});
 
 		if (ucRes.rows.length === 0) {
 			userConfig = defaultConfig;
 		} else {
+			console.log(ucRes.rows[0]);
 			userConfig = JSON.parse(
 				ucRes.rows[0].config as string,
 			) as UserConfig;
@@ -83,25 +84,41 @@ export const getArticle = async (
 
 export const updateUserConfig = async (
 	uc: UserConfig,
-	userId: string,
+	email: string,
 ): Promise<UserConfig> => {
-	const ucRes = await configClient.execute({
-		sql: `INSERT INTO config (
-			email, config
-		) VALUES (
-			?, json(?)
-		)
-		ON CONFLICT (entry_name) DO UPDATE SET
-			config=json(excluded.title),
-		`,
-		args: [userId, JSON.stringify(uc)],
+	const config = await configClient.execute({
+		sql: `SELECT email FROM config WHERE email = ?`,
+		args: [email],
 	});
+	console.log(config);
 
-	if (ucRes.rows.length === 0) {
+	let ucRes: ResultSet;
+	if (config.rows.length === 0) {
+		ucRes = await configClient.execute({
+			sql: `INSERT INTO config (
+				email, config
+			) VALUES (
+				?, json(?)
+			)`,
+			args: [email, JSON.stringify(uc)],
+		});
+	} else {
+		ucRes = await configClient.execute({
+			sql: `
+				UPDATE config AS c
+				SET config = json(?)
+				FROM config
+				WHERE c.email = ?
+			`,
+			args: [JSON.stringify(uc), email],
+		});
+	}
+
+	if (ucRes.rowsAffected === 0) {
 		throw new MutationFailed("Failed to upsert user config");
 	}
 
-	return JSON.parse(ucRes.rows[0].config as string) as UserConfig;
+	return uc;
 };
 
 // Init

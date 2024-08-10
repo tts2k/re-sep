@@ -55,8 +55,8 @@
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					layered: undefined,
 					...$userConfig,
+					layered: undefined
 				}),
 			});
 

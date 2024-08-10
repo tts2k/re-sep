@@ -21,6 +21,7 @@
 	$metadata = {
 		title: article.title,
 		authors: article.authors,
+		entryName: article.entryName,
 		toc: article.toc,
 	};
 

@@ -7,7 +7,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	const session = await locals.auth();
 
 	// unauthorized
-	if (!session?.user) {
+	if (!session?.user?.email) {
 		logger.error("Unauthorized POST call to user api");
 		return json(
 			{ message: "unauthorized" },
@@ -18,8 +18,11 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	const data = await request.json();
 
 	// Validate is on the go service side
-	const res = await promiseResult(authService.updateUserConfig(data, data));
+	const res = await promiseResult(
+		authService.updateUserConfig(data, session.user.email),
+	);
 	if (res.isErr()) {
+		console.error(res.error);
 		logger.error("Error updating user config", res.error.message);
 		return json(
 			{ message: "Error updating user config" },

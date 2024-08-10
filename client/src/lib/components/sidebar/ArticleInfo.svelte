@@ -3,7 +3,7 @@
 	import GlobeIcon from "~icons/radix-icons/globe";
 
 	$: authors = $metadata.authors.join(" - ");
-	$: articleLink = "https://plato.stanford.edu/entries/blame/"; // Hardcoded for now
+	$: articleLink = `https://plato.stanford.edu/entries/${$metadata.entryName}/`; // Hardcoded for now
 </script>
 
 <div
