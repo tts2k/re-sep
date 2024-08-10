@@ -1,4 +1,4 @@
-import { createClient, type Client } from "@libsql/client";
+import { createClient, type Client, type ResultSet } from "@libsql/client";
 import { env } from "$env/dynamic/private";
 import { MutationFailed, NotFoundError } from "./error";
 import { promisify } from "node:util";
@@ -29,10 +29,18 @@ export const getArticle = async (
 	entryName: string,
 	email: string,
 ): Promise<Article> => {
-	const articleRes = await contentClient.execute({
-		sql: "SELECT * FROM articles WHERE entry_name = ?",
-		args: [entryName],
-	});
+	let articleRes: ResultSet;
+
+	if (entryName !== "") {
+		articleRes = await contentClient.execute({
+			sql: "SELECT * FROM articles WHERE entry_name = ?",
+			args: [entryName],
+		});
+	} else {
+		articleRes = await contentClient.execute(
+			"SELECT * FROM articles ORDER BY RANDOM() LIMIT 1",
+		);
+	}
 
 	if (articleRes.rows.length === 0) {
 		throw new NotFoundError("Article not found");

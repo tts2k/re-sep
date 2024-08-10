@@ -10,6 +10,7 @@
 
 <ModeWatcher />
 <Toaster position="top-center" />
+
 <!--Dim the background on sidebar open-->
 {#if $sidebarStatus.open && !$sidebarStatus.pin}
 	<div
