@@ -32,8 +32,6 @@
 		...uc,
 	};
 
-	$: console.log($userConfig);
-
 	$: font = $userConfig.font ? FontPreset[$userConfig.font] : "font-serif";
 	$: justified = $userConfig.justify ? "text-justify" : "";
 	$: marginLeft = MarginPresets.left[($userConfig.margin?.left || 1) - 1];

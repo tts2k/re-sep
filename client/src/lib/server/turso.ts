@@ -69,7 +69,7 @@ export const getArticle = async (
 
 	const htmlTextBuffer = await doGunzip(articleRow.html_text as ArrayBuffer);
 	const htmlText = htmlTextBuffer.toString();
-	const fszMap = getFontSizeMap(defaultConfig.fontSize - 1);
+	const fszMap = getFontSizeMap(userConfig.fontSize - 1);
 
 	return {
 		article: {

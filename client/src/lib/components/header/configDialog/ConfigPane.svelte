@@ -15,11 +15,8 @@
 
 	const configDialog = getContext<ConfigDialogContext>("config-dialog");
 
-	onMount(() => {
-		// Staging preview config before applying to global config
-		$previewConfig.font = $userConfig.font;
-		$previewConfig.fontSize = $userConfig.fontSize;
-	});
+	// Staging preview config before applying to global config
+	$previewConfig = structuredClone($userConfig);
 
 	// Mapping values for Select component(s)
 	$: selectedFont = {
@@ -56,7 +53,7 @@
 				},
 				body: JSON.stringify({
 					...$userConfig,
-					layered: undefined
+					layered: undefined,
 				}),
 			});
 
