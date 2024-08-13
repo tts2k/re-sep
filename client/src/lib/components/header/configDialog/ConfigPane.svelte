@@ -7,7 +7,7 @@
 	import { Checkbox } from "@/components/ui/checkbox";
 	import { userConfig } from "@/stores/userConfig";
 	import { previewConfig } from "../store/previewConfig";
-	import { getContext, onMount } from "svelte";
+	import { getContext } from "svelte";
 	import type { Selected } from "bits-ui";
 	import type { ConfigDialogContext } from "../ConfigDialog.svelte";
 	import { toast } from "svelte-sonner";
