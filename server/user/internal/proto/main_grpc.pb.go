@@ -216,7 +216,7 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ContentClient interface {
-	GetArticle(ctx context.Context, in *EntryName, opts ...grpc.CallOption) (*Article, error)
+	GetArticle(ctx context.Context, in *EntryName, opts ...grpc.CallOption) (*ArticleResponse, error)
 }
 
 type contentClient struct {
@@ -227,8 +227,8 @@ func NewContentClient(cc grpc.ClientConnInterface) ContentClient {
 	return &contentClient{cc}
 }
 
-func (c *contentClient) GetArticle(ctx context.Context, in *EntryName, opts ...grpc.CallOption) (*Article, error) {
-	out := new(Article)
+func (c *contentClient) GetArticle(ctx context.Context, in *EntryName, opts ...grpc.CallOption) (*ArticleResponse, error) {
+	out := new(ArticleResponse)
 	err := c.cc.Invoke(ctx, "/main.Content/GetArticle", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -240,7 +240,7 @@ func (c *contentClient) GetArticle(ctx context.Context, in *EntryName, opts ...g
 // All implementations must embed UnimplementedContentServer
 // for forward compatibility
 type ContentServer interface {
-	GetArticle(context.Context, *EntryName) (*Article, error)
+	GetArticle(context.Context, *EntryName) (*ArticleResponse, error)
 	mustEmbedUnimplementedContentServer()
 }
 
@@ -248,7 +248,7 @@ type ContentServer interface {
 type UnimplementedContentServer struct {
 }
 
-func (UnimplementedContentServer) GetArticle(context.Context, *EntryName) (*Article, error) {
+func (UnimplementedContentServer) GetArticle(context.Context, *EntryName) (*ArticleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetArticle not implemented")
 }
 func (UnimplementedContentServer) mustEmbedUnimplementedContentServer() {}

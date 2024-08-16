@@ -8,6 +8,11 @@ import "auth.proto";
 import "content.proto";
 import "user_config.proto";
 
+message ArticleResponse {
+	content.Article article = 1;
+	config.UserConfig userConfig = 2;
+}
+
 service Auth {
 	rpc Auth(auth.Empty) returns (auth.AuthResponse) {}
 	rpc UpdateUsername(auth.Username) returns (auth.User) {}
@@ -16,7 +21,6 @@ service Auth {
 }
 
 service Content {
-	rpc GetArticle(content.EntryName) returns (content.Article) {}
+	rpc GetArticle(content.EntryName) returns (ArticleResponse) {}
 }
-
 
